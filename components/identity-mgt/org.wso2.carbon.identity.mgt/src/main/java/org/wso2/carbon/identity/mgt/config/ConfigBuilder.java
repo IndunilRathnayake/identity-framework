@@ -159,6 +159,18 @@ public class ConfigBuilder {
                 OMElement omElement = (OMElement) iterator.next();
                 String configType = omElement.getAttributeValue(new QName(
                         "type"));
+                String emailType = omElement.getAttributeValue(new QName(
+                        "emailType"));
+                String key_emailType = (new StringBuilder().append(configType).append("_").append("emailType")).toString();
+                if(emailType != null) {
+                    emailConfig.setProperty(key_emailType, emailType);
+                } else {
+                    emailConfig.setProperty(key_emailType, " ");
+                }
+                /*if(configType.equalsIgnoreCase("emailType")) {
+                    emailConfig.setProperty(configType, omElement.getText());
+                    continue;
+                }*/
                 if (configType != null && configType.trim().length() > 0) {
                     emailConfig.setProperty(configType, loadEmailConfig(omElement));
                 }

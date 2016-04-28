@@ -37,22 +37,31 @@
 <%@ page import="org.wso2.carbon.utils.ServerConstants"%>
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="org.owasp.encoder.Encode" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.ArrayList" %>
 
 <%
 	String username = request.getParameter("username");
     String forwardTo = null;
     AccountCredentialMgtConfigClient client = null;
-    
+
     EmailConfigDTO emailConfig = null;
     String emailSubject = null;
     String emailBody = null;
     String emailFooter = null;
+    String emailFormat = null;
     String templateName = null;
     String emailSubject0 = null;
     String emailBody0 = null;
     String emailFooter0 = null;
     String templateName0 = null;
-    
+    String emailFormat0 = null;
+
+    List<String> emailFormatTypes = new ArrayList<String>() {{
+        add("text/html");
+        add("text/text");
+    }};
+
     if (username == null) {
         username = (String) request.getSession().getAttribute("logged-user");
     }
@@ -70,7 +79,7 @@
 				CarbonConstants.CONFIGURATION_CONTEXT);
         client = new AccountCredentialMgtConfigClient(cookie,
                 backendServerURL, configContext);
-             	
+
 		try {
 			emailConfig = client.loadEmailConfig();
 
@@ -78,7 +87,7 @@
 			e.printStackTrace();
 		}
 
-		
+
 	} catch (Exception e) {
 		String message = resourceBundle
 				.getString("error.while.loading.email.tepmplate.data");
@@ -87,14 +96,16 @@
 	}
 %>
 <script type="text/javascript">
-	
+
 	function updateFields(elm){
 		var $selectedOption = jQuery(elm).find(":selected");
 		jQuery('#emailSubject').val($selectedOption.attr('data-subject'));
 		jQuery('#emailBody').val($selectedOption.attr('data-body'));
 		jQuery('#emailFooter').val($selectedOption.attr('data-footer'));
+        jQuery('#emailFormat').val($selectedOption.attr('data-format'));
+        //('select>option:$selectedOption.attr('data-format')').attr('selected', true);
 		jQuery('#templateName').val($selectedOption.attr('data-templateName'));
-		
+
 	}
 </script>
 <%
@@ -136,37 +147,63 @@
 					</div>
 				<div class=”sectionSub”>
 					<table class="carbonFormTable">
+                        <%--<% List<String> emailFormatTypes = new ArrayList<String>() {{
+                                add("text/html");
+                                add("text/html");
+                           }}; %>--%>
 					<tr>
 							<td class="leftCol-med labelField"><fmt:message	key="email.types" /></td>
 							<td><select id="emailTypes"	name="emailTypes" class="leftCol-big" onchange="updateFields(this);">
 									<%
 									EmailTemplateDTO[] templates = emailConfig.getTemplates();
 									for(int i=0; i < templates.length; i++) {
-										
+
 										EmailTemplateDTO template = templates[i];
 										if(i==0){
-											emailSubject0 = template.getSubject();	
+											emailSubject0 = template.getSubject();
 											emailBody0 = template.getBody();
 											emailFooter0 = template.getFooter();
+                                            emailFormat0 = template.getEmailFormat();
 											templateName0 = template.getName();
-										} 								
+										}
 										emailSubject = template.getSubject();
 										emailBody = template.getBody();
 										emailFooter = template.getFooter();
+                                        emailFormat = template.getEmailFormat();
 										templateName = template.getName();
 	                                %>
-										<option 
-										value="<%=i%>" 
+										<option
+										value="<%=i%>"
 										data-subject="<%=Encode.forHtmlContent(emailSubject)%>"
 										data-body="<%=Encode.forHtmlContent(emailBody)%>"
 										data-footer="<%=Encode.forHtmlContent(emailFooter)%>"
+                                        data-format="<%=Encode.forHtmlContent(emailFormat)%>"
 										data-templateName="<%=Encode.forHtmlContent(templateName)%>"
 										><%=Encode.forHtmlContent(template.getDisplayName())%></option>
-									<% 
-									}									
+									<%
+									}
                                 	%>
 							</select></td>
 						</tr>
+                        <tr>
+                            <td class="leftCol-med labelField"><fmt:message	key="email.format.types" /></td>
+                            <td>
+                                <select id="emailFormat"	name="emailFormat" class="leftCol-big">
+                            <%
+                            for (String formatType : emailFormatTypes) {
+                                if (formatType.equals(emailFormat0)) {
+                            %>
+                                <option value="<%=formatType%>" selected><%=formatType%></option>
+
+                             <% } else {
+                                %>
+                                <option value="<%=formatType%>"><%=formatType%></option>
+                                <%
+             }
+            }
+        %>
+                                </select></td>
+                        </tr>
 						<tr>
 							<td><fmt:message key="emailSubject" /></td>
 							<td><input type="text" name="emailSubject" id="emailSubject" style="width : 500px;" value="<%=Encode.forHtmlAttribute(emailSubject0)%>"/></td>

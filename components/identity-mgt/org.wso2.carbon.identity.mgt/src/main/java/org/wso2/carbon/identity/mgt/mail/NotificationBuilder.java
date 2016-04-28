@@ -35,7 +35,7 @@ public class NotificationBuilder {
         String subject = null;
         String body = null;
         String footer = null;
-        Notification notificatoin = null;
+        Notification notification = null;
 
         if ("EMAIL".equals(notificationType)) {
             String[] contents = template.split("\\|");
@@ -57,15 +57,18 @@ public class NotificationBuilder {
             } catch (UnsupportedEncodingException e) {
                 throw new IdentityMgtServiceException("Unsupported encoding while creating notification", e);
             }
-            notificatoin = new EmailNotification();
-            notificatoin.setSubject(subject);
-            notificatoin.setBody(body);
-            notificatoin.setFooter(footer);
-            notificatoin.setSendFrom(data.getSendFrom());
-            notificatoin.setSendTo(data.getSendTo());
+            notification = new EmailNotification();
+            notification.setSubject(subject);
+            notification.setBody(body);
+            notification.setFooter(footer);
+            notification.setSendFrom(data.getSendFrom());
+            notification.setSendTo(data.getSendTo());
+            if(tagsData.get("email-type") != null) {
+                notification.setType(tagsData.get("email-type"));
+            }
 
         }
-        return notificatoin;
+        return notification;
     }
 
     private static String replaceTags(Map<String, String> tagsData, String content)

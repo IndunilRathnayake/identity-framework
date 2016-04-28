@@ -1374,6 +1374,9 @@
         <axis2-transports.version.range>[1.1.0-wso2v13,2.0.0)</axis2-transports.version.range>
         <org.apache.axis2.transport.mail.version.range>[0.0.0,1.0.0)</org.apache.axis2.transport.mail.version.range>
 
+        <!-- Carbon Event-processing version-->
+        <carbon.analytics.common.version>5.0.9</carbon.analytics.common.version>
+
         <!-- Axiom Version -->
         <axiom.version>1.2.11-wso2v10</axiom.version>
         <axiom.wso2.version>1.2.11.wso2v10</axiom.wso2.version>

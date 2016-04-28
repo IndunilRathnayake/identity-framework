@@ -39,4 +39,8 @@ public interface Notification {
     public String getFooter();
 
     public void setFooter(String footer);
+
+    public String getType();
+
+    public void setType(String type);
 }

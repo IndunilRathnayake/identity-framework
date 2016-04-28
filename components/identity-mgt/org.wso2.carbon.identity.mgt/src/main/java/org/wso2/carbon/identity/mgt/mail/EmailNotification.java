@@ -25,6 +25,7 @@ public class EmailNotification implements Notification {
     private String subject;
     private String body;
     private String footer;
+    private String type;
 
     @Override
     public String getSendTo() {
@@ -76,4 +77,11 @@ public class EmailNotification implements Notification {
         this.footer = footer;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 }

@@ -29,6 +29,7 @@ public class EmailTemplateDTO implements Serializable {
     private String footer;
     private String name;
     private String displayName;
+    private String emailFormat;
 
     public String getSubject() {
         return subject;
@@ -70,4 +71,11 @@ public class EmailTemplateDTO implements Serializable {
         this.displayName = displayName;
     }
 
+    public String getEmailFormat() {
+        return emailFormat;
+    }
+
+    public void setEmailFormat(String emailFormat) {
+        this.emailFormat = emailFormat;
+    }
 }

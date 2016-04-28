@@ -55,26 +55,37 @@ public class EmailConfigTransformer {
             
             if (IdentityMgtConstants.Notification.PASSWORD_RESET_RECOVERY.equals(key)) {
                 template.setDisplayName("Password Reset");
+                template.setEmailFormat(props.getProperty(key + "_emailType"));
             } else if (IdentityMgtConstants.Notification.ACCOUNT_CONFORM.equals(key)) {
                 template.setDisplayName("Account Confirm");
+                template.setEmailFormat(props.getProperty(key + "_emailType"));
             } else if (IdentityMgtConstants.Notification.ACCOUNT_ID_RECOVERY.equals(key)) {
                 template.setDisplayName("Account Id Recovery");
+                template.setEmailFormat(props.getProperty(key + "_emailType"));
             } else if (IdentityMgtConstants.Notification.ACCOUNT_UNLOCK.equals(key)) {
                 template.setDisplayName("Account Unlock");
+                template.setEmailFormat(props.getProperty(key + "_emailType"));
             } else if (IdentityMgtConstants.Notification.ACCOUNT_ENABLE.equals(key)) {
                 template.setDisplayName("Account Enable");
+                template.setEmailFormat(props.getProperty(key + "_emailType"));
             } else if (IdentityMgtConstants.Notification.ACCOUNT_DISABLE.equals(key)) {
                 template.setDisplayName("Account Disable");
+                template.setEmailFormat(props.getProperty(key + "_emailType"));
             }else if (IdentityMgtConstants.Notification.ASK_PASSWORD.equals(key)) {
                 template.setDisplayName("Ask Password");
+                template.setEmailFormat(props.getProperty(key + "_emailType"));
             } else if (IdentityMgtConstants.Notification.OTP_PASSWORD.equals(key)) {
                 template.setDisplayName("One Time Password");
+                template.setEmailFormat(props.getProperty(key + "_emailType"));
             } else if (IdentityMgtConstants.Notification.TEMPORARY_PASSWORD.equals(key)) {
                 template.setDisplayName("Temporary Password");
+                template.setEmailFormat(props.getProperty(key + "_emailType"));
             } else if (IdentityMgtConstants.Notification.PASSWORD_EXPIRES.equals(key)) {
                 template.setDisplayName("Password Expires");
+                template.setEmailFormat(props.getProperty(key + "_emailType"));
             } else if (IdentityMgtConstants.Notification.PASSWORD_EXPIRED.equals(key)) {
                 template.setDisplayName("Password Expired");
+                template.setEmailFormat(props.getProperty(key + "_emailType"));
             } else {
                 // Ignore all other keys in the registry mount.
                 continue;

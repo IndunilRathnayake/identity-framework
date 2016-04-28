@@ -35,7 +35,11 @@ import org.wso2.carbon.identity.mgt.config.ConfigBuilder;
 import org.wso2.carbon.identity.mgt.config.ConfigType;
 import org.wso2.carbon.identity.mgt.config.StorageType;
 import org.wso2.carbon.identity.mgt.constants.IdentityMgtConstants;
-import org.wso2.carbon.identity.mgt.dto.*;
+import org.wso2.carbon.identity.mgt.dto.NotificationDataDTO;
+import org.wso2.carbon.identity.mgt.dto.UserDTO;
+import org.wso2.carbon.identity.mgt.dto.UserIdentityClaimsDO;
+import org.wso2.carbon.identity.mgt.dto.UserRecoveryDTO;
+import org.wso2.carbon.identity.mgt.dto.UserRecoveryDataDO;
 import org.wso2.carbon.identity.mgt.internal.IdentityMgtServiceComponent;
 import org.wso2.carbon.identity.mgt.mail.Notification;
 import org.wso2.carbon.identity.mgt.mail.NotificationBuilder;
@@ -321,20 +325,9 @@ public class IdentityMgtEventListener extends AbstractIdentityUserOperationEvent
 
                         NotificationData emailNotificationData = new NotificationData();
                         String emailTemplate = null;
+                        String emailType = null;
                         int tenantId = userStoreManager.getTenantId();
                         String firstName = null;
-                        try {
-                            firstName =
-                                    Utils.getClaimFromUserStoreManager(userName, tenantId,
-                                            "http://wso2.org/claims/givenname");
-                        } catch (IdentityException e2) {
-                            throw new UserStoreException("Could not load user given name", e2);
-                        }
-                        emailNotificationData.setTagData("first-name", firstName);
-                        emailNotificationData.setTagData("user-name", userName);
-                        emailNotificationData.setTagData("otp-password", password);
-
-                        emailNotificationData.setSendTo(email);
 
                         Config emailConfig = null;
                         ConfigBuilder configBuilder = ConfigBuilder.getInstance();
@@ -350,6 +343,25 @@ public class IdentityMgtEventListener extends AbstractIdentityUserOperationEvent
                         }
 
                         emailTemplate = emailConfig.getProperty("otp");
+                        if(emailConfig.getProperty("otp_emailType") != null) {
+                            emailType = emailConfig.getProperty("otp_emailType");
+                        }
+
+                        try {
+                            firstName =
+                                    Utils.getClaimFromUserStoreManager(userName, tenantId,
+                                            "http://wso2.org/claims/givenname");
+                        } catch (IdentityException e2) {
+                            throw new UserStoreException("Could not load user given name", e2);
+                        }
+                        emailNotificationData.setTagData("first-name", firstName);
+                        emailNotificationData.setTagData("user-name", userName);
+                        emailNotificationData.setTagData("otp-password", password);
+                        if(emailType != null) {
+                            emailNotificationData.setTagData("email-type", emailType);
+                        }
+
+                        emailNotificationData.setSendTo(email);
 
                         Notification emailNotification = null;
                         try {
@@ -720,7 +732,7 @@ public class IdentityMgtEventListener extends AbstractIdentityUserOperationEvent
     /**
 	 * This method is used when the admin is updating the credentials with an
 	 * empty credential. A random password will be generated and will be mailed
-	 * to the user. 
+	 * to the user.
 	 */
 	@Override
     public boolean doPreUpdateCredentialByAdmin(String userName, Object newCredential,
