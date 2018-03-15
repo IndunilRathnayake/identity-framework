@@ -29,6 +29,7 @@ import org.wso2.carbon.identity.application.authentication.framework.config.mode
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
 import org.wso2.carbon.identity.application.common.model.AuthenticationStep;
+import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
@@ -76,7 +77,7 @@ public class ConfigurationFacade {
      * @deprecated Please use  #getSequenceConfig(AuthenticationContext, Map) instead.
      */
     @Deprecated
-    public SequenceConfig getSequenceConfig(String reqType, String relyingParty, String tenantDomain)
+    public SequenceConfig getSequenceConfig(String reqType, String relyingParty, String tenantDomain, List<ClaimMapping> requestedAttributes)
             throws FrameworkException {
 
         ApplicationManagementService appInfo = ApplicationManagementService.getInstance();
@@ -100,7 +101,7 @@ public class ConfigurationFacade {
         AuthenticationStep[] authenticationSteps = serviceProvider.getLocalAndOutBoundAuthenticationConfig()
                 .getAuthenticationSteps();
 
-        return uiBasedConfigurationLoader.getSequence(serviceProvider, tenantDomain, authenticationSteps);
+        return uiBasedConfigurationLoader.getSequence(serviceProvider, requestedAttributes, tenantDomain, authenticationSteps);
 
     }
 

@@ -261,4 +261,22 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
 
         }
     }
+
+    /**
+     * Get all claim dialects
+     *
+     * @return claim uri array
+     * @throws org.wso2.carbon.identity.application.common.IdentityApplicationManagementException
+     */
+    public String[] getAllClaimDialects() throws IdentityApplicationManagementException {
+
+        try {
+            applicationMgtService = ApplicationManagementService.getInstance();
+            return applicationMgtService.getAllLocalClaimUris(getTenantDomain());
+        } catch (IdentityApplicationManagementException idpException) {
+            log.error("Error while retrieving all local claim URIs for tenant: " + getTenantDomain(), idpException);
+            throw idpException;
+
+        }
+    }
 }

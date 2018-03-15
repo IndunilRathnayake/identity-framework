@@ -45,6 +45,7 @@
 <%@ page import="org.wso2.carbon.identity.application.common.util.IdentityApplicationManagementUtil" %>
 <%@ page import="org.wso2.carbon.identity.core.util.IdentityUtil" %>
 <%@ page import="java.security.cert.CertificateException" %>
+<%@ page import="org.wso2.carbon.user.core.UserCoreConstants" %>
 <link href="css/idpmgt.css" rel="stylesheet" type="text/css" media="all"/>
 <carbon:breadcrumb label="breadcrumb.service.provider" resourceBundle="org.wso2.carbon.identity.application.mgt.ui.i18n.Resources"
                     topPage="true" request="<%=request%>" />
@@ -75,6 +76,15 @@ location.href = "list-service-providers.jsp";
 	Map<String, String> claimMapping = appBean.getClaimMapping();
 	Map<String, String> roleMapping = appBean.getRoleMapping();
 	boolean isLocalClaimsSelected = appBean.isLocalClaimsSelected();
+	String[] spClaimDialects = appBean.configuredSPClaimDialects();
+	StringBuffer spClaimDialectsString = null;
+	String[] claimDialects = appBean.getClaimDialects();
+	if(spClaimDialects != null && spClaimDialects.length != 0) {
+	    spClaimDialectsString = new StringBuffer();
+	}
+	for(int i=0; i<spClaimDialects.length; i++) {
+	    spClaimDialectsString.append(spClaimDialects[i]).append(",");
+	}
     String idPName = request.getParameter("idPName");
     String action = request.getParameter("action");
     String[] userStoreDomains = null;
@@ -1136,6 +1146,22 @@ function updateBeanAndPostTo(postURL, data) {
                         </td>
                     </tr>
                     </table>
+                    </div>
+
+                    <div id="spClaimDialectSelection">
+                       <table class="carbonFormTable">
+                          <tr>
+                             <td class="leftCol-med labelField" style="width:15%">
+                                <label id="addSPClaimDialectLbl">
+                                   <fmt:message key='config.application.sp.claim.dialect'/>
+                                </label>
+                             </td>
+                             <td class="leftCol-med">
+                                <input style="width:50%" id="spDialects" name="spDialects"
+                                value=<%=spClaimDialectsString != null ? spClaimDialectsString.toString() : " "%> type="text"/>
+                             </td>
+                          </tr>
+                       </table>
                     </div>
             </div>
               

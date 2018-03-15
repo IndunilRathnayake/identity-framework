@@ -23,6 +23,8 @@
 <%@ page import="org.wso2.carbon.identity.application.common.model.xsd.RequestPathAuthenticatorConfig"%>
 <%@ page import="org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider"%>
 <%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ApplicationManagementServiceClient"%>
+<%@ page import="org.wso2.carbon.identity.claim.metadata.mgt.ui.client.ClaimMetadataAdminClient"%>
+<%@ page import="org.wso2.carbon.identity.claim.metadata.mgt.stub.dto.ClaimDialectDTO"%>
 <%@ page import="org.wso2.carbon.ui.CarbonUIMessage"%>
 <%@ page import="org.wso2.carbon.ui.CarbonUIUtil"%>
 <%@ page import="org.wso2.carbon.ui.CarbonUIUtil"%>
@@ -67,10 +69,16 @@
 				ConfigurationContext configContext = (ConfigurationContext) config.getServletContext().getAttribute(CarbonConstants.CONFIGURATION_CONTEXT);
 		
 				ApplicationManagementServiceClient serviceClient = new ApplicationManagementServiceClient(cookie, backendServerURL, configContext);
+				ClaimMetadataAdminClient claimMetaDataClient = new ClaimMetadataAdminClient(cookie, backendServerURL, configContext);
 				ServiceProvider serviceProvider = serviceClient.getApplication(spName);
 		
 				IdentityProvider[] federatedIdPs = serviceClient.getAllFederatedIdentityProvider();
 				String[] claimUris = serviceClient.getAllClaimUris();
+				ClaimDialectDTO[] claimDialects = claimMetaDataClient.getClaimDialects();
+				String[] dialectURIs = new String[claimDialects.length];
+				for(int j =0; j< claimDialects.length; j++) {
+				    dialectURIs[j] = ((ClaimDialectDTO) claimDialects[j]).getClaimDialectURI();
+				}
 				LocalAuthenticatorConfig[] localAuthenticatorConfigs = serviceClient.getAllLocalAuthenticators();
 				RequestPathAuthenticatorConfig[] requestPathAuthenticators = serviceClient.getAllRequestPathAuthenticators();
 				appBean.setServiceProvider(serviceProvider);
@@ -78,6 +86,7 @@
 				appBean.setFederatedIdentityProviders(federatedIdPs);
 				appBean.setRequestPathAuthenticators(requestPathAuthenticators);
 				appBean.setClaimUris(claimUris);
+				appBean.setClaimDialects(dialectURIs);
 
 			} catch (Exception e) {
 				String message = resourceBundle.getString("alert.error.while.reading.service.provider") + " : " + e.getMessage();
