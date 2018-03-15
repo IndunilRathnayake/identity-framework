@@ -20,7 +20,7 @@
     <groupId>org.wso2.carbon.identity.framework</groupId>
     <artifactId>identity-framework</artifactId>
     <packaging>pom</packaging>
-    <version>5.11.80-SNAPSHOT</version>
+    <version>5.11.149-SNAPSHOT</version>
     <name>WSO2 Carbon - Platform Aggregator Pom</name>
     <url>http://wso2.org</url>
 
@@ -57,6 +57,7 @@
         <module>components/workflow-mgt</module>
         <module>components/policy-editor</module>
         <module>components/carbon-authenticators</module>
+        <module>components/consent-mgt</module>
         <module>features/security-mgt</module>
         <module>features/claim-mgt</module>
         <module>features/identity-core</module>
@@ -73,6 +74,7 @@
         <module>features/workflow-mgt</module>
         <module>features/categories</module>
         <module>features/carbon-authenticators</module>
+        <module>features/consent-mgt</module>
     </modules>
 
     <repositories>
@@ -406,29 +408,9 @@
                 <type>zip</type>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-bundle</artifactId>
-                <version>${cxf-version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-                <version>${org.apache.cxf.cxf-rt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-transports-http</artifactId>
-                <version>${org.apache.cxf.cxf-rt.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.wso2.securevault</groupId>
                 <artifactId>org.wso2.securevault</artifactId>
                 <version>${org.wso2.securevault.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-transports-http-jetty</artifactId>
-                <version>${org.apache.cxf.cxf-rt.version}</version>
             </dependency>
 
             <dependency>
@@ -838,7 +820,7 @@
                 <version>${jsr311-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf.wso2</groupId>
+                <groupId>org.wso2.orbit.org.apache.cxf</groupId>
                 <artifactId>cxf-bundle</artifactId>
                 <version>${cxf-bundle.wso2.version}</version>
             </dependency>
@@ -1448,6 +1430,11 @@
                 <artifactId>org.wso2.carbon.consent.mgt.core</artifactId>
                 <version>${carbon.consent.mgt.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.identity.consent.mgt</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
 
     </dependencyManagement>
@@ -1468,6 +1455,7 @@
         <carbon.kernel.version>4.4.23</carbon.kernel.version>
         <carbon.kernel.package.import.version.range>[4.4.0, 5.0.0)</carbon.kernel.package.import.version.range>
         <carbon.kernel.registry.imp.pkg.version>[1.0.1, 2.0.0)</carbon.kernel.registry.imp.pkg.version>
+        <carbon.consent.mgt.imp.pkg.version.range>[1.0.0, 2.0.0)</carbon.consent.mgt.imp.pkg.version.range>
 
         <osgi.service.component.imp.pkg.version.range>[1.2.0, 2.0.0)</osgi.service.component.imp.pkg.version.range>
         <osgi.service.http.imp.pkg.version.range>[1.2.1, 2.0.0)</osgi.service.http.imp.pkg.version.range>
@@ -1580,7 +1568,7 @@
         <orbit.version.maven-scm>1.7.0.wso2v1</orbit.version.maven-scm>
 
         <!-- Rampart -->
-        <rampart.wso2.version>1.6.1.wso2v25</rampart.wso2.version>
+        <rampart.wso2.version>1.6.1-wso2v26</rampart.wso2.version>
         <rampart.wso2.osgi.version.range>[1.6.1,2.0.0)</rampart.wso2.osgi.version.range>
 
         <!-- Equinox -->
@@ -1640,7 +1628,7 @@
         <openid4java.version>1.0.0</openid4java.version>
         <openid4java.wso2.version>1.0.0.wso2v2</openid4java.wso2.version>
         <openid4java.wso2.osgi.version.range>[1.0.0,2.0.0)</openid4java.wso2.osgi.version.range>
-        <balana.version>1.1.3</balana.version>
+        <balana.version>1.1.5</balana.version>
         <balana.imp.pkg.version.range>[1.1.0,2.0.0)</balana.imp.pkg.version.range>
         <gdata-core.wso2.version>1.47.0.wso2v1</gdata-core.wso2.version>
         <gdata-core.imp.pkg.version.range>[1.47.0.wso2v1,2.0.0)</gdata-core.imp.pkg.version.range>
@@ -1680,8 +1668,7 @@
         <tomcat-util.version>3.3.2</tomcat-util.version>
         <jdom.wso2.version>1.0.0.wso2v1</jdom.wso2.version>
         <json-smart.version>1.3</json-smart.version>
-        <cxf-bundle.wso2.version>2.6.1.wso2v2</cxf-bundle.wso2.version>
-        <cxf-version>2.7.13</cxf-version>
+        <cxf-bundle.wso2.version>2.7.16.wso2v1</cxf-bundle.wso2.version>
         <opencsv.wso2.version>1.8.wso2v1</opencsv.wso2.version>
         <apache.poi.wso2.version>3.9.0.wso2v1</apache.poi.wso2.version>
         <javax.activation.import.pkg.version>[0.0.0, 1.0.0)</javax.activation.import.pkg.version>
@@ -1690,9 +1677,8 @@
         <javax.xml.parsers.import.pkg.version>[0.0.0, 1.0.0)</javax.xml.parsers.import.pkg.version>
         <ehcache.version>1.5.0.wso2v3</ehcache.version>
         <com.fasterxml.core.version2>2.5.4</com.fasterxml.core.version2>
-        <org.apache.cxf.cxf-rt.version>2.7.18</org.apache.cxf.cxf-rt.version>
         <io.swagger.version>1.5.8</io.swagger.version>
-        <carbon.consent.mgt.version>1.0.26</carbon.consent.mgt.version>
+        <carbon.consent.mgt.version>1.0.46</carbon.consent.mgt.version>
 
         <javax.xml.range>[0.0.0,1.0.0)</javax.xml.range>
         <org.apache.xml.security.range>[0.0.0,2.0.0)</org.apache.xml.security.range>

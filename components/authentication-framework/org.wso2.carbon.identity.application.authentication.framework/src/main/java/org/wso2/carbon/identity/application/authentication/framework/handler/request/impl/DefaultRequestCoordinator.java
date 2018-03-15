@@ -19,14 +19,12 @@
 package org.wso2.carbon.identity.application.authentication.framework.handler.request.impl;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticationDataPublisher;
-import org.wso2.carbon.identity.application.authentication.framework.AuthenticationMethodNameTranslator;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorFlowStatus;
 import org.wso2.carbon.identity.application.authentication.framework.cache.AuthenticationRequestCacheEntry;
 import org.wso2.carbon.identity.application.authentication.framework.config.ConfigurationFacade;
@@ -34,6 +32,7 @@ import org.wso2.carbon.identity.application.authentication.framework.config.mode
 import org.wso2.carbon.identity.application.authentication.framework.config.model.SequenceConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
+import org.wso2.carbon.identity.application.authentication.framework.context.TransientObjectWrapper;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.authentication.framework.exception.PostAuthenticationFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.RequestCoordinator;
@@ -53,10 +52,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletException;
@@ -126,8 +123,8 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
 
                         if (authRequest == null) {
                             // authRequest cannot be retrieved from cache. Cache
-                            throw new FrameworkException("Invalid authentication request. Session data key : "
-                                    + sessionDataKey);
+                            throw new FrameworkException(
+                                    "Invalid authentication request. Session data key : " + sessionDataKey);
                         }
                     } else {
                         // sessionDataKey is null and not a logout request
@@ -147,11 +144,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
             } else {
                 returning = true;
                 context = FrameworkUtils.getContextData(request);
-                if (context != null) {
-                    // set current request and response to the authentication context.
-                    context.setRequest(request);
-                    context.setResponse(response);
-                }
+                associateTransientRequestData(request, response, context);
             }
 
             if (context != null) {
@@ -163,8 +156,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
                 }
 
                 if (!context.isLogoutRequest()) {
-                    FrameworkUtils.getAuthenticationRequestHandler().handle(request, response,
-                            context);
+                    FrameworkUtils.getAuthenticationRequestHandler().handle(request, response, context);
                 } else {
                     FrameworkUtils.getLogoutRequestHandler().handle(request, response, context);
                 }
@@ -184,12 +176,13 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
             if (log.isDebugEnabled()) {
                 log.error("Error occurred while evaluating post authentication", e);
             }
-            FrameworkUtils.removeCookie(request, response, FrameworkConstants.PASTR_COOKIE);
+            FrameworkUtils
+                    .removeCookie(request, response, FrameworkUtils.getPASTRCookieName(context.getContextIdentifier()));
             publishAuthenticationFailure(request, context, context.getSequenceConfig().getAuthenticatedUser());
             try {
-                URIBuilder uriBuilder = new URIBuilder(ConfigurationFacade.getInstance()
-                        .getAuthenticationEndpointRetryURL());
-                uriBuilder.addParameter("status", "Post Authentication Evaluation Failed");
+                URIBuilder uriBuilder = new URIBuilder(
+                        ConfigurationFacade.getInstance().getAuthenticationEndpointRetryURL());
+                uriBuilder.addParameter("status", "Authentication attempt failed.");
                 uriBuilder.addParameter("statusMsg", e.getErrorCode());
                 request.setAttribute(FrameworkConstants.RequestParams.FLOW_STATUS, AuthenticatorFlowStatus.INCOMPLETE);
                 response.sendRedirect(uriBuilder.build().toString());
@@ -201,6 +194,24 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
             log.error("Exception in Authentication Framework", e);
             FrameworkUtils.sendToRetryPage(request, response);
         }
+    }
+
+    /**
+     * Associates the transient request data to the Authentication Context.
+     *
+     * @param request
+     * @param response
+     * @param context
+     */
+    private void associateTransientRequestData(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationContext context) {
+
+        if(context == null) {
+            return;
+        }
+        // set current request and response to the authentication context.
+        context.setProperty(FrameworkConstants.RequestAttribute.HTTP_REQUEST, new TransientObjectWrapper(request));
+        context.setProperty(FrameworkConstants.RequestAttribute.HTTP_RESPONSE, new TransientObjectWrapper(response));
     }
 
     /**
@@ -222,7 +233,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
      * @return
      */
     private AuthenticationRequestCacheEntry getAuthenticationRequest(HttpServletRequest request,
-                                                                     String sessionDataKey) {
+            String sessionDataKey) {
 
         AuthenticationRequestCacheEntry authRequest = getAuthenticationRequestFromRequest(request);
         if (authRequest == null) {
@@ -240,8 +251,8 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
      * @throws IOException
      * @throws
      */
-    protected AuthenticationContext initializeFlow(HttpServletRequest request,
-                                                   HttpServletResponse response) throws FrameworkException {
+    protected AuthenticationContext initializeFlow(HttpServletRequest request, HttpServletResponse response)
+            throws FrameworkException {
 
         if (log.isDebugEnabled()) {
             log.debug("Initializing the flow");
@@ -275,9 +286,6 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
         // generate a new key to hold the context data object
         String contextId = UUIDGenerator.generateUUID();
         context.setContextIdentifier(contextId);
-        context.setInitialRequest(request);
-        context.setRequest(request);
-        context.setResponse(response);
 
         if (log.isDebugEnabled()) {
             log.debug("Framework contextId: " + contextId);
@@ -313,6 +321,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
             }
         }
 
+        associateTransientRequestData(request, response, context);
         findPreviousAuthenticatedSession(request, context);
         buildOutboundQueryString(request, context);
 
@@ -326,39 +335,12 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
      */
     private List<String> getAcrRequested(HttpServletRequest request) {
 
-        List<String> result = Collections.emptyList();
-        String requestType = request.getParameter(FrameworkConstants.RequestParams.TYPE);
         List<String> acrValuesList = (List<String>) request.getAttribute(ACR_VALUES_ATTRIBUTE);
-        if (CollectionUtils.isNotEmpty(acrValuesList)) {
-            AuthenticationMethodNameTranslator translator = FrameworkServiceDataHolder.getInstance()
-                    .getAuthenticationMethodNameTranslator();
-            if (translator == null) {
-                log.error("No AuthenticationMethodNameTranslator present to translate the requested acr_values to"
-                        + " internal form. acr_values:" + StringUtils.join(acrValuesList, ' '));
-            }
 
-            LinkedHashSet list = new LinkedHashSet();
-            for (String acrValue : acrValuesList) {
-                String translatedValue = acrValue;
-                if (translator != null) {
-                    String internalAcr = translator.translateToInternalAcr(acrValue, requestType);
-                    if (internalAcr == null) {
-                        String errorMessage = String.format("An internal acr_value mapping is not configured"
-                                + " for external acr_value : %s for the requestType : %s. "
-                                + "Using un-translated acr_value itself for further processing.", acrValue, requestType);
-
-                        log.warn(errorMessage);
-                    } else {
-                        translatedValue = internalAcr;
-                    }
-                }
-                list.add(translatedValue);
-            }
-            if (!list.isEmpty()) {
-                result = new ArrayList<>(list);
-            }
+        if (acrValuesList == null) {
+            acrValuesList = Collections.emptyList();
         }
-        return result;
+        return acrValuesList;
     }
 
     private String getCallerPath(HttpServletRequest request) throws FrameworkException {
@@ -399,8 +381,8 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
         return tenantDomain;
     }
 
-    protected void findPreviousAuthenticatedSession(HttpServletRequest request,
-                                                    AuthenticationContext context) throws FrameworkException {
+    protected void findPreviousAuthenticatedSession(HttpServletRequest request, AuthenticationContext context)
+            throws FrameworkException {
 
         List<String> acrRequested = getAcrRequested(request);
         if (acrRequested != null) {
@@ -427,8 +409,8 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
         if (cookie != null) {
 
             if (log.isDebugEnabled()) {
-                log.debug(FrameworkConstants.COMMONAUTH_COOKIE
-                        + " cookie is available with the value: " + cookie.getValue());
+                log.debug(FrameworkConstants.COMMONAUTH_COOKIE + " cookie is available with the value: " + cookie
+                        .getValue());
             }
 
             String sessionContextKey = DigestUtils.sha256Hex(cookie.getValue());
@@ -445,8 +427,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
                     log.debug("Service Provider is: " + appName);
                 }
 
-                SequenceConfig previousAuthenticatedSeq = sessionContext
-                        .getAuthenticatedSequences().get(appName);
+                SequenceConfig previousAuthenticatedSeq = sessionContext.getAuthenticatedSequences().get(appName);
 
                 if (previousAuthenticatedSeq != null) {
                     if (log.isDebugEnabled()) {
@@ -462,8 +443,8 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
                         try {
                             effectiveSequence = (SequenceConfig) previousAuthenticatedSeq.clone();
                         } catch (CloneNotSupportedException e) {
-                            throw new FrameworkException("Exception when trying to clone the Previous Authentication " +
-                                    "Sequence object of SP:" + appName, e);
+                            throw new FrameworkException("Exception when trying to clone the Previous Authentication "
+                                    + "Sequence object of SP:" + appName, e);
                         }
                     }
 
@@ -475,8 +456,8 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
                         context.setSubject(authenticatedUser);
 
                         if (log.isDebugEnabled()) {
-                            log.debug("Already authenticated by username: " +
-                                    authenticatedUser.getAuthenticatedSubjectIdentifier());
+                            log.debug("Already authenticated by username: " + authenticatedUser
+                                    .getAuthenticatedSubjectIdentifier());
                         }
 
                         if (authenticatedUserTenantDomain != null) {
@@ -518,7 +499,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
      * @return true if there is a need to reinitialize.
      */
     private boolean isReinitialize(SequenceConfig previousAuthenticatedSeq, SequenceConfig sequenceConfig,
-                                   HttpServletRequest request, AuthenticationContext context) {
+            HttpServletRequest request, AuthenticationContext context) {
 
         List<String> newAcrList = getAcrRequested(request);
         List<String> previousAcrList = previousAuthenticatedSeq.getRequestedAcr();
@@ -556,8 +537,9 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
 
         try {
             outboundQueryStringBuilder.append("sessionDataKey=").append(context.getContextIdentifier())
-                    .append("&relyingParty=").append(URLEncoder.encode(context.getRelyingParty(), "UTF-8")).append("&type=")
-                    .append(context.getRequestType()).append("&").append(FrameworkConstants.REQUEST_PARAM_SP).append("=")
+                    .append("&relyingParty=").append(URLEncoder.encode(context.getRelyingParty(), "UTF-8"))
+                    .append("&type=").append(context.getRequestType()).append("&")
+                    .append(FrameworkConstants.REQUEST_PARAM_SP).append("=")
                     .append(URLEncoder.encode(context.getServiceProviderName(), "UTF-8")).append("&isSaaSApp=")
                     .append(context.getSequenceConfig().getApplicationConfig().isSaaSApp());
         } catch (UnsupportedEncodingException e) {
@@ -572,8 +554,8 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
         context.setOrignalRequestQueryParams(outboundQueryStringBuilder.toString());
     }
 
-    private void refreshAppConfig(SequenceConfig sequenceConfig, String clientId, String clientType, String
-            tenantDomain) throws FrameworkException {
+    private void refreshAppConfig(SequenceConfig sequenceConfig, String clientId, String clientType,
+            String tenantDomain) throws FrameworkException {
 
         try {
             ApplicationConfig appConfig = new ApplicationConfig(ApplicationManagementService.getInstance()
@@ -584,14 +566,15 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
                         .getApplicationId() + " in tenant: " + tenantDomain);
             }
         } catch (IdentityApplicationManagementException e) {
-            String message = "No application found for application id: " + sequenceConfig.getApplicationId() +
-                    " in tenant: " + tenantDomain + " Probably, the Service Provider would have been removed.";
+            String message =
+                    "No application found for application id: " + sequenceConfig.getApplicationId() + " in tenant: "
+                            + tenantDomain + " Probably, the Service Provider would have been removed.";
             throw new FrameworkException(message, e);
         }
     }
 
     private void publishAuthenticationFailure(HttpServletRequest request, AuthenticationContext context,
-                                              AuthenticatedUser user) {
+            AuthenticatedUser user) {
 
         AuthenticationDataPublisher authnDataPublisherProxy = FrameworkServiceDataHolder.getInstance()
                 .getAuthnDataPublisherProxy();
@@ -600,8 +583,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
             Map<String, Object> paramMap = new HashMap<>();
             paramMap.put(FrameworkConstants.AnalyticsAttributes.USER, user);
             Map<String, Object> unmodifiableParamMap = Collections.unmodifiableMap(paramMap);
-            authnDataPublisherProxy.publishAuthenticationFailure(request, context,
-                    unmodifiableParamMap);
+            authnDataPublisherProxy.publishAuthenticationFailure(request, context, unmodifiableParamMap);
         }
     }
 }

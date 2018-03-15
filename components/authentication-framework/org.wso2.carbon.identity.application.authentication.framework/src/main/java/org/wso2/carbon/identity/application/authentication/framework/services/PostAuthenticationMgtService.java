@@ -158,7 +158,8 @@ public class PostAuthenticationMgtService {
             logDebug("PASTR cookie is not set to context : " + context.getContextIdentifier() + ". Hence setting the " +
                     "cookie");
             String pastrCookieValue = UUIDGenerator.generateUUID();
-            FrameworkUtils.setCookie(request, response, FrameworkConstants.PASTR_COOKIE, pastrCookieValue, -1);
+            FrameworkUtils.setCookie(request, response, FrameworkUtils.getPASTRCookieName(
+                    context.getContextIdentifier()), pastrCookieValue, -1);
             context.addParameter(FrameworkConstants.PASTR_COOKIE, pastrCookieValue);
         }
     }
@@ -169,12 +170,14 @@ public class PostAuthenticationMgtService {
         Object pstrCookieObj = context.getParameter(FrameworkConstants.PASTR_COOKIE);
         if (pstrCookieObj != null) {
             String storedPastrCookieValue = (String) pstrCookieObj;
-            Cookie pastrCookie = FrameworkUtils.getCookie(request, FrameworkConstants.PASTR_COOKIE);
+            Cookie pastrCookie = FrameworkUtils.getCookie(request,
+                    FrameworkUtils.getPASTRCookieName(context.getContextIdentifier()));
             if (pastrCookie != null && StringUtils.equals(storedPastrCookieValue, pastrCookie.getValue())) {
                 logDebug("pastr cookie validated successfully for sequence : " + context.getContextIdentifier());
                 return;
             } else {
-                throw new PostAuthenticationFailedException("Invalid Request", "Post authentication sequence tracking" +
+                throw new PostAuthenticationFailedException("Invalid Request: Your authentication flow is ended or " +
+                        "invalid. Please initiate again.", "Post authentication sequence tracking" +
                         " cookie not found in request with context id : " + context.getContextIdentifier());
             }
         } else {
@@ -190,7 +193,7 @@ public class PostAuthenticationMgtService {
         if (pstrCookieObj != null) {
             logDebug("Removing post authentication sequnce tracker cookie for context : " + context.getContextIdentifier
                     ());
-            FrameworkUtils.setCookie(request, response, FrameworkConstants.PASTR_COOKIE,
+            FrameworkUtils.setCookie(request, response, FrameworkUtils.getPASTRCookieName(context.getContextIdentifier()),
                     pstrCookieObj.toString(), 0);
         } else {
             logDebug("PASTR cookie is not set to context : " + context.getContextIdentifier());

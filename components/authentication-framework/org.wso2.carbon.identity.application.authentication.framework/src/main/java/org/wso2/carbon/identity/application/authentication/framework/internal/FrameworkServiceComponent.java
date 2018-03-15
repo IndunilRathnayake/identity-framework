@@ -47,8 +47,8 @@ import org.wso2.carbon.identity.application.authentication.framework.exception.F
 import org.wso2.carbon.identity.application.authentication.framework.handler.claims.ClaimFilter;
 import org.wso2.carbon.identity.application.authentication.framework.handler.claims.impl.DefaultClaimFilter;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.PostAuthenticationHandler;
-import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent.ConsentMgtPostAuthnHandler;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.PostAuthnMissingClaimHandler;
+import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent.ConsentMgtPostAuthnHandler;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent.SSOConsentService;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent.SSOConsentServiceImpl;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.FrameworkLoginResponseFactory;
@@ -76,10 +76,10 @@ import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.stratos.common.listeners.TenantMgtListener;
 import org.wso2.carbon.user.core.service.RealmService;
 
-import javax.servlet.Servlet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import javax.servlet.Servlet;
 
 /**
  * OSGi declarative services component which handled registration and unregistration of FrameworkServiceComponent.
@@ -228,12 +228,12 @@ public class FrameworkServiceComponent {
         PostAuthenticationHandler postAuthnMissingClaimHandler = new PostAuthnMissingClaimHandler();
         bundleContext.registerService(PostAuthenticationHandler.class.getName(), postAuthnMissingClaimHandler, null);
 
-        bundleContext.registerService(PostAuthenticationHandler.class.getName(), consentMgtPostAuthnHandler, null);
-
         SSOConsentService ssoConsentService = new SSOConsentServiceImpl();
         bundleContext.registerService(SSOConsentService.class.getName(), ssoConsentService, null);
 
         bundleContext.registerService(ClaimFilter.class.getName(), new DefaultClaimFilter(), null);
+        FrameworkServiceDataHolder.getInstance().setSSOConsentService(ssoConsentService);
+        bundleContext.registerService(PostAuthenticationHandler.class.getName(), consentMgtPostAuthnHandler, null);
         //this is done to load SessionDataStore class and start the cleanup tasks.
         SessionDataStore.getInstance();
 
@@ -512,13 +512,11 @@ public class FrameworkServiceComponent {
             log.debug("Consent Manger is set in the Application Authentication Framework bundle.");
         }
         FrameworkServiceDataHolder.getInstance().setConsentManager(consentManager);
-        consentMgtPostAuthnHandler.setConsentManager(consentManager);
     }
 
     protected void unsetConsentMgtService(ConsentManager consentManager) {
 
         FrameworkServiceDataHolder.getInstance().setConsentManager(null);
-        consentMgtPostAuthnHandler.setConsentManager(null);
     }
 
     @Reference(
@@ -530,13 +528,11 @@ public class FrameworkServiceComponent {
     )
     protected void setClaimMetaMgtService(ClaimMetadataManagementService claimMetaMgtService) {
 
-        consentMgtPostAuthnHandler.setClaimMetadataManagementService(claimMetaMgtService);
         FrameworkServiceDataHolder.getInstance().setClaimMetadataManagementService(claimMetaMgtService);
     }
 
     protected void unsetClaimMetaMgtService(ClaimMetadataManagementService claimMetaMgtService) {
 
-        consentMgtPostAuthnHandler.setClaimMetadataManagementService(null);
         FrameworkServiceDataHolder.getInstance().setClaimMetadataManagementService(null);
     }
 

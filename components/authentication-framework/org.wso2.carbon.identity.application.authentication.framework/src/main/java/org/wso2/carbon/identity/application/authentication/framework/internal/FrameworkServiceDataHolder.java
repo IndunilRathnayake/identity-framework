@@ -29,6 +29,7 @@ import org.wso2.carbon.identity.application.authentication.framework.exception.F
 import org.wso2.carbon.identity.application.authentication.framework.handler.claims.ClaimFilter;
 import org.wso2.carbon.identity.application.authentication.framework.handler.claims.impl.DefaultClaimFilter;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.PostAuthenticationHandler;
+import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent.SSOConsentService;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.HttpIdentityRequestFactory;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.HttpIdentityResponseFactory;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityProcessor;
@@ -63,6 +64,7 @@ public class FrameworkServiceDataHolder {
     private ConsentManager consentManager = null;
     private ClaimMetadataManagementService claimMetadataManagementService = null;
     private List<ClaimFilter> claimFilters = new ArrayList<>();
+    private SSOConsentService ssoConsentService;
 
     private FrameworkServiceDataHolder() {
         setNanoTimeReference(System.nanoTime());
@@ -242,6 +244,22 @@ public class FrameworkServiceDataHolder {
     public void setClaimMetadataManagementService (ClaimMetadataManagementService claimMetadataManagementService) {
 
         this.claimMetadataManagementService = claimMetadataManagementService;
+    }
+
+    /**
+     * Get {@link SSOConsentService}.
+     * @return SSOConsentService.
+     */
+    public SSOConsentService getSSOConsentService() {
+        return ssoConsentService;
+    }
+
+    /**
+     * Set {@link SSOConsentService}.
+     * @param ssoConsentService Instance of {@link SSOConsentService}.
+     */
+    public void setSSOConsentService(SSOConsentService ssoConsentService) {
+        this.ssoConsentService = ssoConsentService;
     }
 
 

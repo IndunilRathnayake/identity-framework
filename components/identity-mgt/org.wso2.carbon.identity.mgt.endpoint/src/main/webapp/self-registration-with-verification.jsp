@@ -43,6 +43,7 @@
     boolean isLastNameRequired = true;
     boolean isEmailInClaims = true;
     boolean isEmailRequired = true;
+    Integer defaultPurposeCatId = null;
     Integer userNameValidityStatusCode = null;
     String username = request.getParameter("username");
     String callback = Encode.forHtmlAttribute(request.getParameter("callback"));
@@ -83,6 +84,9 @@
     String purposes = selfRegistrationMgtClient.getPurposes(user.getTenantDomain());
     boolean hasPurposes = StringUtils.isNotEmpty(purposes);
     
+    if (hasPurposes) {
+        defaultPurposeCatId = selfRegistrationMgtClient.getDefaultPurposeId(user.getTenantDomain());
+    }
     Claim[] claims = new Claim[0];
 
     List<Claim> claimsList;
@@ -112,7 +116,6 @@
         reCaptchaEnabled = true;
     }
 %>
-<fmt:bundle basename="org.wso2.carbon.identity.mgt.endpoint.i18n.Resources">
     <html>
     <head>
         <meta charset="utf-8">
@@ -277,6 +280,9 @@
                                             </p>
                                             <div id="tree-table"></div>
                                         </div>
+                                        <div class="text-left padding-top-double">
+                                            <span class="required"><strong>Please note that all consents are mandatory</strong></span>
+                                        </div>
                                     </div>
                                 </div>
                                 <!--End User Consents-->
@@ -369,17 +375,21 @@
     <script type="text/javascript">
 
         var container;
+        var allAttributes = [];
         $(document).ready(function () {
+
+            var ALL_ATTRIBUTES_MANDATORY = true;
+
             var agreementChk = $(".agreement-checkbox input");
             var registrationBtn = $("#registrationSubmit");
 
-            if(agreementChk.length > 0){
+            if (agreementChk.length > 0) {
                 registrationBtn.prop("disabled", true).addClass("disabled");
             }
-            agreementChk.click(function(){
-                if($(this).is(":checked")){
+            agreementChk.click(function () {
+                if ($(this).is(":checked")) {
                     registrationBtn.prop("disabled", false).removeClass("disabled");
-                }else{
+                } else {
                     registrationBtn.prop("disabled", true).addClass("disabled");
                 }
             });
@@ -401,6 +411,19 @@
                         return false;
                     }
                 }
+
+                if (ALL_ATTRIBUTES_MANDATORY) {
+
+                    var selectedAttributes = container.jstree(true).get_selected();
+                    var allSelected = compareArrays(allAttributes, selectedAttributes) ? true : false;
+
+                    if (!allSelected) {
+                        $("#attribute_selection_validation").modal();
+                        return false;
+                    }
+
+                }
+
                 if (invalidInput) {
                     return false;
                 }
@@ -432,30 +455,34 @@
                 <%
                 if (hasPurposes) {
                 %>
-                    var self = this;
-                    e.preventDefault();
-                    var recipt = addReciptInformation(container);
-                    $('<input />').attr('type', 'hidden')
-                        .attr('name', "consent")
-                        .attr('value', JSON.stringify(recipt))
-                        .appendTo('#register');
-                    self.submit();
+                var self = this;
+                e.preventDefault();
+                var recipt = addReciptInformation(container);
+                $('<input />').attr('type', 'hidden')
+                    .attr('name', "consent")
+                    .attr('value', JSON.stringify(recipt))
+                    .appendTo('#register');
+                self.submit();
                 <%
                 }
                 %>
-                
+
                 return true;
             });
         });
 
+        function compareArrays(arr1, arr2) {
+            return $(arr1).not(arr2).length == 0 && $(arr2).not(arr1).length == 0
+        };
+
         <%
             if (hasPurposes) {
         %>
-            renderReceiptDetails(<%=purposes%>);
+        renderReceiptDetails(<%=purposes%>);
         <%
             }
         %>
-        
+
         function renderReceiptDetails(data) {
 
             var treeTemplate =
@@ -481,43 +508,54 @@
 
             container = $("#html1").jstree({
                 plugins: ["table", "sort", "checkbox", "actions", "wholerow"],
-                checkbox: { "keep_selected_style" : false },
+                checkbox: {"keep_selected_style": false},
             });
-            
+
+            container.on('ready.jstree', function (event, data) {
+                var $tree = $(this);
+                $($tree.jstree().get_json($tree, {
+                    flat: true
+                }))
+                    .each(function (index, value) {
+                        var node = container.jstree().get_node(this.id);
+                        allAttributes.push(node.id);
+                    });
+            });
+
         }
-        
-        function addReciptInformation(container){
-           // var oldReceipt = receiptData.receipts;
+
+        function addReciptInformation(container) {
+            // var oldReceipt = receiptData.receipts;
             var newReceipt = {};
             var services = [];
             var service = {};
 
-            var selectedNodes = container.jstree(true).get_selected('full',true);
-            var undeterminedNodes = container.jstree(true).get_undetermined('full',true);
+            var selectedNodes = container.jstree(true).get_selected('full', true);
+            var undeterminedNodes = container.jstree(true).get_undetermined('full', true);
 
-            if(!selectedNodes || selectedNodes.length < 1 ){
+            if (!selectedNodes || selectedNodes.length < 1) {
                 //revokeReceipt(oldReceipt.consentReceiptID);
                 return;
             }
             selectedNodes = selectedNodes.concat(undeterminedNodes);
             var relationshipTree = unflatten(selectedNodes); //Build relationship tree
             var purposes = relationshipTree[0].children;
-            var newPurposes =[];
+            var newPurposes = [];
 
-            for(var i=0; i< purposes.length; i++){
+            for (var i = 0; i < purposes.length; i++) {
                 var purpose = purposes[i];
                 var newPurpose = {};
-                newPurpose["purposeId"]  =  purpose.li_attr.purposeid;
+                newPurpose["purposeId"] = purpose.li_attr.purposeid;
                 //newPurpose = oldPurpose[0];
                 newPurpose['piiCategory'] = [];
-                newPurpose['purposeCategoryId'] = [1];
+                newPurpose['purposeCategoryId'] = [<%=defaultPurposeCatId%>];
 
                 var piiCategory = [];
                 var categories = purpose.children;
-                for(var j=0; j< categories.length; j++){
+                for (var j = 0; j < categories.length; j++) {
                     var category = categories[j];
                     var c = {};
-                    c['piiCategoryId']  =  category.li_attr.piicategoryid;
+                    c['piiCategoryId'] = category.li_attr.piicategoryid;
                     piiCategory.push(c);
                 }
                 newPurpose['piiCategory'] = piiCategory;
@@ -537,7 +575,7 @@
                 mappedElem;
 
             // First map the nodes of the array to an object -> create a hash table.
-            for(var i = 0, len = arr.length; i < len; i++) {
+            for (var i = 0, len = arr.length; i < len; i++) {
                 arrElem = arr[i];
                 mappedArr[arrElem.id] = arrElem;
                 mappedArr[arrElem.id]['children'] = [];
@@ -558,10 +596,25 @@
             }
             return tree;
         }
-        
+
     </script>
+
+    <div id="attribute_selection_validation" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+        <div class="modal-dialog modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Consent Selection</h4>
+                </div>
+                <div class="modal-body">
+                    You need to provide consent for all the claims in order to proceed..!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     </body>
     </html>
-</fmt:bundle>
-
-
