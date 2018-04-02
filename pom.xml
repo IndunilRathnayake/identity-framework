@@ -20,7 +20,7 @@
     <groupId>org.wso2.carbon.identity.framework</groupId>
     <artifactId>identity-framework</artifactId>
     <packaging>pom</packaging>
-    <version>5.11.149-SNAPSHOT</version>
+    <version>5.11.150-SNAPSHOT</version>
     <name>WSO2 Carbon - Platform Aggregator Pom</name>
     <url>http://wso2.org</url>
 
@@ -1651,9 +1651,9 @@
         <kaptcha.wso2.version>2.3.0.wso2v1</kaptcha.wso2.version>
         <json.wso2.version>3.0.0.wso2v1</json.wso2.version>
         <json.wso2.version.range>[3.0.0.wso2v1, 4.0.0)</json.wso2.version.range>
-        <com.fasterxml.jackson.version>2.6.0</com.fasterxml.jackson.version>
-        <com.fasterxml.jackson.annotation.version>2.6.0</com.fasterxml.jackson.annotation.version>
-        <com.fasterxml.jackson.jaxrs-json-provider-version>2.6.0</com.fasterxml.jackson.jaxrs-json-provider-version>
+        <com.fasterxml.jackson.version>2.9.4</com.fasterxml.jackson.version>
+        <com.fasterxml.jackson.annotation.version>2.9.4</com.fasterxml.jackson.annotation.version>
+        <com.fasterxml.jackson.jaxrs-json-provider-version>2.9.4</com.fasterxml.jackson.jaxrs-json-provider-version>
 
         <apache.wink.version>1.1.3-incubating</apache.wink.version>
         <openspml.version>192-20100413</openspml.version>
