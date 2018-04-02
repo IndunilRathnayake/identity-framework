@@ -210,7 +210,7 @@ public class FrameworkServiceDataHolder {
 
         return this.postAuthenticationMgtService;
     }
-    
+
     /**
      * Get {@link ClaimMetadataManagementService}.
      * @return ClaimMetadataManagementService.
@@ -228,33 +228,6 @@ public class FrameworkServiceDataHolder {
 
         this.claimMetadataManagementService = claimMetadataManagementService;
     }
-
-    /**
-     * Get {@link SSOConsentService}.
-     * @return SSOConsentService.
-     */
-    public SSOConsentService getHighestPrioritySSOConsentService() {
-        ssoConsentServices.sort(new Comparator<SSOConsentService>() {
-            @Override
-            public int compare(SSOConsentService consentService1, SSOConsentService consentService2) {
-                return consentService1.getPriority() < consentService2.getPriority() ? -1 :
-                        consentService1.getPriority() == consentService2.getPriority() ? 0 : 1;
-            }
-        });
-        return ssoConsentServices.get(0);
-    }
-
-    /**
-     * Set {@link SSOConsentService}.
-     * @param ssoConsentService Instance of {@link SSOConsentService}.
-     */
-    public void setSSOConsentService(SSOConsentService ssoConsentService) {
-        if(ssoConsentServices == null) {
-            ssoConsentServices = new ArrayList<>();
-        }
-        ssoConsentServices.add(ssoConsentService);
-    }
-
 
     /**
      *
