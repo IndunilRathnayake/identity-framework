@@ -22,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class ClaimConfig implements Serializable {
     private Claim[] idpClaims = new Claim[0];
     private ClaimMapping[] claimMappings = new ClaimMapping[0];
     private boolean alwaysSendMappedLocalSubjectId;
+    private String[] spClaimDialects = null;
 
     /*
      * <ClaimConfig> <RoleClaimURI></RoleClaimURI> <UserClaimURI></UserClaimURI>
@@ -101,6 +103,8 @@ public class ClaimConfig implements Serializable {
                             .toArray(new ClaimMapping[0]);
                     claimConfig.setClaimMappings(claimMappingsArr);
                 }
+            } else if ("SPClaimDialect".equals(elementName)) {
+                claimConfig.setSpClaimDialects(element.getText().split(","));
             }
         }
 
@@ -165,5 +169,15 @@ public class ClaimConfig implements Serializable {
 
     public void setAlwaysSendMappedLocalSubjectId(boolean alwaysSendMappedLocalSubjectId) {
         this.alwaysSendMappedLocalSubjectId = alwaysSendMappedLocalSubjectId;
+    }
+
+    public String[] getSpClaimDialects() {
+        return spClaimDialects;
+    }
+
+    public void setSpClaimDialects(String[] spClaimDialects) {
+        if(this.spClaimDialects == null) {
+            this.spClaimDialects = spClaimDialects;
+        }
     }
 }

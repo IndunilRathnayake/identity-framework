@@ -29,9 +29,11 @@ import org.wso2.carbon.identity.application.authentication.framework.internal.Fr
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
 import org.wso2.carbon.identity.application.common.model.AuthenticationStep;
+import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,7 +50,8 @@ public abstract class AbstractRequestCoordinator implements RequestCoordinator {
      * @throws FrameworkException when there is an error in loading the Sequence Config, most probably error
      * in underlying data persistence layer.
      */
-    public SequenceConfig getSequenceConfig(AuthenticationContext context, Map<String, String[]> parameterMap)
+    public SequenceConfig getSequenceConfig(AuthenticationContext context, Map<String, String[]> parameterMap,
+                                            List<ClaimMapping> requestedAttributes)
             throws FrameworkException {
         String requestType = context.getRequestType();
         String[] issuers = parameterMap.get(FrameworkConstants.RequestParams.ISSUER);
@@ -61,11 +64,12 @@ public abstract class AbstractRequestCoordinator implements RequestCoordinator {
         SequenceLoader sequenceBuilder = FrameworkServiceDataHolder.getInstance().getSequenceLoader();
         if (sequenceBuilder != null) {
             ServiceProvider serviceProvider = getServiceProvider(requestType, issuer, tenantDomain);
-            return sequenceBuilder.getSequenceConfig(context, parameterMap, serviceProvider);
+            return sequenceBuilder.getSequenceConfig(context, parameterMap, requestedAttributes, serviceProvider);
         } else {
             //Backward compatibility, Using the deprecated method.
             //TODO: Need to remove the dependency to this.
-            return ConfigurationFacade.getInstance().getSequenceConfig(issuer, requestType, tenantDomain);
+            return ConfigurationFacade.getInstance().getSequenceConfig(issuer, requestType, tenantDomain,
+                    requestedAttributes);
         }
 
     }

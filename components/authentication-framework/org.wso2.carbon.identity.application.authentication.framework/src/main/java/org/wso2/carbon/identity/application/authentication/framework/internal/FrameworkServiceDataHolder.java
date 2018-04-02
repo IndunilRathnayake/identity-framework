@@ -26,6 +26,7 @@ import org.wso2.carbon.identity.application.authentication.framework.Authenticat
 import org.wso2.carbon.identity.application.authentication.framework.config.loader.SequenceLoader;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.graph.JsGraphBuilderFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
+import org.wso2.carbon.identity.application.authentication.framework.handler.claims.ClaimFilter;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.PostAuthenticationHandler;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent.SSOConsentService;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.HttpIdentityRequestFactory;
@@ -38,6 +39,7 @@ import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class FrameworkServiceDataHolder {
@@ -61,7 +63,7 @@ public class FrameworkServiceDataHolder {
     private PostAuthenticationMgtService postAuthenticationMgtService = null;
     private ConsentManager consentManager = null;
     private ClaimMetadataManagementService claimMetadataManagementService = null;
-    private SSOConsentService ssoConsentService;
+    private List<ClaimFilter> claimFilters = new ArrayList<>();
 
     private FrameworkServiceDataHolder() {
         setNanoTimeReference(System.nanoTime());
@@ -208,23 +210,7 @@ public class FrameworkServiceDataHolder {
 
         return this.postAuthenticationMgtService;
     }
-
-    /**
-     * Get {@link ConsentManager} service.
-     * @return Consent manager service
-     */
-    public ConsentManager getConsentManager() {
-        return consentManager;
-    }
-
-    /**
-     * Set {@link ConsentManager} service.
-     * @param consentManager Instance of {@link ConsentManager} service.
-     */
-    public void setConsentManager(ConsentManager consentManager) {
-        this.consentManager = consentManager;
-    }
-
+    
     /**
      * Get {@link ClaimMetadataManagementService}.
      * @return ClaimMetadataManagementService.
@@ -247,8 +233,15 @@ public class FrameworkServiceDataHolder {
      * Get {@link SSOConsentService}.
      * @return SSOConsentService.
      */
-    public SSOConsentService getSSOConsentService() {
-        return ssoConsentService;
+    public SSOConsentService getHighestPrioritySSOConsentService() {
+        ssoConsentServices.sort(new Comparator<SSOConsentService>() {
+            @Override
+            public int compare(SSOConsentService consentService1, SSOConsentService consentService2) {
+                return consentService1.getPriority() < consentService2.getPriority() ? -1 :
+                        consentService1.getPriority() == consentService2.getPriority() ? 0 : 1;
+            }
+        });
+        return ssoConsentServices.get(0);
     }
 
     /**
@@ -256,6 +249,29 @@ public class FrameworkServiceDataHolder {
      * @param ssoConsentService Instance of {@link SSOConsentService}.
      */
     public void setSSOConsentService(SSOConsentService ssoConsentService) {
-        this.ssoConsentService = ssoConsentService;
+        if(ssoConsentServices == null) {
+            ssoConsentServices = new ArrayList<>();
+        }
+        ssoConsentServices.add(ssoConsentService);
+    }
+
+
+    /**
+     *
+     * @return The Claim Filter with the highest priority.
+     */
+    public ClaimFilter getHighestPriorityClaimFilter() {
+        if (claimFilters.isEmpty()) {
+            throw new RuntimeException("No Claim Filters available.");
+        }
+        return claimFilters.get(0);
+    }
+
+    public List<ClaimFilter> getClaimFilters() {
+        return claimFilters;
+    }
+
+    public void setClaimFilters(List<ClaimFilter> claimFilters) {
+        this.claimFilters = claimFilters;
     }
 }

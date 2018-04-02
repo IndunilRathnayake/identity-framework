@@ -42,6 +42,7 @@ import org.wso2.carbon.identity.application.authentication.framework.model.Authe
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
+import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 import org.wso2.carbon.registry.core.utils.UUIDGenerator;
 import org.wso2.carbon.user.api.Tenant;
@@ -68,6 +69,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
     private static final Log log = LogFactory.getLog(DefaultRequestCoordinator.class);
     private static volatile DefaultRequestCoordinator instance;
     private static final String ACR_VALUES_ATTRIBUTE = "acr_values";
+    private static final String REQUESTED_ATTRIBUTES = "requested_attributes";
 
     public static DefaultRequestCoordinator getInstance() {
 
@@ -388,8 +390,12 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
                 context.addRequestedAcr(acr);
             }
         }
+
+        List<ClaimMapping> requestedAttributesFromRequest = (List<ClaimMapping>) request.getAttribute(REQUESTED_ATTRIBUTES);
+
         // Get service provider chain
-        SequenceConfig effectiveSequence = getSequenceConfig(context, request.getParameterMap());
+        SequenceConfig effectiveSequence = getSequenceConfig(context, request.getParameterMap(),
+                requestedAttributesFromRequest);
 
         if (acrRequested != null) {
             for (String acr : acrRequested) {
@@ -553,7 +559,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
 
         try {
             ApplicationConfig appConfig = new ApplicationConfig(ApplicationManagementService.getInstance()
-                    .getServiceProviderByClientId(clientId, clientType, tenantDomain));
+                    .getServiceProviderByClientId(clientId, clientType, tenantDomain), null);
             sequenceConfig.setApplicationConfig(appConfig);
             if (log.isDebugEnabled()) {
                 log.debug("Refresh application config in sequence config for application id: " + sequenceConfig
