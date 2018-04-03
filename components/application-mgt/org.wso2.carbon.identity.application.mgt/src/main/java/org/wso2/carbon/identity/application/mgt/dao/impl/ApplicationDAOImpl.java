@@ -1361,7 +1361,6 @@ public class ApplicationDAOImpl implements ApplicationDAO {
             if (spClaimDialects != null) {
                 storeSPDialectsPrepStmt = connection
                         .prepareStatement(ApplicationMgtDBQueries.UPDATE_BASIC_APPINFO_WITH_SP_DIALECTS);
-                // ROLE_CLAIM=? WHERE TENANT_ID= ? AND ID =
                 storeSPDialectsPrepStmt.setString(1, spClaimDialectsBuilder.toString());
                 storeSPDialectsPrepStmt.setInt(2, tenantID);
                 storeSPDialectsPrepStmt.setInt(3, applicationId);

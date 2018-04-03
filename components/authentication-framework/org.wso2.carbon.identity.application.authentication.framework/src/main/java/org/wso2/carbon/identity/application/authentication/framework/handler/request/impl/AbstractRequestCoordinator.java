@@ -50,8 +50,7 @@ public abstract class AbstractRequestCoordinator implements RequestCoordinator {
      * @throws FrameworkException when there is an error in loading the Sequence Config, most probably error
      * in underlying data persistence layer.
      */
-    public SequenceConfig getSequenceConfig(AuthenticationContext context, Map<String, String[]> parameterMap,
-                                            List<ClaimMapping> requestedAttributes)
+    public SequenceConfig getSequenceConfig(AuthenticationContext context, Map<String, String[]> parameterMap)
             throws FrameworkException {
         String requestType = context.getRequestType();
         String[] issuers = parameterMap.get(FrameworkConstants.RequestParams.ISSUER);
@@ -64,12 +63,11 @@ public abstract class AbstractRequestCoordinator implements RequestCoordinator {
         SequenceLoader sequenceBuilder = FrameworkServiceDataHolder.getInstance().getSequenceLoader();
         if (sequenceBuilder != null) {
             ServiceProvider serviceProvider = getServiceProvider(requestType, issuer, tenantDomain);
-            return sequenceBuilder.getSequenceConfig(context, parameterMap, requestedAttributes, serviceProvider);
+            return sequenceBuilder.getSequenceConfig(context, parameterMap, serviceProvider);
         } else {
             //Backward compatibility, Using the deprecated method.
             //TODO: Need to remove the dependency to this.
-            return ConfigurationFacade.getInstance().getSequenceConfig(issuer, requestType, tenantDomain,
-                    requestedAttributes);
+            return ConfigurationFacade.getInstance().getSequenceConfig(context, issuer, requestType, tenantDomain);
         }
 
     }

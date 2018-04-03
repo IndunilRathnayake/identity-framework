@@ -17,12 +17,6 @@
  */
 package org.wso2.carbon.identity.application.authentication.framework.config.model;
 
-import com.hazelcast.util.MapUtil;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.wso2.carbon.identity.application.authentication.framework.handler.claims.impl.DefaultClaimFilter;
 import org.wso2.carbon.identity.application.authentication.framework.internal.FrameworkServiceDataHolder;
 import org.wso2.carbon.identity.application.common.model.ApplicationPermission;
 import org.wso2.carbon.identity.application.common.model.ClaimConfig;
@@ -31,11 +25,8 @@ import org.wso2.carbon.identity.application.common.model.LocalAndOutboundAuthent
 import org.wso2.carbon.identity.application.common.model.PermissionsAndRoleConfig;
 import org.wso2.carbon.identity.application.common.model.RoleMapping;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
-import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementAdminService;
-import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,9 +78,8 @@ public class ApplicationConfig implements Serializable, Cloneable {
         }
 
         FrameworkServiceDataHolder.getInstance()
-                .getHighestPriorityClaimFilter().getClaimsFilteredByRequestedClaims(claimMappings,
-                requestedClaims, mandatoryClaims, claimConfig,
-                requestedClaimsInRequest);
+                .getHighestPriorityClaimFilter().getFilteredRequestedClaims(claimMappings, requestedClaims,
+                mandatoryClaims, claimConfig, requestedClaimsInRequest);
 
         PermissionsAndRoleConfig permissionRoleConfiguration;
         permissionRoleConfiguration = application.getPermissionAndRoleConfig();

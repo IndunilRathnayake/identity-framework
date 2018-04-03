@@ -37,9 +37,9 @@ public class DefaultClaimFilter implements ClaimFilter {
     }
 
     @Override
-    public void getClaimsFilteredByRequestedClaims(Map<String, String> claimMappings, Map<String, String> requestedClaims,
-                                                   Map<String, String> mandatoryClaims, ClaimConfig claimConfig,
-                                                   List<ClaimMapping> requestedClaimsInRequest) {
+    public void getFilteredRequestedClaims(Map<String, String> claimMappings, Map<String, String> requestedClaims,
+                                           Map<String, String> mandatoryClaims, ClaimConfig claimConfig,
+                                           List<ClaimMapping> requestedClaimsInRequest) {
         List<ClaimMapping> selectedRequestedClaims = null;
         if(ArrayUtils.isEmpty(claimConfig.getClaimMappings()) && !requestedClaimsInRequest.isEmpty()) {
             selectedRequestedClaims = requestedClaimsInRequest;

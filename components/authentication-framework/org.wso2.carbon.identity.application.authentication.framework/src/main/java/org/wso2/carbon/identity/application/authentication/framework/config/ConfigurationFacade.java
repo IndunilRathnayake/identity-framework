@@ -26,7 +26,9 @@ import org.wso2.carbon.identity.application.authentication.framework.config.load
 import org.wso2.carbon.identity.application.authentication.framework.config.loader.UIBasedConfigurationLoader;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.ExternalIdPConfig;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.SequenceConfig;
+import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
 import org.wso2.carbon.identity.application.common.model.AuthenticationStep;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
@@ -77,8 +79,8 @@ public class ConfigurationFacade {
      * @deprecated Please use  #getSequenceConfig(AuthenticationContext, Map) instead.
      */
     @Deprecated
-    public SequenceConfig getSequenceConfig(String reqType, String relyingParty, String tenantDomain, List<ClaimMapping> requestedAttributes)
-            throws FrameworkException {
+    public SequenceConfig getSequenceConfig(AuthenticationContext context, String reqType, String relyingParty,
+                                            String tenantDomain) throws FrameworkException {
 
         ApplicationManagementService appInfo = ApplicationManagementService.getInstance();
 
@@ -101,8 +103,11 @@ public class ConfigurationFacade {
         AuthenticationStep[] authenticationSteps = serviceProvider.getLocalAndOutBoundAuthenticationConfig()
                 .getAuthenticationSteps();
 
-        return uiBasedConfigurationLoader.getSequence(serviceProvider, requestedAttributes, tenantDomain, authenticationSteps);
+        List<ClaimMapping> requestedClaimsInRequest = (List<ClaimMapping>) context.getProperty(
+                FrameworkConstants.SP_REQUESTED_CLAIMS_IN_REQUEST);
 
+        return uiBasedConfigurationLoader.getSequence(serviceProvider, requestedClaimsInRequest, tenantDomain,
+                authenticationSteps);
     }
 
     public ExternalIdPConfig getIdPConfigByName(String idpName, String tenantDomain)

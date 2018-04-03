@@ -22,7 +22,6 @@ import org.apache.commons.collections.CollectionUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -103,7 +102,7 @@ public class ClaimConfig implements Serializable {
                             .toArray(new ClaimMapping[0]);
                     claimConfig.setClaimMappings(claimMappingsArr);
                 }
-            } else if ("SPClaimDialect".equals(elementName)) {
+            } else if ("SPClaimDialects".equals(elementName)) {
                 claimConfig.setSpClaimDialects(element.getText().split(","));
             }
         }

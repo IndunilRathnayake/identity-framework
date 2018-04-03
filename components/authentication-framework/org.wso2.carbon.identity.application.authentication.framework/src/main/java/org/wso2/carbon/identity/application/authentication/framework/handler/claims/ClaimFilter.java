@@ -35,12 +35,15 @@ public interface ClaimFilter {
     int getPriority();
 
     /**
+     * Filtering out and selecting the claim mappings, requested and mandatory claims
      *
-     * @param applicationConfig
-     * @param claimConfig
-     * @param requestedClaims
+     * @param claimMappings SP configured claim mappings
+     * @param requestedClaims SP requested claims
+     * @param mandatoryClaims SP mandatory claims
+     * @param claimConfig SP claim configuration
+     * @param requestedClaimsInRequest Requested claims in the request
      */
-    void getClaimsFilteredByRequestedClaims(Map<String, String> claimMappings, Map<String, String> requestedClaims,
-                                            Map<String, String> mandatoryClaims, ClaimConfig claimConfig,
-                                            List<ClaimMapping> requestedClaimsInRequest);
+    void getFilteredRequestedClaims(Map<String, String> claimMappings, Map<String, String> requestedClaims,
+                                    Map<String, String> mandatoryClaims, ClaimConfig claimConfig,
+                                    List<ClaimMapping> requestedClaimsInRequest);
 }

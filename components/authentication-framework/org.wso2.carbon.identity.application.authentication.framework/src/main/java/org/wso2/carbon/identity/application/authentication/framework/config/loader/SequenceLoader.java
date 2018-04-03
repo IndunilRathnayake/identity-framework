@@ -21,10 +21,8 @@ package org.wso2.carbon.identity.application.authentication.framework.config.loa
 import org.wso2.carbon.identity.application.authentication.framework.config.model.SequenceConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
-import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,7 +41,7 @@ public interface SequenceLoader {
      * @throws FrameworkException will be thrown upon any error accessing underlying repository.
      */
     SequenceConfig getSequenceConfig(AuthenticationContext context, Map<String, String[]> parameterMap,
-                                     List<ClaimMapping> requestedAttributes, ServiceProvider serviceProvider)
+                                     ServiceProvider serviceProvider)
             throws FrameworkException;
 
 }

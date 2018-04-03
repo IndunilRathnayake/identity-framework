@@ -39,7 +39,6 @@ import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class FrameworkServiceDataHolder {
@@ -63,6 +62,7 @@ public class FrameworkServiceDataHolder {
     private PostAuthenticationMgtService postAuthenticationMgtService = null;
     private ConsentManager consentManager = null;
     private ClaimMetadataManagementService claimMetadataManagementService = null;
+    private SSOConsentService ssoConsentService;
     private List<ClaimFilter> claimFilters = new ArrayList<>();
 
     private FrameworkServiceDataHolder() {
@@ -212,6 +212,22 @@ public class FrameworkServiceDataHolder {
     }
 
     /**
+     * Get {@link ConsentManager} service.
+     * @return Consent manager service
+     */
+    public ConsentManager getConsentManager() {
+        return consentManager;
+    }
+
+    /**
+     * Set {@link ConsentManager} service.
+     * @param consentManager Instance of {@link ConsentManager} service.
+     */
+    public void setConsentManager(ConsentManager consentManager) {
+        this.consentManager = consentManager;
+    }
+
+    /**
      * Get {@link ClaimMetadataManagementService}.
      * @return ClaimMetadataManagementService.
      */
@@ -227,6 +243,22 @@ public class FrameworkServiceDataHolder {
     public void setClaimMetadataManagementService (ClaimMetadataManagementService claimMetadataManagementService) {
 
         this.claimMetadataManagementService = claimMetadataManagementService;
+    }
+
+    /**
+     * Get {@link SSOConsentService}.
+     * @return SSOConsentService.
+     */
+    public SSOConsentService getSSOConsentService() {
+        return ssoConsentService;
+    }
+
+    /**
+     * Set {@link SSOConsentService}.
+     * @param ssoConsentService Instance of {@link SSOConsentService}.
+     */
+    public void setSSOConsentService(SSOConsentService ssoConsentService) {
+        this.ssoConsentService = ssoConsentService;
     }
 
     /**

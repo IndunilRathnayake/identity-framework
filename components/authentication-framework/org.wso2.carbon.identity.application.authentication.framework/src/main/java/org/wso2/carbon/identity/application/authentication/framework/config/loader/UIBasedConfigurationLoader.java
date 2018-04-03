@@ -33,7 +33,14 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.authentication.framework.internal.FrameworkServiceComponent;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
-import org.wso2.carbon.identity.application.common.model.*;
+import org.wso2.carbon.identity.application.common.model.AuthenticationStep;
+import org.wso2.carbon.identity.application.common.model.ClaimMapping;
+import org.wso2.carbon.identity.application.common.model.FederatedAuthenticatorConfig;
+import org.wso2.carbon.identity.application.common.model.IdentityProvider;
+import org.wso2.carbon.identity.application.common.model.LocalAndOutboundAuthenticationConfig;
+import org.wso2.carbon.identity.application.common.model.LocalAuthenticatorConfig;
+import org.wso2.carbon.identity.application.common.model.RequestPathAuthenticatorConfig;
+import org.wso2.carbon.identity.application.common.model.ServiceProvider;
 import org.wso2.carbon.identity.application.common.model.script.AuthenticationScriptConfig;
 import org.wso2.carbon.idp.mgt.IdentityProviderManagementException;
 import org.wso2.carbon.idp.mgt.IdentityProviderManager;
@@ -58,7 +65,7 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
 
     @Override
     public SequenceConfig getSequenceConfig(AuthenticationContext context, Map<String, String[]> parameterMap,
-                                            List<ClaimMapping> requestedAttributes, ServiceProvider serviceProvider)
+                                            ServiceProvider serviceProvider)
             throws FrameworkException {
 
         String tenantDomain = context.getTenantDomain();
@@ -73,7 +80,11 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
             authenticationSteps = localAndOutboundAuthenticationConfig.getAuthenticationSteps();
         }
 
-        SequenceConfig sequenceConfig = getSequence(serviceProvider, requestedAttributes, tenantDomain, authenticationSteps);
+        List<ClaimMapping> requestedClaimsInRequest = (List<ClaimMapping>) context.getProperty(
+                FrameworkConstants.SP_REQUESTED_CLAIMS_IN_REQUEST);
+
+        SequenceConfig sequenceConfig = getSequence(serviceProvider, requestedClaimsInRequest, tenantDomain,
+                authenticationSteps);
 
         //Use script based evaluation if script is present.
         if (isAuthenticationScriptBasedSequence(localAndOutboundAuthenticationConfig.getAuthenticationScriptConfig())) {
@@ -132,7 +143,7 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
      * @return
      * @throws FrameworkException
      */
-    public SequenceConfig getSequence(ServiceProvider serviceProvider, List<ClaimMapping> requestedAttributes,
+    public SequenceConfig getSequence(ServiceProvider serviceProvider, List<ClaimMapping> requestedClaimsInRequest,
                                       String tenantDomain, AuthenticationStep[] authenticationSteps)
             throws FrameworkException {
 
@@ -141,7 +152,7 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
         }
         SequenceConfig sequenceConfig = new SequenceConfig();
         sequenceConfig.setApplicationId(serviceProvider.getApplicationName());
-        sequenceConfig.setApplicationConfig(new ApplicationConfig(serviceProvider, requestedAttributes));
+        sequenceConfig.setApplicationConfig(new ApplicationConfig(serviceProvider, requestedClaimsInRequest));
 
         // setting request path authenticators
         loadRequestPathAuthenticators(sequenceConfig, serviceProvider);

@@ -391,11 +391,12 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
             }
         }
 
-        List<ClaimMapping> requestedAttributesFromRequest = (List<ClaimMapping>) request.getAttribute(REQUESTED_ATTRIBUTES);
+        List<ClaimMapping> requestedClaimsInRequest = (List<ClaimMapping>) request.getAttribute(REQUESTED_ATTRIBUTES);
+
+        context.setProperty(FrameworkConstants.SP_REQUESTED_CLAIMS_IN_REQUEST, requestedClaimsInRequest);
 
         // Get service provider chain
-        SequenceConfig effectiveSequence = getSequenceConfig(context, request.getParameterMap(),
-                requestedAttributesFromRequest);
+        SequenceConfig effectiveSequence = getSequenceConfig(context, request.getParameterMap());
 
         if (acrRequested != null) {
             for (String acr : acrRequested) {
@@ -472,7 +473,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
                     // This is done to reflect the changes done in SP to the sequence config. So, the requested claim updates,
                     // authentication step updates will be reflected.
                     refreshAppConfig(effectiveSequence, request.getParameter(FrameworkConstants.RequestParams.ISSUER),
-                            context.getRequestType(), context.getTenantDomain());
+                            context.getRequestType(), context.getTenantDomain(), requestedClaimsInRequest);
                 }
 
                 context.setPreviousAuthenticatedIdPs(sessionContext.getAuthenticatedIdPs());
@@ -555,11 +556,11 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
     }
 
     private void refreshAppConfig(SequenceConfig sequenceConfig, String clientId, String clientType,
-            String tenantDomain) throws FrameworkException {
+            String tenantDomain, List<ClaimMapping> requestedClaimsInRequest) throws FrameworkException {
 
         try {
             ApplicationConfig appConfig = new ApplicationConfig(ApplicationManagementService.getInstance()
-                    .getServiceProviderByClientId(clientId, clientType, tenantDomain), null);
+                    .getServiceProviderByClientId(clientId, clientType, tenantDomain), requestedClaimsInRequest);
             sequenceConfig.setApplicationConfig(appConfig);
             if (log.isDebugEnabled()) {
                 log.debug("Refresh application config in sequence config for application id: " + sequenceConfig

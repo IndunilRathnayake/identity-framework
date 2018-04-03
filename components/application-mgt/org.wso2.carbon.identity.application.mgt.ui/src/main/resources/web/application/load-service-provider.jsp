@@ -86,7 +86,7 @@
 				appBean.setFederatedIdentityProviders(federatedIdPs);
 				appBean.setRequestPathAuthenticators(requestPathAuthenticators);
 				appBean.setClaimUris(claimUris);
-				appBean.setClaimDialects(dialectURIs);
+				appBean.setClaimDialectUris(dialectURIs);
 
 			} catch (Exception e) {
 				String message = resourceBundle.getString("alert.error.while.reading.service.provider") + " : " + e.getMessage();

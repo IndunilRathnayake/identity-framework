@@ -81,7 +81,7 @@ public class ApplicationBean {
     private String passiveSTSWReply;
     private String openid;
     private String[] claimUris;
-    private String[] claimDialects;
+    private String[] claimDialectUris;
     private List<InboundAuthenticationRequestConfig> inboundAuthenticationRequestConfigs;
     private List<String> standardInboundAuthTypes;
 
@@ -447,7 +447,7 @@ public class ApplicationBean {
         return true;
     }
 
-    public String[] configuredSPClaimDialects() {
+    public String[] getSPClaimDialects() {
         if (serviceProvider.getClaimConfig() != null &&
                 !ArrayUtils.isEmpty(serviceProvider.getClaimConfig().getSpClaimDialects())) {
             return serviceProvider.getClaimConfig().getSpClaimDialects();
@@ -862,12 +862,12 @@ public class ApplicationBean {
         this.claimUris = claimUris;
     }
 
-    public void setClaimDialects(String[] claimDialects) {
-        this.claimDialects = claimDialects;
+    public void setClaimDialectUris(String[] claimDialectUris) {
+        this.claimDialectUris = claimDialectUris;
     }
 
-    public String[] getClaimDialects() {
-        return claimDialects;
+    public String[] getClaimDialectUris() {
+        return claimDialectUris;
     }
 
     private boolean isCustomInboundAuthType(String authType) {

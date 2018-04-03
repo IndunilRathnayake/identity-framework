@@ -45,7 +45,6 @@
 <%@ page import="org.wso2.carbon.identity.application.common.util.IdentityApplicationManagementUtil" %>
 <%@ page import="org.wso2.carbon.identity.core.util.IdentityUtil" %>
 <%@ page import="java.security.cert.CertificateException" %>
-<%@ page import="org.wso2.carbon.user.core.UserCoreConstants" %>
 <link href="css/idpmgt.css" rel="stylesheet" type="text/css" media="all"/>
 <carbon:breadcrumb label="breadcrumb.service.provider" resourceBundle="org.wso2.carbon.identity.application.mgt.ui.i18n.Resources"
                     topPage="true" request="<%=request%>" />
@@ -76,8 +75,8 @@ location.href = "list-service-providers.jsp";
 	Map<String, String> claimMapping = appBean.getClaimMapping();
 	Map<String, String> roleMapping = appBean.getRoleMapping();
 	boolean isLocalClaimsSelected = appBean.isLocalClaimsSelected();
-	String[] spClaimDialects = appBean.configuredSPClaimDialects();
-	String[] dialectURIs = appBean.getClaimDialects();
+	String[] spClaimDialects = appBean.getSPClaimDialects();
+	String[] dialectURIs = appBean.getClaimDialectUris();
     String idPName = request.getParameter("idPName");
     String action = request.getParameter("action");
     String[] userStoreDomains = null;
@@ -523,14 +522,14 @@ function updateBeanAndPostTo(postURL, data) {
 		location.href='configure-authentication-flow.jsp?spName=<%=Encode.forUriComponent(spName)%>';
 	}
 
-    function onClickAddStandardDialectUrl() {
-        var assertionConsumerURL = $("#standard_dialect").val();
-        if (assertionConsumerURL == null || assertionConsumerURL.trim().length == 0) {
-            CARBON.showWarningDialog("<fmt:message key='sp.enter.not.valid.endpoint.address'/>", null, null);
+    function onClickAddSpClaimDialectUri() {
+        var spClaimDialect = $("#standard_dialect").val();
+        if (spClaimDialect == null || spClaimDialect.trim().length == 0) {
+            CARBON.showWarningDialog("<fmt:message key='config.application.claim.dialect.sp.not.valid'/>", null, null);
             return false;
         }
 
-        assertionConsumerURL = assertionConsumerURL.trim();
+        spClaimDialect = spClaimDialect.trim();
 
         if (!$("#spClaimDialectsTblRow").length) {
             var row = '<tr id="spClaimDialectsTblRow">' +
@@ -544,26 +543,26 @@ function updateBeanAndPostTo(postURL, data) {
                     '        <input type="hidden" id="currentColumnId" value="0">' +
                     '    </td>' +
                     '</tr>';
-            $('#assertionConsumerURLInputRow').after(row);
+            $('#spClaimDialectInputRow').after(row);
         }
 
-        var assertionConsumerURLs = $("#spClaimDialects").val();
+        var spClaimDialects = $("#spClaimDialects").val();
         var currentColumnId = $("#currentColumnId").val();
-        if (assertionConsumerURLs == null || assertionConsumerURLs.trim().length == 0) {
-            $("#spClaimDialects").val(assertionConsumerURL);
+        if (spClaimDialects == null || spClaimDialects.trim().length == 0) {
+            $("#spClaimDialects").val(spClaimDialect);
             var row =
-                    '<tr id="acsUrl_' + parseInt(currentColumnId) + '">' +
-                    '</td><td style="padding-left: 30px !important; color: rgb(119, 119, 119);font-style: italic;">' + assertionConsumerURL +
-                    '</td><td><a onclick="removeAssertionConsumerURL();return false;" href="#" class="icon-link" style="background-image: url(../admin/images/delete.gif)">Delete</a></td></tr>';
+                    '<tr id="spClaimDialectUri_' + parseInt(currentColumnId) + '">' +
+                    '</td><td style="padding-left: 30px !important; color: rgb(119, 119, 119);font-style: italic;">' + spClaimDialect +
+                    '</td><td><a onclick="removeSpClaimDialect();return false;" href="#" class="icon-link" style="background-image: url(../admin/images/delete.gif)">Delete</a></td></tr>';
 
             $('#spClaimDialectsTable tbody').append(row);
 
         } else {
             var isExist = false;
-            $.each(assertionConsumerURLs.split(","), function (index, value) {
-                if (value === assertionConsumerURL) {
+            $.each(spClaimDialects.split(","), function (index, value) {
+                if (value === spClaimDialect) {
                     isExist = true;
-                    CARBON.showWarningDialog("<fmt:message key='sp.endpoint.address.already.exists'/>", null, null);
+                    CARBON.showWarningDialog("<fmt:message key='config.application.claim.dialect.sp.already.exists'/>", null, null);
                     return false;
                 }
             });
@@ -571,11 +570,11 @@ function updateBeanAndPostTo(postURL, data) {
                 return false;
             }
 
-            $("#spClaimDialects").val(assertionConsumerURLs + "," + assertionConsumerURL);
+            $("#spClaimDialects").val(spClaimDialects + "," + spClaimDialect);
             var row =
-                    '<tr id="acsUrl_' + parseInt(currentColumnId) + '">' +
-                    '</td><td style="padding-left: 30px !important; color: rgb(119, 119, 119);font-style: italic;">' + assertionConsumerURL +
-                    '</td><td><a onclick="removeAssertionConsumerURL();return false;" href="#" class="icon-link" style="background-image: url(../admin/images/delete.gif)">Delete</a></td></tr>';
+                    '<tr id="spClaimDialectUri_' + parseInt(currentColumnId) + '">' +
+                    '</td><td style="padding-left: 30px !important; color: rgb(119, 119, 119);font-style: italic;">' + spClaimDialect +
+                    '</td><td><a onclick="removeSpClaimDialect();return false;" href="#" class="icon-link" style="background-image: url(../admin/images/delete.gif)">Delete</a></td></tr>';
 
             $('#spClaimDialectsTable tr:last').after(row);
 
@@ -914,73 +913,6 @@ function updateBeanAndPostTo(postURL, data) {
         }
     }
 
-        function onClickAddSPClaimDialect() {
-
-            var spClaimDialect = $("#spClaimDialectTxt").val();
-            if (spClaimDialect == null || spClaimDialect.trim().length == 0) {
-                CARBON.showWarningDialog("<fmt:message key='sp.enter.not.valid.dialect'/>", null, null);
-                return false;
-            }
-
-            spClaimDialect = spClaimDialect.trim();
-
-            //var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-            //if (!regexp.test(spClaimDialect) || spClaimDialect.indexOf(",") > -1) {
-            //    CARBON.showWarningDialog("<fmt:message key='sp.enter.not.valid.endpoint.address'/>", null, null);
-            //    return false;
-            //}
-
-            if (!$("#SPClaimDialectTblRow").length) {
-                var row = '<tr id="SPClaimDialectTblRow">' +
-                        '    <td></td>' +
-                        '    <td>' +
-                        '        <table id="SPClaimDialectTable" style="width: 40%; margin-bottom: 3px;" class="styledInner">' +
-                        '            <tbody id="SPClaimDialectTableBody">' +
-                        '            </tbody>' +
-                        '        </table>' +
-                        '        <input type="hidden" id="SPClaimDialects" name="SPClaimDialects" value="">' +
-                        '        <input type="hidden" id="currentColumnId" value="0">' +
-                        '    </td>' +
-                        '</tr>';
-                $('#spClaimDialectInputRow').after(row);
-            }
-
-            var spClaimDialects = $("#spClaimDialects").val();
-            var currentColumnId = $("#currentColumnId").val();
-            if (spClaimDialects == null || spClaimDialects.trim().length == 0) {
-                $("#spClaimDialects").val(spClaimDialect);
-                var row =
-                        '<tr id="spDialect_' + parseInt(currentColumnId) + '">' +
-                        '</td><td style="padding-left: 15px !important; color: rgb(119, 119, 119);font-style: italic;">' + spClaimDialect +
-                        '</td><td><a onclick="removespClaimDialect (\'' + spClaimDialect + '\', \'spDialect_' + parseInt(currentColumnId) + '\');return false;"' +
-                        'href="#" class="icon-link" style="background-image: url(../admin/images/delete.gif)"> Delete </a></td></tr>';
-
-                $('#SPClaimDialectTable tbody').append(row);
-            } else {
-                var isExist = false;
-                $.each(spClaimDialects.split(","), function (index, value) {
-                    if (value === spClaimDialect) {
-                        isExist = true;
-                        CARBON.showWarningDialog("<fmt:message key='sp.endpoint.address.already.exists'/>", null, null);
-                        return false;
-                    }
-                });
-                if (isExist) {
-                    return false;
-                }
-
-                $("#SPClaimDialects").val(spClaimDialects + "," + spClaimDialect);
-                var row =
-                        '<tr id="spDialect_' + parseInt(currentColumnId) + 1 + '">' +
-                        '</td><td style="padding-left: 15px !important; color: rgb(119, 119, 119);font-style: italic;">' + spClaimDialect +
-                        '</td></tr>';
-
-                $('#spClaimDialectTable tr:last').after(row);
-            }
-            $("#spClaimDialectTxt").val("");
-            $("#currentColumnId").val(parseInt(currentColumnId) + 1);
-        }
-
 </script>
 
 <fmt:bundle basename="org.wso2.carbon.identity.application.mgt.ui.i18n.Resources">
@@ -1271,21 +1203,21 @@ function updateBeanAndPostTo(postURL, data) {
                     </div>
                     <div id="spClaimDialectSelection">
                        <table class="carbonFormTable">
-                       <tr id="assertionConsumerURLInputRow">
+                       <tr id="spClaimDialectInputRow">
 					    <td class="leftCol-med labelField" style="width:15%">
-                            <label id="addStandardDialectUrisLbl"><fmt:message key='config.application.claim.dialect.sp'/>:</label>
+                            <label id="addSpClaimDialectUrisLbl"><fmt:message key='config.application.claim.dialect.sp'/>:</label>
                         </td>
                         <td>
                             <select class="leftCol-med" id="standard_dialect" name="standard_dialect" style=" margin-left: 5px; ">
                                 <option value="">---Select---</option>
                                 <%
-                                    for(String claimDialect : dialectURIs) {%>
-                                        <option value="<%=Encode.forHtmlAttribute(claimDialect)%>"> <%=Encode.forHtmlContent(claimDialect)%></option>
+                                    for(String dialectURI : dialectURIs) {%>
+                                        <option value="<%=Encode.forHtmlAttribute(dialectURI)%>"> <%=Encode.forHtmlContent(dialectURI)%></option>
                                  <%
                                 } %>
                             </select>
-                            <input id="addStandardDialectURLBtn" type="button" value="<fmt:message key="config.application.claim.dialect.sp.add"/>"
-                                onclick="onClickAddStandardDialectUrl()"/>
+                            <input id="addSpClaimDialectUriBtn" type="button" value="<fmt:message key="config.application.claim.dialect.sp.add"/>"
+                                onclick="onClickAddSpClaimDialectUri()"/>
                         </td>
 					   </tr>
 
@@ -1298,7 +1230,7 @@ function updateBeanAndPostTo(postURL, data) {
                                             <tbody id="spClaimDialectsTableBody">
                                             <%
                                                 StringBuilder spClaimDialectsBuilder = new StringBuilder();
-                                                int acsColumnId = 0;
+                                                int spClaimDialectColumnId = 0;
                                                 for (String spClaimDialect : spClaimDialects) {
                                                   if(spClaimDialect != null) {
                                                     if (spClaimDialectsBuilder.length() > 0) {
@@ -1307,13 +1239,13 @@ function updateBeanAndPostTo(postURL, data) {
                                                         spClaimDialectsBuilder.append(spClaimDialect);
                                                     }
                                             %>
-                                            <tr id="acsUrl_<%=acsColumnId%>">
+                                            <tr id="spClaimDialectUri_<%=spClaimDialectColumnId%>">
                                                 <td style="padding-left: 30px !important; color: rgb(119, 119, 119);font-style: italic;">
                                                     <%=Encode.forHtml(spClaimDialect)%>
                                                 </td>
                                                 <td>
-                                                    <a onclick="removeAssertionConsumerURL('<%=Encode.forJavaScriptAttribute(spClaimDialect)%>',
-                                                            'acsUrl_<%=acsColumnId%>');return false;"
+                                                    <a onclick="removeSpClaimDialect('<%=Encode.forJavaScriptAttribute(spClaimDialect)%>',
+                                                            'spClaimDialectUri_<%=spClaimDialectColumnId%>');return false;"
                                                        href="#" class="icon-link"
                                                        style="background-image: url(../admin/images/delete.gif)">
                                                         Delete
@@ -1321,7 +1253,7 @@ function updateBeanAndPostTo(postURL, data) {
                                                 </td>
                                             </tr>
                                             <%
-                                                    acsColumnId++;
+                                                    spClaimDialectColumnId++;
                                                 }
                                                }
                                             %>
@@ -1330,7 +1262,7 @@ function updateBeanAndPostTo(postURL, data) {
                                         <input type="hidden" id="spClaimDialects" name="spClaimDialects"
                                                value="<%=spClaimDialectsBuilder.length() > 0 ?
          Encode.forHtmlAttribute(spClaimDialectsBuilder.toString()) : ""%>">
-                                        <input type="hidden" id="currentColumnId" value="<%=acsColumnId%>">
+                                        <input type="hidden" id="currentColumnId" value="<%=spClaimDialectColumnId%>">
                                     </td>
                                 </tr>
                                 <%
