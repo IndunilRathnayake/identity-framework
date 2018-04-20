@@ -553,7 +553,8 @@ function updateBeanAndPostTo(postURL, data) {
             var row =
                     '<tr id="spClaimDialectUri_' + parseInt(currentColumnId) + '">' +
                     '</td><td style="padding-left: 30px !important; color: rgb(119, 119, 119);font-style: italic;">' + spClaimDialect +
-                    '</td><td><a onclick="removeSpClaimDialect();return false;" href="#" class="icon-link" style="background-image: url(../admin/images/delete.gif)">Delete</a></td></tr>';
+                    '</td><td><a onclick="removeSpClaimDialect(\'' + spClaimDialect + '\', \'spClaimDialectUri_' + parseInt(currentColumnId) + '\');return false;"' +
+                    ' href="#" class="icon-link" style="background-image: url(../admin/images/delete.gif)">Delete</a></td></tr>';
 
             $('#spClaimDialectsTable tbody').append(row);
 
@@ -574,7 +575,8 @@ function updateBeanAndPostTo(postURL, data) {
             var row =
                     '<tr id="spClaimDialectUri_' + parseInt(currentColumnId) + '">' +
                     '</td><td style="padding-left: 30px !important; color: rgb(119, 119, 119);font-style: italic;">' + spClaimDialect +
-                    '</td><td><a onclick="removeSpClaimDialect();return false;" href="#" class="icon-link" style="background-image: url(../admin/images/delete.gif)">Delete</a></td></tr>';
+                    '</td><td><a onclick="removeSpClaimDialect(\'' + spClaimDialect + '\', \'spClaimDialectUri_' + parseInt(currentColumnId) + '\');return false;"' +
+                    ' href="#" class="icon-link" style="background-image: url(../admin/images/delete.gif)">Delete</a></td></tr>';
 
             $('#spClaimDialectsTable tr:last').after(row);
 
@@ -582,6 +584,33 @@ function updateBeanAndPostTo(postURL, data) {
         $("#standard_dialect").val("");
         $("#currentColumnId").val(parseInt(currentColumnId) + 1);
     }
+
+    function removeSpClaimDialect(spClaimDialect, columnId) {
+
+            var spClaimDialects = $("#spClaimDialects").val();
+            var newSpClaimDialects = "";
+
+            if (spClaimDialects != null && spClaimDialects.trim().length > 0) {
+                $.each(spClaimDialects.split(","), function (index, value) {
+                    if (value.trim() === spClaimDialect.trim()) {
+                        return true;
+                    }
+
+                    if (newSpClaimDialects.length > 0) {
+                        newSpClaimDialects = newSpClaimDialects + "," + value.trim();
+                    } else {
+                        newSpClaimDialects = value.trim();
+                    }
+                });
+            }
+
+            $('#' + columnId).remove();
+            $("#spClaimDialects").val(newSpClaimDialects);
+
+            if (newSpClaimDialects.length == 0) {
+                $('#spClaimDialectsTblRow').remove();
+            }
+        }
 
     var openFile = function (event) {
         var input = event.target;

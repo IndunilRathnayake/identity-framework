@@ -50,8 +50,7 @@ public class DefaultClaimFilter implements ClaimFilter {
             selectedRequestedClaims = new ArrayList<>();
             for(ClaimMapping claimMappingInSPConfig : requestedClaimsInSPConfig) {
                 for(ClaimMapping claimMappingInRequest : requestedClaimsInRequest) {
-                    if(claimMappingInRequest.getLocalClaim().equals(claimMappingInSPConfig.getLocalClaim()) &&
-                            claimMappingInRequest.getRemoteClaim().equals(claimMappingInSPConfig.getRemoteClaim())) {
+                    if(claimMappingInRequest.getRemoteClaim().equals(claimMappingInSPConfig.getRemoteClaim())) {
                         selectedRequestedClaims.add(claimMappingInRequest);
                     }
                 }

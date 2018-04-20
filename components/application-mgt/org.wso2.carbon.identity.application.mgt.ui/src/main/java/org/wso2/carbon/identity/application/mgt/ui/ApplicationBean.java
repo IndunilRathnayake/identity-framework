@@ -1397,6 +1397,12 @@ public class ApplicationBean {
 
         serviceProvider.getClaimConfig().setRoleClaimURI(request.getParameter("roleClaim"));
 
+        if(request.getParameter("spClaimDialects") != null) {
+            serviceProvider.getClaimConfig().setSpClaimDialects(request.getParameter("spClaimDialects").split(","));
+        } else {
+            serviceProvider.getClaimConfig().setSpClaimDialects(null);
+        }
+
         String alwaysSendMappedLocalSubjectId = request.getParameter("always_send_local_subject_id");
         serviceProvider.getClaimConfig().setAlwaysSendMappedLocalSubjectId(
                 alwaysSendMappedLocalSubjectId != null
