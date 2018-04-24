@@ -42,6 +42,7 @@ import org.wso2.carbon.identity.application.common.model.xsd.ProvisioningConnect
 import org.wso2.carbon.identity.application.common.model.xsd.RequestPathAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.xsd.RoleMapping;
 import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
+import org.wso2.carbon.identity.application.mgt.ui.util.ApplicationMgtUIConstants;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,6 +82,7 @@ public class ApplicationBean {
     private String passiveSTSWReply;
     private String openid;
     private String[] claimUris;
+    private String[] claimDialectUris;
     private List<InboundAuthenticationRequestConfig> inboundAuthenticationRequestConfigs;
     private List<String> standardInboundAuthTypes;
 
@@ -853,6 +855,25 @@ public class ApplicationBean {
         this.claimUris = claimUris;
     }
 
+    public void setClaimDialectUris(String[] claimDialectUris) {
+        if(this.claimDialectUris == null) {
+            this.claimDialectUris = claimDialectUris;
+        } else {
+            this.claimDialectUris = (String[]) ArrayUtils.addAll(this.claimDialectUris, claimDialectUris);
+        }
+    }
+
+    public String[] getClaimDialectUris() {
+        return claimDialectUris;
+    }
+
+    public String[] getSPClaimDialects() {
+        if (serviceProvider.getClaimConfig() != null &&
+                !ArrayUtils.isEmpty(serviceProvider.getClaimConfig().getSpClaimDialects())) {
+            return serviceProvider.getClaimConfig().getSpClaimDialects();
+        }
+        return null;
+    }
 
     private boolean isCustomInboundAuthType(String authType) {
         return !standardInboundAuthTypes.contains(authType);
@@ -890,7 +911,7 @@ public class ApplicationBean {
      * @param request
      */
     public void updateOutBoundAuthenticationConfig(HttpServletRequest request) {
-        
+
         String[] authSteps = request.getParameterValues("auth_step");
 
         if (authSteps != null && authSteps.length > 0) {
@@ -1380,6 +1401,13 @@ public class ApplicationBean {
                 claimMappingList.toArray(new ClaimMapping[claimMappingList.size()]));
 
         serviceProvider.getClaimConfig().setRoleClaimURI(request.getParameter("roleClaim"));
+
+        String spClaimDialectParam = request.getParameter(ApplicationMgtUIConstants.Params.SP_CLAIM_DIALECT);
+        if(spClaimDialectParam != null) {
+            serviceProvider.getClaimConfig().setSpClaimDialects(spClaimDialectParam.split(","));
+        } else {
+            serviceProvider.getClaimConfig().setSpClaimDialects(null);
+        }
 
         String alwaysSendMappedLocalSubjectId = request.getParameter("always_send_local_subject_id");
         serviceProvider.getClaimConfig().setAlwaysSendMappedLocalSubjectId(

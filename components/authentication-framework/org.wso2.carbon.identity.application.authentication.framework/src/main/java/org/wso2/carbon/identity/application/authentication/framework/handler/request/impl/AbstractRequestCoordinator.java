@@ -29,9 +29,11 @@ import org.wso2.carbon.identity.application.authentication.framework.internal.Fr
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
 import org.wso2.carbon.identity.application.common.model.AuthenticationStep;
+import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -65,7 +67,7 @@ public abstract class AbstractRequestCoordinator implements RequestCoordinator {
         } else {
             //Backward compatibility, Using the deprecated method.
             //TODO: Need to remove the dependency to this.
-            return ConfigurationFacade.getInstance().getSequenceConfig(issuer, requestType, tenantDomain);
+            return ConfigurationFacade.getInstance().getSequenceConfig(context, issuer, requestType, tenantDomain);
         }
 
     }

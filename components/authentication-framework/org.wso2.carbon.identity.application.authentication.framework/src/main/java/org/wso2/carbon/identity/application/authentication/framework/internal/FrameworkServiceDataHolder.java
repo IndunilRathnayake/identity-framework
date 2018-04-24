@@ -26,6 +26,7 @@ import org.wso2.carbon.identity.application.authentication.framework.Authenticat
 import org.wso2.carbon.identity.application.authentication.framework.config.loader.SequenceLoader;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.graph.JsGraphBuilderFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
+import org.wso2.carbon.identity.application.authentication.framework.handler.claims.ClaimFilter;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.PostAuthenticationHandler;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent.SSOConsentService;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.HttpIdentityRequestFactory;
@@ -62,6 +63,7 @@ public class FrameworkServiceDataHolder {
     private ConsentManager consentManager = null;
     private ClaimMetadataManagementService claimMetadataManagementService = null;
     private SSOConsentService ssoConsentService;
+    private List<ClaimFilter> claimFilters = new ArrayList<>();
 
     private FrameworkServiceDataHolder() {
         setNanoTimeReference(System.nanoTime());
@@ -257,5 +259,24 @@ public class FrameworkServiceDataHolder {
      */
     public void setSSOConsentService(SSOConsentService ssoConsentService) {
         this.ssoConsentService = ssoConsentService;
+    }
+
+    /**
+     *
+     * @return The Claim Filter with the highest priority.
+     */
+    public ClaimFilter getHighestPriorityClaimFilter() {
+        if (claimFilters.isEmpty()) {
+            throw new RuntimeException("No Claim Filters available.");
+        }
+        return claimFilters.get(0);
+    }
+
+    public List<ClaimFilter> getClaimFilters() {
+        return claimFilters;
+    }
+
+    public void setClaimFilters(List<ClaimFilter> claimFilters) {
+        this.claimFilters = claimFilters;
     }
 }

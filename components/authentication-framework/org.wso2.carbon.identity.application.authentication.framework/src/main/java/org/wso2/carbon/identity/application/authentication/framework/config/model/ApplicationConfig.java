@@ -17,6 +17,7 @@
  */
 package org.wso2.carbon.identity.application.authentication.framework.config.model;
 
+import org.wso2.carbon.identity.application.authentication.framework.internal.FrameworkServiceDataHolder;
 import org.wso2.carbon.identity.application.common.model.ApplicationPermission;
 import org.wso2.carbon.identity.application.common.model.ClaimConfig;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
@@ -27,6 +28,7 @@ import org.wso2.carbon.identity.application.common.model.ServiceProvider;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ApplicationConfig implements Serializable, Cloneable {
@@ -50,8 +52,9 @@ public class ApplicationConfig implements Serializable, Cloneable {
     private boolean useTenantDomainInLocalSubjectIdentifier = false;
     private boolean useUserstoreDomainInLocalSubjectIdentifier = false;
     private boolean enableAuthorization = false;
+    private String[] spClaimDialects = null;
 
-    public ApplicationConfig(ServiceProvider application) {
+    public ApplicationConfig(ServiceProvider application, List<ClaimMapping> requestedClaimsInRequest) {
         this.serviceProvider = application;
         applicationID = application.getApplicationID();
         applicationName = application.getApplicationName();
@@ -71,42 +74,12 @@ public class ApplicationConfig implements Serializable, Cloneable {
         if (claimConfig != null) {
             roleClaim = claimConfig.getRoleClaimURI();
             alwaysSendMappedLocalSubjectId = claimConfig.isAlwaysSendMappedLocalSubjectId();
-
-            ClaimMapping[] claimMapping = claimConfig.getClaimMappings();
-
-            if (claimMapping != null && claimMapping.length > 0) {
-                for (ClaimMapping claim : claimMapping) {
-                    if (claim.getRemoteClaim() != null
-                        && claim.getRemoteClaim().getClaimUri() != null) {
-                        if (claim.getLocalClaim() != null) {
-                            claimMappings.put(claim.getRemoteClaim().getClaimUri(), claim
-                                    .getLocalClaim().getClaimUri());
-
-                            if (claim.isRequested()) {
-                                requestedClaims.put(claim.getRemoteClaim().getClaimUri(), claim
-                                        .getLocalClaim().getClaimUri());
-                            }
-
-                            if (claim.isMandatory()) {
-                                mandatoryClaims.put(claim.getRemoteClaim().getClaimUri(), claim
-                                        .getLocalClaim().getClaimUri());
-                            }
-
-                        } else {
-                            claimMappings.put(claim.getRemoteClaim().getClaimUri(), null);
-                            if (claim.isRequested()) {
-                                requestedClaims.put(claim.getRemoteClaim().getClaimUri(), null);
-                            }
-
-                            if (claim.isMandatory()) {
-                                mandatoryClaims.put(claim.getRemoteClaim().getClaimUri(), null);
-                            }
-                        }
-                    }
-
-                }
-            }
+            spClaimDialects = claimConfig.getSpClaimDialects();
         }
+
+        FrameworkServiceDataHolder.getInstance()
+                .getHighestPriorityClaimFilter().getFilteredRequestedClaims(claimMappings, requestedClaims,
+                mandatoryClaims, claimConfig, requestedClaimsInRequest);
 
         PermissionsAndRoleConfig permissionRoleConfiguration;
         permissionRoleConfiguration = application.getPermissionAndRoleConfig();
@@ -129,7 +102,7 @@ public class ApplicationConfig implements Serializable, Cloneable {
             if (tempRoleMappings != null && tempRoleMappings.length > 0) {
                 for (RoleMapping roleMapping : tempRoleMappings) {
                     this.roleMappings.put(roleMapping.getLocalRole().getLocalRoleName(),
-                                          roleMapping.getRemoteRole());
+                            roleMapping.getRemoteRole());
                 }
             }
         }
@@ -257,6 +230,14 @@ public class ApplicationConfig implements Serializable, Cloneable {
     public void setEnableAuthorization(boolean enableAuthorization) {
 
         this.enableAuthorization = enableAuthorization;
+    }
+
+    public String[] getSpClaimDialects() {
+        return spClaimDialects;
+    }
+
+    public void setSpClaimDialects(String[] spClaimDialects) {
+        this.spClaimDialects = spClaimDialects;
     }
 
     /**

@@ -42,6 +42,7 @@ import org.wso2.carbon.identity.application.authentication.framework.model.Authe
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
+import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 import org.wso2.carbon.registry.core.utils.UUIDGenerator;
 import org.wso2.carbon.user.api.Tenant;
@@ -68,6 +69,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
     private static final Log log = LogFactory.getLog(DefaultRequestCoordinator.class);
     private static volatile DefaultRequestCoordinator instance;
     private static final String ACR_VALUES_ATTRIBUTE = "acr_values";
+    private static final String REQUESTED_ATTRIBUTES = "requested_attributes";
 
     public static DefaultRequestCoordinator getInstance() {
 
@@ -202,7 +204,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
      * @param context
      */
     private void associateTransientRequestData(HttpServletRequest request, HttpServletResponse response,
-            AuthenticationContext context) {
+                                               AuthenticationContext context) {
 
         if(context == null) {
             return;
@@ -231,7 +233,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
      * @return
      */
     private AuthenticationRequestCacheEntry getAuthenticationRequest(HttpServletRequest request,
-            String sessionDataKey) {
+                                                                     String sessionDataKey) {
 
         AuthenticationRequestCacheEntry authRequest = getAuthenticationRequestFromRequest(request);
         if (authRequest == null) {
@@ -388,6 +390,11 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
                 context.addRequestedAcr(acr);
             }
         }
+
+        List<ClaimMapping> requestedClaimsInRequest = (List<ClaimMapping>) request.getAttribute(REQUESTED_ATTRIBUTES);
+
+        context.setProperty(FrameworkConstants.SP_REQUESTED_CLAIMS_IN_REQUEST, requestedClaimsInRequest);
+
         // Get service provider chain
         SequenceConfig effectiveSequence = getSequenceConfig(context, request.getParameterMap());
 
@@ -466,7 +473,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
                     // This is done to reflect the changes done in SP to the sequence config. So, the requested claim updates,
                     // authentication step updates will be reflected.
                     refreshAppConfig(effectiveSequence, request.getParameter(FrameworkConstants.RequestParams.ISSUER),
-                            context.getRequestType(), context.getTenantDomain());
+                            context.getRequestType(), context.getTenantDomain(), requestedClaimsInRequest);
                 }
 
                 context.setPreviousAuthenticatedIdPs(sessionContext.getAuthenticatedIdPs());
@@ -493,7 +500,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
      * @return true if there is a need to reinitialize.
      */
     private boolean isReinitialize(SequenceConfig previousAuthenticatedSeq, SequenceConfig sequenceConfig,
-            HttpServletRequest request, AuthenticationContext context) {
+                                   HttpServletRequest request, AuthenticationContext context) {
 
         List<String> newAcrList = getAcrRequested(request);
         List<String> previousAcrList = previousAuthenticatedSeq.getRequestedAcr();
@@ -549,11 +556,11 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
     }
 
     private void refreshAppConfig(SequenceConfig sequenceConfig, String clientId, String clientType,
-            String tenantDomain) throws FrameworkException {
+                                  String tenantDomain, List<ClaimMapping> requestedClaimsInRequest) throws FrameworkException {
 
         try {
             ApplicationConfig appConfig = new ApplicationConfig(ApplicationManagementService.getInstance()
-                    .getServiceProviderByClientId(clientId, clientType, tenantDomain));
+                    .getServiceProviderByClientId(clientId, clientType, tenantDomain), requestedClaimsInRequest);
             sequenceConfig.setApplicationConfig(appConfig);
             if (log.isDebugEnabled()) {
                 log.debug("Refresh application config in sequence config for application id: " + sequenceConfig
@@ -568,7 +575,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
     }
 
     private void publishAuthenticationFailure(HttpServletRequest request, AuthenticationContext context,
-            AuthenticatedUser user) {
+                                              AuthenticatedUser user) {
 
         AuthenticationDataPublisher authnDataPublisherProxy = FrameworkServiceDataHolder.getInstance()
                 .getAuthnDataPublisherProxy();

@@ -43,13 +43,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
@@ -148,10 +142,10 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
 
             if (isDebugEnabled()) {
                 String message = String.format("Retrieving required consent data of user: %s for service " +
-                                               "provider: %s in tenant domain: %s.",
-                                               authenticatedUser.getAuthenticatedSubjectIdentifier(),
-                                               serviceProvider.getApplicationName(),
-                                               getSPTenantDomain(serviceProvider));
+                                "provider: %s in tenant domain: %s.",
+                        authenticatedUser.getAuthenticatedSubjectIdentifier(),
+                        serviceProvider.getApplicationName(),
+                        getSPTenantDomain(serviceProvider));
                 logDebug(message);
             }
 
@@ -163,10 +157,10 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
 
                 if (isDebugEnabled()) {
                     String message = String.format("Required consent data is empty for user: %s for service " +
-                                                   "provider: %s in tenant domain: %s. Post authentication completed.",
-                                                   authenticatedUser.getAuthenticatedSubjectIdentifier(),
-                                                   serviceProvider.getApplicationName(),
-                                                   getSPTenantDomain(serviceProvider));
+                                    "provider: %s in tenant domain: %s. Post authentication completed.",
+                            authenticatedUser.getAuthenticatedSubjectIdentifier(),
+                            serviceProvider.getApplicationName(),
+                            getSPTenantDomain(serviceProvider));
                     logDebug(message);
                 }
                 return PostAuthnHandlerFlowStatus.SUCCESS_COMPLETED;
@@ -176,12 +170,12 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
 
                 if (isDebugEnabled()) {
                     String message = "Require consent for mandatory claims: %s, requested claims: %s, from user: %s " +
-                                     "for service provider: %s in tenant domain: %s.";
+                            "for service provider: %s in tenant domain: %s.";
 
                     message = String.format(message, consentClaimsData.getMandatoryClaims(),
-                                            consentClaimsData.getRequestedClaims(),
-                                            authenticatedUser.getAuthenticatedSubjectIdentifier(),
-                                            serviceProvider.getApplicationName(), getSPTenantDomain(serviceProvider));
+                            consentClaimsData.getRequestedClaims(),
+                            authenticatedUser.getAuthenticatedSubjectIdentifier(),
+                            serviceProvider.getApplicationName(), getSPTenantDomain(serviceProvider));
                     logDebug(message);
                 }
 
@@ -195,11 +189,11 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
             return PostAuthnHandlerFlowStatus.SUCCESS_COMPLETED;
         } catch (SSOConsentServiceException e) {
             String error = String.format("Error occurred while retrieving consent data of user: %s for service " +
-                                         "provider: %s in tenant domain: %s.", authenticatedUser
+                    "provider: %s in tenant domain: %s.", authenticatedUser
                     .getAuthenticatedSubjectIdentifier(), serviceProvider.getApplicationName(), getSPTenantDomain
                     (serviceProvider));
             throw new PostAuthenticationFailedException("Authentication failed. Error occurred while processing user " +
-                                                        "consent.", error, e);
+                    "consent.", error, e);
         }
     }
 
@@ -214,8 +208,8 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
         List<ClaimMetaData> claimsWithConsent = consentClaimsData.getClaimsWithConsent();
         List<String> claimsURIsWithConsent = getClaimsFromMetaData(claimsWithConsent);
         Set<String> claimsWithoutConsent = getClaimsWithoutConsent(claimsURIsWithConsent, context);
-        String spStandardDialect = getStandardDialect(context);
-        removeUserClaimsFromContext(context, new ArrayList<>(claimsWithoutConsent), spStandardDialect);
+        List<String> spStandardDialects = getStandardDialect(context);
+        removeUserClaimsFromContext(context, new ArrayList<>(claimsWithoutConsent), spStandardDialects);
     }
 
     private ServiceProvider getServiceProvider(AuthenticationContext context) {
@@ -238,8 +232,8 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
     private Set<String> getClaimsWithoutConsent(List<String> claimWithConsent, AuthenticationContext context)
             throws PostAuthenticationFailedException {
 
-        List<String> requestedClaims = new ArrayList<>(getSPRequestedLocalClaims(context));
-        List<String> mandatoryClaims = new ArrayList<>(getSPMandatoryLocalClaims(context));
+        List<String> requestedClaims = new ArrayList<>(getSPRequestedClaims(context));
+        List<String> mandatoryClaims = new ArrayList<>(getSPMandatoryClaims(context));
         Set<String> consentClaims = getUniqueLocalClaims(requestedClaims, mandatoryClaims);
 
         consentClaims.removeAll(claimWithConsent);
@@ -277,7 +271,7 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
 
                 String message = "User: %s has approved consent for service provider: %s in tenant domain %s.";
                 message = String.format(message, authenticatedUser.getAuthenticatedSubjectIdentifier(),
-                                        serviceProvider.getApplicationName(), getSPTenantDomain(serviceProvider));
+                        serviceProvider.getApplicationName(), getSPTenantDomain(serviceProvider));
                 logDebug(message);
             }
             UserConsent userConsent = processUserConsent(request, context);
@@ -287,29 +281,29 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
 
                 List<Integer> claimIdsWithConsent = getClaimIdsWithConsent(userConsent);
                 getSSOConsentService().processConsent(claimIdsWithConsent, serviceProvider, authenticatedUser,
-                                                 consentClaimsData);
+                        consentClaimsData);
                 removeDisapprovedClaims(context, userConsent);
             } catch (SSOConsentDisabledException e) {
                 String error = "Authentication Failure: Consent management is disabled for SSO.";
                 String errorDesc = "Illegal operation. Consent management is disabled, but post authentication for " +
-                                   "sso consent management is invoked.";
+                        "sso consent management is invoked.";
                 throw new PostAuthenticationFailedException(error, errorDesc, e);
             } catch (SSOConsentServiceException e) {
                 String error = "Error occurred while processing consent input of user: %s, for service provider: %s " +
-                               "in tenant domain: %s.";
+                        "in tenant domain: %s.";
                 error = String.format(error, authenticatedUser.getAuthenticatedSubjectIdentifier(), serviceProvider
                         .getApplicationName(), getSPTenantDomain(serviceProvider));
                 throw new PostAuthenticationFailedException("Authentication failed. Error while processing user " +
-                                                            "consent input.", error, e);
+                        "consent input.", error, e);
             }
         } else {
 
             String error = String.format("Authentication failed. User denied consent to share information with %s.",
-                                         applicationConfig.getApplicationName());
+                    applicationConfig.getApplicationName());
             if (isDebugEnabled()) {
                 logDebug(String.format("User: %s denied consent to share information with the service " +
-                                       "provider: %s.", authenticatedUser.getAuthenticatedSubjectIdentifier(),
-                                       applicationConfig.getApplicationName()));
+                                "provider: %s.", authenticatedUser.getAuthenticatedSubjectIdentifier(),
+                        applicationConfig.getApplicationName()));
             }
             throw new PostAuthenticationFailedException(error, error);
         }
@@ -326,23 +320,23 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
 
             if (isDebugEnabled()) {
                 logDebug("Cannot find " + CONSENT_CLAIM_META_DATA + " entry in AuthenticationContext. Retrieving from" +
-                         " SSOConsentService.");
+                        " SSOConsentService.");
             }
             try {
                 consentClaimsData = getSSOConsentService().getConsentRequiredClaimsWithExistingConsents(serviceProvider,
-                                                                                                   authenticatedUser);
+                        authenticatedUser);
             } catch (SSOConsentDisabledException e) {
                 String error = "Authentication Failure: Consent management is disabled for SSO.";
                 String errorDesc = "Illegal operation. Consent management is disabled, but post authentication for " +
-                                   "sso consent management is invoked.";
+                        "sso consent management is invoked.";
                 throw new PostAuthenticationFailedException(error, errorDesc, e);
             } catch (SSOConsentServiceException e) {
                 String error = String.format("Error occurred while retrieving consent data of user: %s for service " +
-                                             "provider: %s in tenant domain: %s.",
-                                             authenticatedUser.getAuthenticatedSubjectIdentifier(),
-                                             serviceProvider.getApplicationName(), getSPTenantDomain(serviceProvider));
+                                "provider: %s in tenant domain: %s.",
+                        authenticatedUser.getAuthenticatedSubjectIdentifier(),
+                        serviceProvider.getApplicationName(), getSPTenantDomain(serviceProvider));
                 throw new PostAuthenticationFailedException("Authentication failed. Error occurred while processing " +
-                                                            "user consent.", error, e);
+                        "user consent.", error, e);
             }
         }
         return consentClaimsData;
@@ -355,19 +349,19 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
 
     private void removeDisapprovedClaims(AuthenticationContext context, UserConsent userConsent) {
 
-        String spStandardDialect = getStandardDialect(context);
+        List<String> spStandardDialects = getStandardDialect(context);
         List<String> disapprovedClaims = getClaimsFromMetaData(userConsent.getDisapprovedClaims());
 
         if (isDebugEnabled()) {
             String message = "Removing disapproved claims: %s in the dialect: %s by user: %s for service provider: %s" +
-                             " in tenant domain: %s.";
+                    " in tenant domain: %s.";
             ServiceProvider serviceProvider = getServiceProvider(context);
-            message = String.format(message, disapprovedClaims, defaultString(spStandardDialect),
-                                    getAuthenticatedUser(context).getAuthenticatedSubjectIdentifier(),
-                                    serviceProvider.getApplicationName(), getSPTenantDomain(serviceProvider));
+            message = String.format(message, disapprovedClaims, defaultString(spStandardDialects.get(0)),
+                    getAuthenticatedUser(context).getAuthenticatedSubjectIdentifier(),
+                    serviceProvider.getApplicationName(), getSPTenantDomain(serviceProvider));
             logDebug(message);
         }
-        removeUserClaimsFromContext(context, disapprovedClaims, spStandardDialect);
+        removeUserClaimsFromContext(context, disapprovedClaims, spStandardDialects);
     }
 
     private List<String> getClaimsFromMetaData(List<ClaimMetaData> claimMetaDataList) {
@@ -389,16 +383,16 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
 
         Map<String, String[]> requestParams = request.getParameterMap();
         List<ClaimMetaData> approvedClamMetaData = buildApprovedClaimList(consentClaimsPrefix, requestParams,
-                                                                    consentClaimsData);
+                consentClaimsData);
 
         List<ClaimMetaData> consentRequiredClaimMetaData = getConsentRequiredClaimMetaData(consentClaimsData);
         List<ClaimMetaData> disapprovedClaims = buildDisapprovedClaimList(consentRequiredClaimMetaData,
-                                                                          approvedClamMetaData);
+                approvedClamMetaData);
 
         if (isMandatoryClaimsDisapproved(consentClaimsData.getMandatoryClaims(), disapprovedClaims)) {
             throw new PostAuthenticationFailedException("Authentication failed. Consent denied for mandatory " +
-                                                        "attributes.", "User denied consent to share mandatory " +
-                                                                       "attributes.");
+                    "attributes.", "User denied consent to share mandatory " +
+                    "attributes.");
         }
 
         userConsent.setApprovedClaims(approvedClamMetaData);
@@ -439,7 +433,7 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
     }
 
     private List<ClaimMetaData> buildApprovedClaimList(String consentClaimsPrefix, Map<String, String[]> requestParams,
-                                                ConsentClaimsData consentClaimsData) {
+                                                       ConsentClaimsData consentClaimsData) {
 
         List<ClaimMetaData> approvedClaims = new ArrayList<>();
 
@@ -482,10 +476,10 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
             response.sendRedirect(uriBuilder.build().toString());
         } catch (IOException e) {
             throw new PostAuthenticationFailedException("Authentication failed. Error while processing consent " +
-                                                        "requirements.", "Error while redirecting to consent page.", e);
+                    "requirements.", "Error while redirecting to consent page.", e);
         } catch (URISyntaxException e) {
             throw new PostAuthenticationFailedException("Authentication failed. Error while processing consent " +
-                                                        "requirements.", "Error while building redirect URI.", e);
+                    "requirements.", "Error while building redirect URI.", e);
         }
     }
 
@@ -498,10 +492,10 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
         return subjectClaimUri;
     }
 
-    private List<String> getSPRequestedLocalClaims(AuthenticationContext context)
+    private List<String> getSPRequestedClaims(AuthenticationContext context)
             throws PostAuthenticationFailedException {
 
-        List<String> spRequestedLocalClaims = new ArrayList<>();
+        List<String> spRequestedClaims = new ArrayList<>();
         ApplicationConfig applicationConfig = context.getSequenceConfig().getApplicationConfig();
 
         if (applicationConfig == null) {
@@ -510,28 +504,32 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
             String error = "Application configs are null in AuthenticationContext for SP: " + serviceProvider
                     .getApplicationName() + " in tenant domain: " + getSPTenantDomain(serviceProvider);
             throw new PostAuthenticationFailedException("Authentication failed. Error while processing application " +
-                                                        "claim configurations.", error);
+                    "claim configurations.", error);
         }
 
         Map<String, String> claimMappings = applicationConfig.getRequestedClaimMappings();
 
-        if (isNotEmpty(claimMappings) && isNotEmpty(claimMappings.values())) {
-            spRequestedLocalClaims = new ArrayList<>(claimMappings.values());
+        if (isNotEmpty(claimMappings)) {
+            if(applicationConfig.getSpClaimDialects() != null && isNotEmpty(claimMappings.keySet())) {
+                spRequestedClaims = new ArrayList<>(claimMappings.keySet());
+            } else if (isNotEmpty(claimMappings.values())) {
+                spRequestedClaims = new ArrayList<>(claimMappings.values());
+            }
         }
 
         String subjectClaimUri = getSubjectClaimUri(applicationConfig);
-        spRequestedLocalClaims.remove(subjectClaimUri);
+        spRequestedClaims.remove(subjectClaimUri);
 
         if (isDebugEnabled()) {
-            String message = String.format("Requested claims for SP: %s - " + spRequestedLocalClaims,
+            String message = String.format("Requested claims for SP: %s - " + spRequestedClaims,
                     applicationConfig.getApplicationName());
             logDebug(message);
         }
 
-        return spRequestedLocalClaims;
+        return spRequestedClaims;
     }
 
-    private List<String> getSPMandatoryLocalClaims(AuthenticationContext context)
+    private List<String> getSPMandatoryClaims(AuthenticationContext context)
             throws PostAuthenticationFailedException {
 
         List<String> spMandatoryLocalClaims = new ArrayList<>();
@@ -542,7 +540,7 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
             String error = "Application configs are null in AuthenticationContext for SP: " + serviceProvider
                     .getApplicationName() + " in tenant domain: " + getSPTenantDomain(serviceProvider);
             throw new PostAuthenticationFailedException("Authentication failed. Error while processing application " +
-                                                        "claim configurations.", error);
+                    "claim configurations.", error);
         }
 
         Map<String, String> claimMappings = applicationConfig.getMandatoryClaimMappings();
@@ -610,7 +608,7 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
     }
 
     private void removeUserClaimsFromContext(AuthenticationContext context, List<String> disapprovedClaims,
-                                             String spStandardDialect) {
+                                             List<String> spStandardDialects) {
 
         Map<ClaimMapping, String> userAttributes = getUserAttributes(context);
         Map<ClaimMapping, String> modifiedUserAttributes = new HashMap<>();
@@ -618,23 +616,27 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
         if (isDebugEnabled()) {
 
             String message = "Removing disapproved claims: %s from context of user: %s for service provider: %s in " +
-                             "tenant domain: %s";
+                    "tenant domain: %s";
             ServiceProvider serviceProvider = getServiceProvider(context);
             message = String.format(message, disapprovedClaims,
-                                    getAuthenticatedUser(context).getAuthenticatedSubjectIdentifier(),
-                                    serviceProvider.getApplicationName(), getSPTenantDomain(serviceProvider));
+                    getAuthenticatedUser(context).getAuthenticatedSubjectIdentifier(),
+                    serviceProvider.getApplicationName(), getSPTenantDomain(serviceProvider));
             logDebug(message);
         }
 
-        if (isStandardDialect(spStandardDialect)) {
-            Map<String, String> standardToCarbonClaimMappings = getSPToCarbonClaimMappings(context);
-            filterClaims(userAttributes, disapprovedClaims, standardToCarbonClaimMappings, modifiedUserAttributes);
-        } else {
-            // WSO2 dialect or Non standards custom claim mappings.
-            Map<String, String> customToLocalClaimMappings = context.getSequenceConfig().getApplicationConfig()
-                    .getRequestedClaimMappings();
-            filterClaims(userAttributes, disapprovedClaims, customToLocalClaimMappings, modifiedUserAttributes);
+        for(String spStandardDialect : spStandardDialects) {
+
+            if (isStandardDialect(spStandardDialect)) {
+                Map<String, String> standardToCarbonClaimMappings = getSPToCarbonClaimMappings(context);
+                filterClaims(userAttributes, disapprovedClaims, standardToCarbonClaimMappings, modifiedUserAttributes);
+            } else {
+                // WSO2 dialect or Non standards custom claim mappings.
+                Map<String, String> customToLocalClaimMappings = context.getSequenceConfig().getApplicationConfig()
+                        .getRequestedClaimMappings();
+                filterClaims(userAttributes, disapprovedClaims, customToLocalClaimMappings, modifiedUserAttributes);
+            }
         }
+
         context.getSequenceConfig().getAuthenticatedUser().setUserAttributes(modifiedUserAttributes);
     }
 
@@ -681,36 +683,38 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
                 !disapprovedClaims.contains(carbonToSPClaimMapping.get(localClaimUri));
     }
 
-    private String getStandardDialect(AuthenticationContext context) {
-
+    protected List<String> getStandardDialect(AuthenticationContext context) {
         String clientType = context.getRequestType();
         ApplicationConfig appConfig = context.getSequenceConfig().getApplicationConfig();
+        List<String> spStandardDialects = new ArrayList<>();
         Map<String, String> claimMappings = appConfig.getClaimMappings();
-        if (FrameworkConstants.RequestType.CLAIM_TYPE_OIDC.equals(clientType)) {
-            return HTTP_WSO2_ORG_OIDC_CLAIM;
+        if(isNotEmpty(Arrays.asList(appConfig.getSpClaimDialects()))) {
+            spStandardDialects = Arrays.asList(appConfig.getSpClaimDialects());
+        } else if (FrameworkConstants.RequestType.CLAIM_TYPE_OIDC.equals(clientType)) {
+            spStandardDialects.add("http://wso2.org/oidc/claim");
         } else if (FrameworkConstants.RequestType.CLAIM_TYPE_STS.equals(clientType)) {
-            return HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY;
+            spStandardDialects.add("http://schemas.xmlsoap.org/ws/2005/05/identity");
         } else if (FrameworkConstants.RequestType.CLAIM_TYPE_OPENID.equals(clientType)) {
-            return HTTP_AXSCHEMA_ORG;
-        } else if (FrameworkConstants.RequestType.CLAIM_TYPE_WSO2.equals(clientType)) {
-            return ApplicationConstants.LOCAL_IDP_DEFAULT_CLAIM_DIALECT;
+            spStandardDialects.add("http://axschema.org");
         } else if (FrameworkConstants.RequestType.CLAIM_TYPE_SCIM.equals(clientType)) {
-            return URN_SCIM_SCHEMAS_CORE_1_0;
+            spStandardDialects.add("urn:scim:schemas:core:1.0");
+        } else if (FrameworkConstants.RequestType.CLAIM_TYPE_WSO2.equals(clientType)) {
+            spStandardDialects.add(ApplicationConstants.LOCAL_IDP_DEFAULT_CLAIM_DIALECT);
         } else if (claimMappings == null || claimMappings.isEmpty()) {
-            return ApplicationConstants.LOCAL_IDP_DEFAULT_CLAIM_DIALECT;
+            spStandardDialects.add(ApplicationConstants.LOCAL_IDP_DEFAULT_CLAIM_DIALECT);
         } else {
             boolean isAtLeastOneNotEqual = false;
             for (Map.Entry<String, String> entry : claimMappings.entrySet()) {
-                if (!entry.getKey().equalsIgnoreCase(entry.getValue())) {
+                if (!entry.getKey().equals(entry.getValue())) {
                     isAtLeastOneNotEqual = true;
                     break;
                 }
             }
             if (!isAtLeastOneNotEqual) {
-                return ApplicationConstants.LOCAL_IDP_DEFAULT_CLAIM_DIALECT;
+                spStandardDialects.add(ApplicationConstants.LOCAL_IDP_DEFAULT_CLAIM_DIALECT);
             }
         }
-        return null;
+        return spStandardDialects;
     }
 
     private SSOConsentService getSSOConsentService() {

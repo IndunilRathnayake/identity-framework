@@ -107,6 +107,7 @@ public class ConsentDeletionUserEventHandler extends AbstractEventHandler {
 
         Map<String, Object> eventProperties = event.getEventProperties();
         String userName = (String) eventProperties.get(IdentityEventConstants.EventProperty.USER_NAME);
+        String tenantDomain = (String) eventProperties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN);
         UserStoreManager userStoreManager = (UserStoreManager)
                 eventProperties.get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
 
@@ -114,7 +115,7 @@ public class ConsentDeletionUserEventHandler extends AbstractEventHandler {
                 getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
         if (log.isDebugEnabled()) {
             log.debug(String.format("Deleting consents for user: %s , in tenant domain :%s",
-                    UserCoreUtil.addDomainToName(userName, domainName)));
+                    UserCoreUtil.addDomainToName(userName, domainName), tenantDomain));
         }
         ConsentManager consentManager = IdentityConsentDataHolder.getInstance().getConsentManager();
         try {
@@ -126,7 +127,7 @@ public class ConsentDeletionUserEventHandler extends AbstractEventHandler {
             }
             receiptListResponses.forEach(rethrowConsumer(receiptListResponse -> {
                 if (log.isDebugEnabled()) {
-                    log.debug(String.format("Deleting receipt with ID : %d, issued for application %s" + receiptListResponse
+                    log.debug(String.format("Deleting receipt with ID : %s, issued for application %s", receiptListResponse
                             .getConsentReceiptId(), receiptListResponse.getSpDisplayName()));
                 }
                 consentManager.deleteReceipt(receiptListResponse.getConsentReceiptId());

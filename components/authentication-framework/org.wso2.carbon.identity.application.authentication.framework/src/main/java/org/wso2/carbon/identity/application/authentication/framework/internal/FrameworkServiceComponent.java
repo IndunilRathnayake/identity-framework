@@ -44,6 +44,8 @@ import org.wso2.carbon.identity.application.authentication.framework.config.load
 import org.wso2.carbon.identity.application.authentication.framework.config.model.graph.JsFunctionRegistryImpl;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.graph.JsGraphBuilderFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
+import org.wso2.carbon.identity.application.authentication.framework.handler.claims.ClaimFilter;
+import org.wso2.carbon.identity.application.authentication.framework.handler.claims.impl.DefaultClaimFilter;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.PostAuthenticationHandler;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.PostAuthnMissingClaimHandler;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent.ConsentMgtPostAuthnHandler;
@@ -75,6 +77,7 @@ import org.wso2.carbon.stratos.common.listeners.TenantMgtListener;
 import org.wso2.carbon.user.core.service.RealmService;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.servlet.Servlet;
 
@@ -170,11 +173,11 @@ public class FrameworkServiceComponent {
         if (tenantDropdownEnabled) {
             // Register the tenant management listener for tracking changes to tenants
             bundleContext.registerService(TenantMgtListener.class.getName(),
-                                          new AuthenticationEndpointTenantActivityListener(), null);
+                    new AuthenticationEndpointTenantActivityListener(), null);
 
             if (log.isDebugEnabled()) {
                 log.debug("AuthenticationEndpointTenantActivityListener is registered. Tenant Domains Dropdown is " +
-                          "enabled.");
+                        "enabled.");
             }
         }
         AuthenticationMethodNameTranslatorImpl authenticationMethodNameTranslator = new AuthenticationMethodNameTranslatorImpl();
@@ -189,7 +192,7 @@ public class FrameworkServiceComponent {
                 COMMON_SERVLET_URL);
 
         Servlet identityServlet = new ContextPathServletAdaptor(new IdentityServlet(),
-                                                                 IDENTITY_SERVLET_URL);
+                IDENTITY_SERVLET_URL);
 
         Servlet loginContextServlet = new ContextPathServletAdaptor(new LoginContextServlet(),
                 LOGIN_CONTEXT_SERVLET_URL);
@@ -228,6 +231,8 @@ public class FrameworkServiceComponent {
         SSOConsentService ssoConsentService = new SSOConsentServiceImpl();
         bundleContext.registerService(SSOConsentService.class.getName(), ssoConsentService, null);
         FrameworkServiceDataHolder.getInstance().setSSOConsentService(ssoConsentService);
+
+        bundleContext.registerService(ClaimFilter.class.getName(), new DefaultClaimFilter(), null);
         bundleContext.registerService(PostAuthenticationHandler.class.getName(), consentMgtPostAuthnHandler, null);
         //this is done to load SessionDataStore class and start the cleanup tasks.
         SessionDataStore.getInstance();
@@ -297,7 +302,7 @@ public class FrameworkServiceComponent {
         Property[] configProperties = null;
 
         if (authenticator.getConfigurationProperties() != null
-            && !authenticator.getConfigurationProperties().isEmpty()) {
+                && !authenticator.getConfigurationProperties().isEmpty()) {
             configProperties = authenticator.getConfigurationProperties().toArray(new Property[0]);
         }
 
@@ -363,7 +368,7 @@ public class FrameworkServiceComponent {
 
         FrameworkServiceDataHolder.getInstance().getIdentityProcessors().add(requestProcessor);
         Collections.sort(FrameworkServiceDataHolder.getInstance().getIdentityProcessors(),
-                         new HandlerComparator());
+                new HandlerComparator());
         Collections.reverse(FrameworkServiceDataHolder.getInstance().getIdentityProcessors());
         if (log.isDebugEnabled()) {
             log.debug("Added IdentityProcessor : " + requestProcessor.getName());
@@ -390,7 +395,7 @@ public class FrameworkServiceComponent {
 
         FrameworkServiceDataHolder.getInstance().getHttpIdentityRequestFactories().add(factory);
         Collections.sort(FrameworkServiceDataHolder.getInstance().getHttpIdentityRequestFactories(),
-                         new HandlerComparator());
+                new HandlerComparator());
         Collections.reverse(FrameworkServiceDataHolder.getInstance().getHttpIdentityRequestFactories());
         if (log.isDebugEnabled()) {
             log.debug("Added HttpIdentityRequestFactory : " + factory.getName());
@@ -417,7 +422,7 @@ public class FrameworkServiceComponent {
 
         FrameworkServiceDataHolder.getInstance().getHttpIdentityResponseFactories().add(factory);
         Collections.sort(FrameworkServiceDataHolder.getInstance().getHttpIdentityResponseFactories(),
-                         new HandlerComparator());
+                new HandlerComparator());
         Collections.reverse(FrameworkServiceDataHolder.getInstance().getHttpIdentityResponseFactories());
         if (log.isDebugEnabled()) {
             log.debug("Added HttpIdentityResponseFactory : " + factory.getName());
@@ -529,5 +534,31 @@ public class FrameworkServiceComponent {
     protected void unsetClaimMetaMgtService(ClaimMetadataManagementService claimMetaMgtService) {
 
         FrameworkServiceDataHolder.getInstance().setClaimMetadataManagementService(null);
+    }
+
+    @Reference(
+            name = "claim.filter.service",
+            service = ClaimFilter.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetClaimFilter"
+    )
+    protected void setClaimFilter(ClaimFilter claimFilter) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("DefaultClaimFilter: " + claimFilter.getClass().getName() + " set in " +
+                    "FrameworkServiceComponent.");
+        }
+        FrameworkServiceDataHolder.getInstance().getClaimFilters().add(claimFilter);
+        FrameworkServiceDataHolder.getInstance().getClaimFilters().sort(getClaimFilterComparator());
+    }
+
+    protected void unsetClaimFilter (ClaimFilter claimFilter) {
+        FrameworkServiceDataHolder.getInstance().setClaimFilters(null);
+    }
+
+    private Comparator<ClaimFilter> getClaimFilterComparator() {
+        // Sort based on priority in descending order, ie. highest priority comes to the first element of the list.
+        return Comparator.comparingInt(ClaimFilter::getPriority).reversed();
     }
 }
