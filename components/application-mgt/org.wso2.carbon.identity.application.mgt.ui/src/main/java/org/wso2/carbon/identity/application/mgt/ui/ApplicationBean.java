@@ -81,6 +81,7 @@ public class ApplicationBean {
     private String passiveSTSWReply;
     private String openid;
     private String[] claimUris;
+    private String[] claimDialectUris;
     private List<InboundAuthenticationRequestConfig> inboundAuthenticationRequestConfigs;
     private List<String> standardInboundAuthTypes;
 
@@ -853,6 +854,22 @@ public class ApplicationBean {
         this.claimUris = claimUris;
     }
 
+    public String[] getSPClaimDialects() {
+        if (serviceProvider.getClaimConfig() != null &&
+                !ArrayUtils.isEmpty(serviceProvider.getClaimConfig().getSpClaimDialects())) {
+            return serviceProvider.getClaimConfig().getSpClaimDialects();
+        }
+        return null;
+    }
+
+    public void setClaimDialectUris(String[] claimDialectUris) {
+        this.claimDialectUris = claimDialectUris;
+    }
+
+    public String[] getClaimDialectUris() {
+        return claimDialectUris;
+    }
+
 
     private boolean isCustomInboundAuthType(String authType) {
         return !standardInboundAuthTypes.contains(authType);
@@ -1380,6 +1397,13 @@ public class ApplicationBean {
                 claimMappingList.toArray(new ClaimMapping[claimMappingList.size()]));
 
         serviceProvider.getClaimConfig().setRoleClaimURI(request.getParameter("roleClaim"));
+
+        String spClaimDialectParam = request.getParameter(ApplicationMgtUIConstants.Params.SP_CLAIM_DIALECT);
+        if(spClaimDialectParam != null) {
+            serviceProvider.getClaimConfig().setSpClaimDialects(spClaimDialectParam.split(","));
+        } else {
+            serviceProvider.getClaimConfig().setSpClaimDialects(null);
+        }
 
         String alwaysSendMappedLocalSubjectId = request.getParameter("always_send_local_subject_id");
         serviceProvider.getClaimConfig().setAlwaysSendMappedLocalSubjectId(
