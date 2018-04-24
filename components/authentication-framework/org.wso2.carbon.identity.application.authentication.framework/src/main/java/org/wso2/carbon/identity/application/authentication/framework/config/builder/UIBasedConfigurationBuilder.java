@@ -65,7 +65,7 @@ public class UIBasedConfigurationBuilder {
         } catch (IdentityApplicationManagementException e) {
             throw new FrameworkException(e.getMessage(), e);
         }
-        return uiBasedConfigurationLoader.getSequence(serviceProvider, tenantDomain);
+        return uiBasedConfigurationLoader.getSequence(serviceProvider, null,tenantDomain);
     }
 
 }
