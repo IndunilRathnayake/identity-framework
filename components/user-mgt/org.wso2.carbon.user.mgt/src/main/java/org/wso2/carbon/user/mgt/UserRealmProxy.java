@@ -33,6 +33,7 @@ import org.wso2.carbon.registry.core.Collection;
 import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.user.api.Claim;
 import org.wso2.carbon.user.api.ClaimMapping;
+import org.wso2.carbon.user.api.Permission;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserRealmService;
 import org.wso2.carbon.user.core.AuthorizationManager;
@@ -40,11 +41,16 @@ import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.common.AbstractUserOperationEventListener;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
+import org.wso2.carbon.user.core.constants.UserCoreErrorConstants;
+import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
+import org.wso2.carbon.user.core.listener.UserOperationEventListener;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.user.mgt.bulkimport.BulkImportConfig;
 import org.wso2.carbon.user.mgt.bulkimport.CSVUserBulkImport;
 import org.wso2.carbon.user.mgt.bulkimport.ExcelUserBulkImport;
+import org.wso2.carbon.user.mgt.bulkimport.UserBulkImport;
 import org.wso2.carbon.user.mgt.common.ClaimValue;
 import org.wso2.carbon.user.mgt.common.FlaggedName;
 import org.wso2.carbon.user.mgt.common.UIPermissionNode;
@@ -2074,6 +2080,9 @@ public class UserRealmProxy {
 
     public void setRoleUIPermission(String roleName, String[] rawResources)
             throws UserAdminException {
+
+        Permission[] permissions = null;
+        UserStoreManager userStoreManager = null;
         try {
             if (((AbstractUserStoreManager) realm.getUserStoreManager()).isOthersSharedRole(roleName)) {
                 throw new UserAdminException("Logged in user is not authorized to assign " +
@@ -2102,10 +2111,18 @@ public class UserRealmProxy {
             String[] optimizedList = UserCoreUtil.optimizePermissions(rawResources);
             AuthorizationManager authMan = realm.getAuthorizationManager();
             authMan.clearRoleActionOnAllResources(roleName, UserMgtConstants.EXECUTE_ACTION);
-            for (String path : optimizedList) {
-                authMan.authorizeRole(roleName, path, UserMgtConstants.EXECUTE_ACTION);
+
+            permissions = new Permission[optimizedList.length];
+            for (int i = 0; i < optimizedList.length; i++) {
+                authMan.authorizeRole(roleName, optimizedList[i], UserMgtConstants.EXECUTE_ACTION);
+                permissions[i] = new Permission(optimizedList[i], UserMgtConstants.EXECUTE_ACTION);
             }
+
+            userStoreManager = realm.getUserStoreManager();
+            ManagementPermissionUtil.handlePostUpdatePermissionsOfRole(roleName, permissions, userStoreManager);
         } catch (UserStoreException e) {
+            ManagementPermissionUtil
+                    .handleOnUpdatePermissionsOfRoleFailure(e.getMessage(), roleName, permissions, userStoreManager);
             log.error(e.getMessage(), e);
             throw new UserAdminException(e.getMessage(), e);
         }
@@ -2126,10 +2143,10 @@ public class UserRealmProxy {
             userStore = userStore.getSecondaryUserStoreManager(userStoreDomain);
 
             if (fileName.endsWith("csv")) {
-                CSVUserBulkImport csvAdder = new CSVUserBulkImport(config);
+                UserBulkImport csvAdder = new CSVUserBulkImport(config);
                 csvAdder.addUserList(userStore);
             } else if (fileName.endsWith("xls") || fileName.endsWith("xlsx")) {
-                ExcelUserBulkImport excelAdder = new ExcelUserBulkImport(config);
+                UserBulkImport excelAdder = new ExcelUserBulkImport(config);
                 excelAdder.addUserList(userStore);
             } else {
                 throw new UserAdminException("Unsupported format");

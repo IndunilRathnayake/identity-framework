@@ -83,6 +83,10 @@ public abstract class FrameworkConstants {
 
     public static final String SERVICE_PROVIDER_SUBJECT_CLAIM_VALUE = "ServiceProviderSubjectClaimValue";
 
+    public static final String RETRYING_STEP = "stepRetrying";
+    
+    public static final String REMEMBER_ME_OPT_ON = "on";
+
     private FrameworkConstants() {
 
     }
@@ -245,12 +249,17 @@ public abstract class FrameworkConstants {
         public static final String JS_SERVICE_PROVIDER_NAME = "serviceProviderName";
         public static final String JS_REQUESTED_ACR = "requestedAcr";
         public static final String JS_LAST_AUTHENTICATED_USER = "lastAuthenticatedUser";
+        public static final String JS_LAST_LOGIN_FAILED_USER = "lastLoginFailedUser";
         public static final String JS_AUTHENTICATED_SUBJECT = "subject";
+        public static final String JS_LOCAL_CLAIMS = "localClaims";
+        public static final String JS_REMOTE_CLAIMS = "remoteClaims";
         public static final String JS_SELECTED_ACR = "selectedAcr";
+        public static final String JS_STEPS = "steps";
         public static final String JS_REQUEST = "request";
         public static final String JS_RESPONSE = "response";
         public static final String JS_HEADERS = "headers";
         public static final String JS_PARAMS = "params";
+        public static final String JS_REQUEST_IP = "ip";
         public static final String JS_COOKIES = "cookies";
         public static final String JS_COOKIE_NAME = "name";
         public static final String JS_COOKIE_VALUE = "value";
@@ -261,8 +270,8 @@ public abstract class FrameworkConstants {
         public static final String JS_COOKIE_SECURE = "secure";
         public static final String JS_COOKIE_VERSION = "version";
         public static final String JS_COOKIE_HTTP_ONLY = "httpOnly";
-
-        public static final String JS_USER_CLAIMS = "claims";
+        public static final String JS_LOCAL_ROLES = "roles";
+        public static final String JS_AUTHENTICATED_IDP = "idp";
 
         public static final String PROP_CURRENT_NODE = "Adaptive.Auth.Current.Graph.Node";
 
@@ -273,12 +282,7 @@ public abstract class FrameworkConstants {
         public static final String JS_FUNC_SEND_ERROR = "sendError";
         public static final String JS_SHOW_ERROR_PAGE = "showErrorPage";
         public static final String JS_PAGE_URI = "pageUri";
-
-        public static final String JS_CLAIM_MEMBER_LOCAL = "local";
-        public static final String JS_CLAIM_MEMBER_REMOTE = "remote";
-        public static final String JS_CLAIM_MEMBER_PUSH = "push";
-        public static final String JS_CLAIM_MEMBER_VALUE = "value";
-        public static final String JS_CLAIM_MEMBER_URI = "uri";
+        public static final String JS_RETRY_STEP = "retry";
     }
 
     public static class InternalRoleDomains {
