@@ -204,7 +204,6 @@ public class SAML2SSOFederatedAuthenticatorConfig extends FederatedAuthenticator
     }
 
     public boolean isArtifactResponseSigned() {
-
         return isArtifactResponseSigned;
     }
 
