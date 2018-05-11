@@ -88,6 +88,11 @@ public class SAML2SSOFederatedAuthenticatorConfig extends FederatedAuthenticator
     private boolean isArtifactResolveReqSigned;
 
     /**
+     * If Artifact Response will be signed
+     */
+    private boolean isArtifactResponseSigned;
+
+    /**
      * End url to send artifact resolve soap request
      */
     private String artifactResolveUrl;
@@ -123,6 +128,9 @@ public class SAML2SSOFederatedAuthenticatorConfig extends FederatedAuthenticator
             } else if (IdentityApplicationConstants.Authenticator.SAML2SSO.IS_ARTIFACT_RESOLVE_REQ_SIGNED.equals(
                     property.getName())) {
                 isArtifactResolveReqSigned = Boolean.parseBoolean(property.getValue());
+            } else if (IdentityApplicationConstants.Authenticator.SAML2SSO.IS_ARTIFACT_RESPONSE_SIGNED.equals(
+                    property.getName())) {
+                isArtifactResponseSigned = Boolean.parseBoolean(property.getValue());
             } else if (IdentityApplicationConstants.Authenticator.SAML2SSO.ARTIFACT_RESOLVE_URL.equals(
                     property.getName())) {
                 artifactResolveUrl = property.getValue();
@@ -193,6 +201,11 @@ public class SAML2SSOFederatedAuthenticatorConfig extends FederatedAuthenticator
 
     public boolean isArtifactResolveReqSigned() {
         return isArtifactResolveReqSigned;
+    }
+
+    public boolean isArtifactResponseSigned() {
+
+        return isArtifactResponseSigned;
     }
 
     public String getArtifactResolveUrl() { return artifactResolveUrl; }
