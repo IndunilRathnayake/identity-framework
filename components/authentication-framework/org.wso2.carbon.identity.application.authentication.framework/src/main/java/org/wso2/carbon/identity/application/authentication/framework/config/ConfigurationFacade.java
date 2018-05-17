@@ -103,10 +103,7 @@ public class ConfigurationFacade {
         AuthenticationStep[] authenticationSteps = serviceProvider.getLocalAndOutBoundAuthenticationConfig()
                 .getAuthenticationSteps();
 
-        List<ClaimMapping> requestedClaimsInRequest = (List<ClaimMapping>) context.getProperty(
-                FrameworkConstants.SP_REQUESTED_CLAIMS_IN_REQUEST);
-
-        return uiBasedConfigurationLoader.getSequence(serviceProvider, requestedClaimsInRequest, tenantDomain,
+        return uiBasedConfigurationLoader.getSequence(context, serviceProvider, tenantDomain,
                 authenticationSteps);
     }
 

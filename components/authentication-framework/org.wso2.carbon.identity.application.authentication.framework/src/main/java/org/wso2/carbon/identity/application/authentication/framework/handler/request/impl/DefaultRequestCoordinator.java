@@ -557,7 +557,8 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
 
         try {
             ServiceProvider serviceProvider = getServiceProvider(clientType, clientId, tenantDomain);
-            ApplicationConfig appConfig = new ApplicationConfig(serviceProvider, requestedClaimsInRequest);
+            ApplicationConfig appConfig = new ApplicationConfig(serviceProvider);
+            appConfig.setClaimConfigurations(serviceProvider, requestedClaimsInRequest);
             sequenceConfig.setApplicationConfig(appConfig);
             if (log.isDebugEnabled()) {
                 log.debug("Refresh application config in sequence config for application id: " + sequenceConfig

@@ -79,11 +79,7 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
             authenticationSteps = localAndOutboundAuthenticationConfig.getAuthenticationSteps();
         }
 
-        List<ClaimMapping> requestedClaimsInRequest = (List<ClaimMapping>) context.getProperty(
-                FrameworkConstants.SP_REQUESTED_CLAIMS_IN_REQUEST);
-
-        SequenceConfig sequenceConfig = getSequence(serviceProvider, requestedClaimsInRequest, tenantDomain,
-                authenticationSteps);
+        SequenceConfig sequenceConfig = getSequence(context, serviceProvider, tenantDomain, authenticationSteps);
 
         //Use script based evaluation if script is present.
         if (isAuthenticationScriptBasedSequence(localAndOutboundAuthenticationConfig.getAuthenticationScriptConfig())) {
@@ -119,8 +115,7 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
      * @deprecated Please do not use this for any development as this is maintained for backward compatibility.
      */
     @Deprecated
-    public SequenceConfig getSequence(ServiceProvider serviceProvider, List<ClaimMapping> requestedAttributes,
-                                      String tenantDomain) throws FrameworkException {
+    public SequenceConfig getSequence(AuthenticationContext context, ServiceProvider serviceProvider, String tenantDomain) throws FrameworkException {
 
         if (serviceProvider == null) {
             throw new FrameworkException("ServiceProvider cannot be null");
@@ -128,7 +123,7 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
         AuthenticationStep[] authenticationSteps = serviceProvider.getLocalAndOutBoundAuthenticationConfig()
                 .getAuthenticationSteps();
 
-        return getSequence(serviceProvider, requestedAttributes, tenantDomain, authenticationSteps);
+        return getSequence(context, serviceProvider, tenantDomain, authenticationSteps);
     }
 
     /**
@@ -141,8 +136,7 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
      * @return
      * @throws FrameworkException
      */
-    public SequenceConfig getSequence(ServiceProvider serviceProvider, List<ClaimMapping> requestedClaimsInRequest,
-                                      String tenantDomain, AuthenticationStep[] authenticationSteps)
+    public SequenceConfig getSequence(AuthenticationContext context, ServiceProvider serviceProvider, String tenantDomain, AuthenticationStep[] authenticationSteps)
             throws FrameworkException {
 
         if (serviceProvider == null) {
@@ -150,7 +144,15 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
         }
         SequenceConfig sequenceConfig = new SequenceConfig();
         sequenceConfig.setApplicationId(serviceProvider.getApplicationName());
-        sequenceConfig.setApplicationConfig(new ApplicationConfig(serviceProvider, requestedClaimsInRequest));
+
+        List<ClaimMapping> requestedClaimsInRequest = null;
+        if(context != null) {
+            requestedClaimsInRequest = (List<ClaimMapping>) context.getProperty(
+                    FrameworkConstants.SP_REQUESTED_CLAIMS_IN_REQUEST);
+        }
+        ApplicationConfig applicationConfig = new ApplicationConfig(serviceProvider);
+        applicationConfig.setClaimConfigurations(serviceProvider, requestedClaimsInRequest);
+        sequenceConfig.setApplicationConfig(applicationConfig);
 
         // setting request path authenticators
         loadRequestPathAuthenticators(sequenceConfig, serviceProvider);

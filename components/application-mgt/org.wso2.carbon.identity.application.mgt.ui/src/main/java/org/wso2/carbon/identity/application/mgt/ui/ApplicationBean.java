@@ -42,6 +42,7 @@ import org.wso2.carbon.identity.application.common.model.xsd.ProvisioningConnect
 import org.wso2.carbon.identity.application.common.model.xsd.RequestPathAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.xsd.RoleMapping;
 import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
+import org.wso2.carbon.identity.application.mgt.ui.util.ApplicationMgtUIConstants;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1399,7 +1400,7 @@ public class ApplicationBean {
         serviceProvider.getClaimConfig().setRoleClaimURI(request.getParameter("roleClaim"));
 
         String spClaimDialectParam = request.getParameter(ApplicationMgtUIConstants.Params.SP_CLAIM_DIALECT);
-        if(spClaimDialectParam != null) {
+        if (spClaimDialectParam != null) {
             serviceProvider.getClaimConfig().setSpClaimDialects(spClaimDialectParam.split(","));
         } else {
             serviceProvider.getClaimConfig().setSpClaimDialects(null);

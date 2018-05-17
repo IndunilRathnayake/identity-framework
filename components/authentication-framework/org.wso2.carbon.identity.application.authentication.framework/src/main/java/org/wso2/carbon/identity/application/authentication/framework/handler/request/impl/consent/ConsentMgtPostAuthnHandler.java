@@ -360,10 +360,10 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
         List<String> disapprovedClaims = getClaimsFromMetaData(userConsent.getDisapprovedClaims());
 
         if (isDebugEnabled()) {
-            String message = "Removing disapproved claims: %s in the dialect: %s by user: %s for service provider: %s" +
+            String message = "Removing disapproved claims: %s in the dialects: %s by user: %s for service provider: %s" +
                              " in tenant domain: %s.";
             ServiceProvider serviceProvider = getServiceProvider(context);
-            message = String.format(message, disapprovedClaims, defaultString(spStandardDialects.get(0)),
+            message = String.format(message, disapprovedClaims, spStandardDialects,
                                     getAuthenticatedUser(context).getAuthenticatedSubjectIdentifier(),
                                     serviceProvider.getApplicationName(), getSPTenantDomain(serviceProvider));
             logDebug(message);
@@ -517,7 +517,7 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
         Map<String, String> claimMappings = applicationConfig.getRequestedClaimMappings();
 
         if (isNotEmpty(claimMappings)) {
-            if(applicationConfig.getSpClaimDialects() != null && isNotEmpty(claimMappings.keySet())) {
+            if (applicationConfig.getSpClaimDialects() != null && isNotEmpty(claimMappings.keySet())) {
                 spRequestedClaims = new ArrayList<>(claimMappings.keySet());
             } else if (isNotEmpty(claimMappings.values())) {
                 spRequestedClaims = new ArrayList<>(claimMappings.values());

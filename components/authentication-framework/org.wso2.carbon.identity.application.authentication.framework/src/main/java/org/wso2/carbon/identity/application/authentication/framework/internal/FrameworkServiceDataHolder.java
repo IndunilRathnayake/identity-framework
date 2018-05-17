@@ -290,7 +290,7 @@ public class FrameworkServiceDataHolder {
      */
     public ClaimFilter getHighestPriorityClaimFilter() {
         if (claimFilters.isEmpty()) {
-            log.info("No Claim Filters available.");
+            log.info("No Registered Claim Filters available. Using the default claim filter.");
             return new DefaultClaimFilter();
         }
         return claimFilters.get(0);

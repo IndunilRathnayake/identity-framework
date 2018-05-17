@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.application.authentication.framework.handler.claims.impl;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.wso2.carbon.identity.application.authentication.framework.handler.claims.ClaimFilter;
 import org.wso2.carbon.identity.application.common.model.ClaimConfig;
@@ -80,20 +81,36 @@ public class DefaultClaimFilter implements ClaimFilter {
 
     private List<ClaimMapping> filterRequestedClaims(ClaimConfig claimConfig, List<ClaimMapping> requestedClaimsInRequest) {
         List<ClaimMapping> selectedRequestedClaims = null;
-        if(ArrayUtils.isEmpty(claimConfig.getClaimMappings()) && !requestedClaimsInRequest.isEmpty()) {
+        if (requestedClaimsFromRequest(claimConfig, requestedClaimsInRequest)) {
             selectedRequestedClaims = requestedClaimsInRequest;
-        } else if (!ArrayUtils.isEmpty(claimConfig.getClaimMappings()) && requestedClaimsInRequest.isEmpty()) {
+        } else if (requestedClaimsFromSpConfig(claimConfig, requestedClaimsInRequest)) {
             selectedRequestedClaims = Arrays.asList(claimConfig.getClaimMappings());
-        } else if(!ArrayUtils.isEmpty(claimConfig.getClaimMappings()) && ! requestedClaimsInRequest.isEmpty()) {
+        } else if (requestedClaimsFromSpConfigAndRequest(claimConfig, requestedClaimsInRequest)) {
             List<ClaimMapping> requestedClaimsInSPConfig = Arrays.asList(claimConfig.getClaimMappings());
             selectedRequestedClaims = new ArrayList<>();
-            for(ClaimMapping claimMappingInSPConfig : requestedClaimsInSPConfig) {
-                for(ClaimMapping claimMappingInRequest : requestedClaimsInRequest) {
-                    if(claimMappingInRequest.getRemoteClaim().equals(claimMappingInSPConfig.getRemoteClaim())) {
+            for (ClaimMapping claimMappingInSPConfig : requestedClaimsInSPConfig) {
+                for (ClaimMapping claimMappingInRequest : requestedClaimsInRequest) {
+                    if (claimMappingInRequest.getRemoteClaim().equals(claimMappingInSPConfig.getRemoteClaim())) {
                         selectedRequestedClaims.add(claimMappingInRequest);
                     }
                 }
             }
-        } return selectedRequestedClaims;
+        }
+        return selectedRequestedClaims;
+    }
+
+    private boolean requestedClaimsFromSpConfigAndRequest(ClaimConfig claimConfig, List<ClaimMapping> requestedClaimsInRequest) {
+        return claimConfig != null && !ArrayUtils.isEmpty(claimConfig.getClaimMappings()) &&
+                !CollectionUtils.isEmpty(requestedClaimsInRequest);
+    }
+
+    private boolean requestedClaimsFromSpConfig(ClaimConfig claimConfig, List<ClaimMapping> requestedClaimsInRequest) {
+        return claimConfig != null && !ArrayUtils.isEmpty(claimConfig.getClaimMappings()) &&
+                CollectionUtils.isEmpty(requestedClaimsInRequest);
+    }
+
+    private boolean requestedClaimsFromRequest(ClaimConfig claimConfig, List<ClaimMapping> requestedClaimsInRequest) {
+        return (claimConfig == null || ArrayUtils.isEmpty(claimConfig.getClaimMappings())) &&
+                !CollectionUtils.isEmpty(requestedClaimsInRequest);
     }
 }

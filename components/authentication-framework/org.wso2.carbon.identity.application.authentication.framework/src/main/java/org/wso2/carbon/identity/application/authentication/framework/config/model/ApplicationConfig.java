@@ -54,7 +54,7 @@ public class ApplicationConfig implements Serializable, Cloneable {
     private boolean enableAuthorization = false;
     private String[] spClaimDialects = null;
 
-    public ApplicationConfig(ServiceProvider application, List<ClaimMapping> requestedClaimsInRequest) {
+    public ApplicationConfig(ServiceProvider application) {
         this.serviceProvider = application;
         applicationID = application.getApplicationID();
         applicationName = application.getApplicationName();
@@ -68,18 +68,6 @@ public class ApplicationConfig implements Serializable, Cloneable {
                     .isUseUserstoreDomainInLocalSubjectIdentifier());
             setEnableAuthorization(outboundAuthConfig.isEnableAuthorization());
         }
-
-
-        ClaimConfig claimConfig = application.getClaimConfig();
-        if (claimConfig != null) {
-            roleClaim = claimConfig.getRoleClaimURI();
-            alwaysSendMappedLocalSubjectId = claimConfig.isAlwaysSendMappedLocalSubjectId();
-            spClaimDialects = claimConfig.getSpClaimDialects();
-        }
-
-        FrameworkServiceDataHolder.getInstance()
-                .getHighestPriorityClaimFilter().getFilteredRequestedClaims(claimMappings, requestedClaims,
-                mandatoryClaims, claimConfig, requestedClaimsInRequest);
 
         PermissionsAndRoleConfig permissionRoleConfiguration;
         permissionRoleConfiguration = application.getPermissionAndRoleConfig();
@@ -106,6 +94,19 @@ public class ApplicationConfig implements Serializable, Cloneable {
                 }
             }
         }
+    }
+
+    public void setClaimConfigurations(ServiceProvider application, List<ClaimMapping> requestedClaimsInRequest) {
+        ClaimConfig claimConfig = application.getClaimConfig();
+        if (claimConfig != null) {
+            roleClaim = claimConfig.getRoleClaimURI();
+            alwaysSendMappedLocalSubjectId = claimConfig.isAlwaysSendMappedLocalSubjectId();
+            spClaimDialects = claimConfig.getSpClaimDialects();
+        }
+
+        FrameworkServiceDataHolder.getInstance()
+                .getHighestPriorityClaimFilter().getFilteredRequestedClaims(claimMappings, requestedClaims,
+                mandatoryClaims, claimConfig, requestedClaimsInRequest);
     }
 
     public int getApplicationID() {
