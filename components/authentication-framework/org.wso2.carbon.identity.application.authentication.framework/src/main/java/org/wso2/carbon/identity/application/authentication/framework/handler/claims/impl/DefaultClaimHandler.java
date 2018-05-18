@@ -34,6 +34,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.authentication.framework.handler.claims.ClaimHandler;
 import org.wso2.carbon.identity.application.authentication.framework.internal.FrameworkServiceComponent;
+import org.wso2.carbon.identity.application.authentication.framework.internal.FrameworkServiceDataHolder;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
@@ -90,7 +91,12 @@ public class DefaultClaimHandler implements ClaimHandler {
 
         ApplicationConfig appConfig = context.getSequenceConfig().getApplicationConfig();
         List<String> spStandardDialects = getStandardDialect(context.getRequestType(), appConfig);
-        Map<String, String> returningClaims = null;
+
+        ApplicationConfig modifiedAppConfig = FrameworkServiceDataHolder.getInstance()
+                .getHighestPriorityClaimFilter().getFilteredRequestedClaims(context, appConfig);
+        context.getSequenceConfig().setApplicationConfig(modifiedAppConfig);
+
+        Map<String, String> returningClaims;
         if (isFederatedClaims) {
             returningClaims = handleFederatedClaims(remoteClaims, spStandardDialects, stepConfig, context);
         } else {
@@ -183,12 +189,12 @@ public class DefaultClaimHandler implements ClaimHandler {
 
         // claim mapping from local service provider to remote service provider.
         Map<String, String> localToSPClaimMappings = mapLocalSpClaimsToRemoteSPClaims(spStandardDialects, context,
-                spClaimMappings);
+                                                                                      spClaimMappings);
 
         // Loop through <code>localToSPClaimMappings</code> and filter
         // <code>spUnfilteredClaims</code> and <code>spFilteredClaims</code>
         filterSPClaims(spRequestedClaimMappings, localUnfilteredClaims, spUnfilteredClaims, spFilteredClaims,
-                localToSPClaimMappings);
+                       localToSPClaimMappings);
 
         // set all service provider mapped unfiltered remote claims as a property
         context.setProperty(FrameworkConstants.UNFILTERED_SP_CLAIM_VALUES, spUnfilteredClaims);

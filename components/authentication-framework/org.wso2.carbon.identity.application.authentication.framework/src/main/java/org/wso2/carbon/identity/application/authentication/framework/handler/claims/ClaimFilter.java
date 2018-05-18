@@ -18,6 +18,8 @@
 
 package org.wso2.carbon.identity.application.authentication.framework.handler.claims;
 
+import org.wso2.carbon.identity.application.authentication.framework.config.model.ApplicationConfig;
+import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.common.model.ClaimConfig;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 
@@ -37,13 +39,9 @@ public interface ClaimFilter {
     /**
      * Filtering out and selecting the claim mappings, requested and mandatory claims
      *
-     * @param claimMappings SP configured claim mappings
-     * @param requestedClaims SP requested claims
-     * @param mandatoryClaims SP mandatory claims
-     * @param claimConfig SP claim configuration
-     * @param requestedClaimsInRequest Requested claims in the request
+     * @param context Authentication context
+     * @param appConfig Application Configuration
+     * @return Modified Application Configuration
      */
-    void getFilteredRequestedClaims(Map<String, String> claimMappings, Map<String, String> requestedClaims,
-                                    Map<String, String> mandatoryClaims, ClaimConfig claimConfig,
-                                    List<ClaimMapping> requestedClaimsInRequest);
+    ApplicationConfig getFilteredRequestedClaims(AuthenticationContext context, ApplicationConfig appConfig);
 }

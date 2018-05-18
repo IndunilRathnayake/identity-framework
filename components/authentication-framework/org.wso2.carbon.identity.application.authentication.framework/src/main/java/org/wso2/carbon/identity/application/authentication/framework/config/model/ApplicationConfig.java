@@ -17,7 +17,6 @@
  */
 package org.wso2.carbon.identity.application.authentication.framework.config.model;
 
-import org.wso2.carbon.identity.application.authentication.framework.internal.FrameworkServiceDataHolder;
 import org.wso2.carbon.identity.application.common.model.ApplicationPermission;
 import org.wso2.carbon.identity.application.common.model.ClaimConfig;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
@@ -28,7 +27,6 @@ import org.wso2.carbon.identity.application.common.model.ServiceProvider;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ApplicationConfig implements Serializable, Cloneable {
@@ -69,6 +67,49 @@ public class ApplicationConfig implements Serializable, Cloneable {
             setEnableAuthorization(outboundAuthConfig.isEnableAuthorization());
         }
 
+
+        ClaimConfig claimConfig = application.getClaimConfig();
+        if (claimConfig != null) {
+            roleClaim = claimConfig.getRoleClaimURI();
+            alwaysSendMappedLocalSubjectId = claimConfig.isAlwaysSendMappedLocalSubjectId();
+            spClaimDialects = claimConfig.getSpClaimDialects();
+
+            ClaimMapping[] claimMapping = claimConfig.getClaimMappings();
+
+            if (claimMapping != null && claimMapping.length > 0) {
+                for (ClaimMapping claim : claimMapping) {
+                    if (claim.getRemoteClaim() != null
+                        && claim.getRemoteClaim().getClaimUri() != null) {
+                        if (claim.getLocalClaim() != null) {
+                            claimMappings.put(claim.getRemoteClaim().getClaimUri(), claim
+                                    .getLocalClaim().getClaimUri());
+
+                            if (claim.isRequested()) {
+                                requestedClaims.put(claim.getRemoteClaim().getClaimUri(), claim
+                                        .getLocalClaim().getClaimUri());
+                            }
+
+                            if (claim.isMandatory()) {
+                                mandatoryClaims.put(claim.getRemoteClaim().getClaimUri(), claim
+                                        .getLocalClaim().getClaimUri());
+                            }
+
+                        } else {
+                            claimMappings.put(claim.getRemoteClaim().getClaimUri(), null);
+                            if (claim.isRequested()) {
+                                requestedClaims.put(claim.getRemoteClaim().getClaimUri(), null);
+                            }
+
+                            if (claim.isMandatory()) {
+                                mandatoryClaims.put(claim.getRemoteClaim().getClaimUri(), null);
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
         PermissionsAndRoleConfig permissionRoleConfiguration;
         permissionRoleConfiguration = application.getPermissionAndRoleConfig();
 
@@ -94,19 +135,6 @@ public class ApplicationConfig implements Serializable, Cloneable {
                 }
             }
         }
-    }
-
-    public void setClaimConfigurations(ServiceProvider application, List<ClaimMapping> requestedClaimsInRequest) {
-        ClaimConfig claimConfig = application.getClaimConfig();
-        if (claimConfig != null) {
-            roleClaim = claimConfig.getRoleClaimURI();
-            alwaysSendMappedLocalSubjectId = claimConfig.isAlwaysSendMappedLocalSubjectId();
-            spClaimDialects = claimConfig.getSpClaimDialects();
-        }
-
-        FrameworkServiceDataHolder.getInstance()
-                .getHighestPriorityClaimFilter().getFilteredRequestedClaims(claimMappings, requestedClaims,
-                mandatoryClaims, claimConfig, requestedClaimsInRequest);
     }
 
     public int getApplicationID() {
@@ -159,8 +187,16 @@ public class ApplicationConfig implements Serializable, Cloneable {
         return requestedClaims;
     }
 
+    public void setRequestedClaims(Map<String, String> requestedClaims) {
+        this.requestedClaims = requestedClaims;
+    }
+
     public Map<String, String> getMandatoryClaimMappings() {
         return mandatoryClaims;
+    }
+
+    public void setMandatoryClaims(Map<String, String> mandatoryClaims) {
+        this.mandatoryClaims = mandatoryClaims;
     }
 
     public Map<String, String> getRoleMappings() {

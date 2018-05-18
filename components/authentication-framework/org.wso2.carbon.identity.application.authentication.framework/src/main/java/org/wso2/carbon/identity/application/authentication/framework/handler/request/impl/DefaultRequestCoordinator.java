@@ -320,6 +320,9 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
             }
         }
 
+        List<ClaimMapping> requestedClaimsInRequest = (List<ClaimMapping>) request.getAttribute(REQUESTED_ATTRIBUTES);
+        context.setProperty(FrameworkConstants.SP_REQUESTED_CLAIMS_IN_REQUEST, requestedClaimsInRequest);
+
         associateTransientRequestData(request, response, context);
         findPreviousAuthenticatedSession(request, context);
         buildOutboundQueryString(request, context);
@@ -389,9 +392,6 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
                 context.addRequestedAcr(acr);
             }
         }
-        List<ClaimMapping> requestedClaimsInRequest = (List<ClaimMapping>) request.getAttribute(REQUESTED_ATTRIBUTES);
-        context.setProperty(FrameworkConstants.SP_REQUESTED_CLAIMS_IN_REQUEST, requestedClaimsInRequest);
-
         // Get service provider chain
         SequenceConfig effectiveSequence = getSequenceConfig(context, request.getParameterMap());
 
@@ -470,7 +470,7 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
                     // This is done to reflect the changes done in SP to the sequence config. So, the requested claim updates,
                     // authentication step updates will be reflected.
                     refreshAppConfig(effectiveSequence, request.getParameter(FrameworkConstants.RequestParams.ISSUER),
-                            context.getRequestType(), context.getTenantDomain(), requestedClaimsInRequest);
+                            context.getRequestType(), context.getTenantDomain());
                 }
 
                 context.setPreviousAuthenticatedIdPs(sessionContext.getAuthenticatedIdPs());
@@ -553,12 +553,11 @@ public class DefaultRequestCoordinator extends AbstractRequestCoordinator implem
     }
 
     private void refreshAppConfig(SequenceConfig sequenceConfig, String clientId, String clientType,
-            String tenantDomain, List<ClaimMapping> requestedClaimsInRequest) throws FrameworkException {
+            String tenantDomain) throws FrameworkException {
 
         try {
             ServiceProvider serviceProvider = getServiceProvider(clientType, clientId, tenantDomain);
             ApplicationConfig appConfig = new ApplicationConfig(serviceProvider);
-            appConfig.setClaimConfigurations(serviceProvider, requestedClaimsInRequest);
             sequenceConfig.setApplicationConfig(appConfig);
             if (log.isDebugEnabled()) {
                 log.debug("Refresh application config in sequence config for application id: " + sequenceConfig

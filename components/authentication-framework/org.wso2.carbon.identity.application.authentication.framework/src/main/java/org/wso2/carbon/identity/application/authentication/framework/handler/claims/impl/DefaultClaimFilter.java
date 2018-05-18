@@ -19,14 +19,15 @@
 package org.wso2.carbon.identity.application.authentication.framework.handler.claims.impl;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.wso2.carbon.identity.application.authentication.framework.config.model.ApplicationConfig;
+import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.handler.claims.ClaimFilter;
-import org.wso2.carbon.identity.application.common.model.ClaimConfig;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
+import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,57 +39,56 @@ public class DefaultClaimFilter implements ClaimFilter {
     }
 
     @Override
-    public void getFilteredRequestedClaims(Map<String, String> claimMappings, Map<String, String> requestedClaims,
-                                           Map<String, String> mandatoryClaims, ClaimConfig claimConfig,
-                                           List<ClaimMapping> requestedClaimsInRequest) {
-        List<ClaimMapping> selectedRequestedClaims = filterRequestedClaims(claimConfig, requestedClaimsInRequest);
-        getMandatoryAndRequestedClaims(claimMappings, requestedClaims, mandatoryClaims, selectedRequestedClaims);
-    }
+    public ApplicationConfig getFilteredRequestedClaims(AuthenticationContext context, ApplicationConfig appConfig) {
 
-    private void getMandatoryAndRequestedClaims(Map<String, String> claimMappings, Map<String, String> requestedClaims, Map<String, String> mandatoryClaims, List<ClaimMapping> selectedRequestedClaims) {
-        if (CollectionUtils.isNotEmpty(selectedRequestedClaims)) {
-            for (ClaimMapping claim : selectedRequestedClaims) {
-                if (claim.getRemoteClaim() != null
-                        && claim.getRemoteClaim().getClaimUri() != null) {
-                    if (claim.getLocalClaim() != null) {
-                        claimMappings.put(claim.getRemoteClaim().getClaimUri(), claim
-                                .getLocalClaim().getClaimUri());
+        List<ClaimMapping> spClaimMappings = getSpClaimMappings(appConfig);
 
-                        if (claim.isRequested()) {
-                            requestedClaims.put(claim.getRemoteClaim().getClaimUri(), claim
-                                    .getLocalClaim().getClaimUri());
-                        }
-
-                        if (claim.isMandatory()) {
-                            mandatoryClaims.put(claim.getRemoteClaim().getClaimUri(), claim
-                                    .getLocalClaim().getClaimUri());
-                        }
-
-                    } else {
-                        claimMappings.put(claim.getRemoteClaim().getClaimUri(), null);
-                        if (claim.isRequested()) {
-                            requestedClaims.put(claim.getRemoteClaim().getClaimUri(), null);
-                        }
-
-                        if (claim.isMandatory()) {
-                            mandatoryClaims.put(claim.getRemoteClaim().getClaimUri(), null);
-                        }
-                    }
-                }
-            }
+        List<ClaimMapping> requestedClaimsInRequest = null;
+        if (context != null) {
+            requestedClaimsInRequest = (List<ClaimMapping>) context.getProperty(
+                    FrameworkConstants.SP_REQUESTED_CLAIMS_IN_REQUEST);
         }
+        List<ClaimMapping> selectedRequestedClaims = filterRequestedClaims(spClaimMappings, requestedClaimsInRequest);
+        getMandatoryAndRequestedClaims(appConfig, selectedRequestedClaims);
+        return appConfig;
     }
 
-    private List<ClaimMapping> filterRequestedClaims(ClaimConfig claimConfig, List<ClaimMapping> requestedClaimsInRequest) {
+    private List<ClaimMapping> getSpClaimMappings(ApplicationConfig appConfig) {
+
+        Map<String, String> spClaimMapping = appConfig.getClaimMappings();
+        Map<String, String> mandatoryClaims = appConfig.getMandatoryClaimMappings();
+        Map<String, String> requestedClaims = appConfig.getRequestedClaimMappings();
+
+        List<ClaimMapping> spClaimMappingsList = new ArrayList<>();
+        spClaimMapping.forEach((key, value) -> {
+            Claim remoteClaim = new Claim();
+            remoteClaim.setClaimUri(key);
+            Claim localClaim = new Claim();
+            localClaim.setClaimUri(value);
+            ClaimMapping claimMapping = new ClaimMapping();
+            claimMapping.setRemoteClaim(remoteClaim);
+            claimMapping.setLocalClaim(localClaim);
+
+            mandatoryClaims.entrySet().stream().filter(entry1 -> key.equals(entry1.getKey()))
+                    .map(entry1 -> true).forEach(claimMapping::setMandatory);
+            requestedClaims.entrySet().stream().filter(entry2 -> key.equals(entry2.getKey()))
+                    .map(entry2 -> true).forEach(claimMapping::setRequested);
+            spClaimMappingsList.add(claimMapping);
+        });
+        return spClaimMappingsList;
+    }
+
+    private List<ClaimMapping> filterRequestedClaims(List<ClaimMapping> spClaimMappings,
+                                                     List<ClaimMapping> requestedClaimsInRequest) {
+
         List<ClaimMapping> selectedRequestedClaims = null;
-        if (requestedClaimsFromRequest(claimConfig, requestedClaimsInRequest)) {
+        if (requestedClaimsFromRequest(spClaimMappings, requestedClaimsInRequest)) {
             selectedRequestedClaims = requestedClaimsInRequest;
-        } else if (requestedClaimsFromSpConfig(claimConfig, requestedClaimsInRequest)) {
-            selectedRequestedClaims = Arrays.asList(claimConfig.getClaimMappings());
-        } else if (requestedClaimsFromSpConfigAndRequest(claimConfig, requestedClaimsInRequest)) {
-            List<ClaimMapping> requestedClaimsInSPConfig = Arrays.asList(claimConfig.getClaimMappings());
+        } else if (requestedClaimsFromSpConfig(spClaimMappings, requestedClaimsInRequest)) {
+            selectedRequestedClaims = spClaimMappings;
+        } else if (requestedClaimsFromSpConfigAndRequest(spClaimMappings, requestedClaimsInRequest)) {
             selectedRequestedClaims = new ArrayList<>();
-            for (ClaimMapping claimMappingInSPConfig : requestedClaimsInSPConfig) {
+            for (ClaimMapping claimMappingInSPConfig : spClaimMappings) {
                 for (ClaimMapping claimMappingInRequest : requestedClaimsInRequest) {
                     if (claimMappingInRequest.getRemoteClaim().equals(claimMappingInSPConfig.getRemoteClaim())) {
                         selectedRequestedClaims.add(claimMappingInRequest);
@@ -99,18 +99,70 @@ public class DefaultClaimFilter implements ClaimFilter {
         return selectedRequestedClaims;
     }
 
-    private boolean requestedClaimsFromSpConfigAndRequest(ClaimConfig claimConfig, List<ClaimMapping> requestedClaimsInRequest) {
-        return claimConfig != null && !ArrayUtils.isEmpty(claimConfig.getClaimMappings()) &&
-                !CollectionUtils.isEmpty(requestedClaimsInRequest);
+    private void getMandatoryAndRequestedClaims(ApplicationConfig appConfig, List<ClaimMapping> selectedRequestedClaims) {
+
+        Map<String, String> claimMappings = new HashMap<>();
+        Map<String, String> requestedClaims = new HashMap<>();
+        Map<String, String> mandatoryClaims = new HashMap<>();
+
+        if (CollectionUtils.isNotEmpty(selectedRequestedClaims)) {
+            for (ClaimMapping claim : selectedRequestedClaims) {
+                if (claim.getRemoteClaim() != null
+                        && claim.getRemoteClaim().getClaimUri() != null) {
+                    if (claim.getLocalClaim() != null) {
+                        setClaimsWhenLocalClaimExists(claimMappings, requestedClaims, mandatoryClaims, claim);
+
+                    } else {
+                        setClaimsWhenLocalClaimNotExists(claimMappings, requestedClaims, mandatoryClaims, claim);
+                    }
+                }
+            }
+        }
+        appConfig.setClaimMappings(claimMappings);
+        appConfig.setRequestedClaims(requestedClaims);
+        appConfig.setMandatoryClaims(mandatoryClaims);
     }
 
-    private boolean requestedClaimsFromSpConfig(ClaimConfig claimConfig, List<ClaimMapping> requestedClaimsInRequest) {
-        return claimConfig != null && !ArrayUtils.isEmpty(claimConfig.getClaimMappings()) &&
-                CollectionUtils.isEmpty(requestedClaimsInRequest);
+    private boolean requestedClaimsFromSpConfigAndRequest(List<ClaimMapping> claimMappings, List<ClaimMapping> requestedClaimsInRequest) {
+
+        return !CollectionUtils.isEmpty(claimMappings) && !CollectionUtils.isEmpty(requestedClaimsInRequest);
     }
 
-    private boolean requestedClaimsFromRequest(ClaimConfig claimConfig, List<ClaimMapping> requestedClaimsInRequest) {
-        return (claimConfig == null || ArrayUtils.isEmpty(claimConfig.getClaimMappings())) &&
-                !CollectionUtils.isEmpty(requestedClaimsInRequest);
+    private boolean requestedClaimsFromSpConfig(List<ClaimMapping> claimMappings, List<ClaimMapping> requestedClaimsInRequest) {
+
+        return !CollectionUtils.isEmpty(claimMappings) && CollectionUtils.isEmpty(requestedClaimsInRequest);
+    }
+
+    private boolean requestedClaimsFromRequest(List<ClaimMapping> claimMappings, List<ClaimMapping> requestedClaimsInRequest) {
+
+        return CollectionUtils.isEmpty(claimMappings) && !CollectionUtils.isEmpty(requestedClaimsInRequest);
+    }
+
+    private void setClaimsWhenLocalClaimNotExists(Map<String, String> claimMappings, Map<String, String> requestedClaims, Map<String, String> mandatoryClaims, ClaimMapping claim) {
+
+        claimMappings.put(claim.getRemoteClaim().getClaimUri(), null);
+        if (claim.isRequested()) {
+            requestedClaims.put(claim.getRemoteClaim().getClaimUri(), null);
+        }
+
+        if (claim.isMandatory()) {
+            mandatoryClaims.put(claim.getRemoteClaim().getClaimUri(), null);
+        }
+    }
+
+    private void setClaimsWhenLocalClaimExists(Map<String, String> claimMappings, Map<String, String> requestedClaims, Map<String, String> mandatoryClaims, ClaimMapping claim) {
+
+        claimMappings.put(claim.getRemoteClaim().getClaimUri(), claim
+                .getLocalClaim().getClaimUri());
+
+        if (claim.isRequested()) {
+            requestedClaims.put(claim.getRemoteClaim().getClaimUri(), claim
+                    .getLocalClaim().getClaimUri());
+        }
+
+        if (claim.isMandatory()) {
+            mandatoryClaims.put(claim.getRemoteClaim().getClaimUri(), claim
+                    .getLocalClaim().getClaimUri());
+        }
     }
 }

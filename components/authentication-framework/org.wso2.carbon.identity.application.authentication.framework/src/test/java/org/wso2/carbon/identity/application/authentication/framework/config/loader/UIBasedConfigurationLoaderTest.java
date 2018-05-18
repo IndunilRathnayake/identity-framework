@@ -21,7 +21,6 @@ package org.wso2.carbon.identity.application.authentication.framework.config.loa
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.AbstractFrameworkTest;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.SequenceConfig;
-import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.common.model.AuthenticationStep;
 import org.wso2.carbon.identity.application.common.model.LocalAndOutboundAuthenticationConfig;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
@@ -48,7 +47,7 @@ public class UIBasedConfigurationLoaderTest extends AbstractFrameworkTest {
 
         localAndOutboundAuthenticationConfig.setAuthenticationSteps(authenticationSteps);
 
-        SequenceConfig sequenceConfig = loader.getSequence(new AuthenticationContext(), testSp1, "test_domain");
+        SequenceConfig sequenceConfig = loader.getSequence(testSp1, "test_domain");
         assertNotNull(sequenceConfig);
 
         assertNotNull(sequenceConfig.getStepMap());

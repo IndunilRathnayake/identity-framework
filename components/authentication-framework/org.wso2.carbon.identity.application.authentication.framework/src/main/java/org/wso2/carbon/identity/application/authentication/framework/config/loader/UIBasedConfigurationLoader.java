@@ -34,7 +34,6 @@ import org.wso2.carbon.identity.application.authentication.framework.exception.F
 import org.wso2.carbon.identity.application.authentication.framework.internal.FrameworkServiceComponent;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.model.AuthenticationStep;
-import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.FederatedAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.model.LocalAndOutboundAuthenticationConfig;
@@ -79,7 +78,7 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
             authenticationSteps = localAndOutboundAuthenticationConfig.getAuthenticationSteps();
         }
 
-        SequenceConfig sequenceConfig = getSequence(context, serviceProvider, tenantDomain, authenticationSteps);
+        SequenceConfig sequenceConfig = getSequence(serviceProvider, tenantDomain, authenticationSteps);
 
         //Use script based evaluation if script is present.
         if (isAuthenticationScriptBasedSequence(localAndOutboundAuthenticationConfig.getAuthenticationScriptConfig())) {
@@ -115,7 +114,7 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
      * @deprecated Please do not use this for any development as this is maintained for backward compatibility.
      */
     @Deprecated
-    public SequenceConfig getSequence(AuthenticationContext context, ServiceProvider serviceProvider, String tenantDomain) throws FrameworkException {
+    public SequenceConfig getSequence(ServiceProvider serviceProvider, String tenantDomain) throws FrameworkException {
 
         if (serviceProvider == null) {
             throw new FrameworkException("ServiceProvider cannot be null");
@@ -123,7 +122,7 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
         AuthenticationStep[] authenticationSteps = serviceProvider.getLocalAndOutBoundAuthenticationConfig()
                 .getAuthenticationSteps();
 
-        return getSequence(context, serviceProvider, tenantDomain, authenticationSteps);
+        return getSequence(serviceProvider, tenantDomain, authenticationSteps);
     }
 
     /**
@@ -136,23 +135,15 @@ public class UIBasedConfigurationLoader implements SequenceLoader {
      * @return
      * @throws FrameworkException
      */
-    public SequenceConfig getSequence(AuthenticationContext context, ServiceProvider serviceProvider, String tenantDomain, AuthenticationStep[] authenticationSteps)
-            throws FrameworkException {
+    public SequenceConfig getSequence(ServiceProvider serviceProvider, String tenantDomain,
+                                      AuthenticationStep[] authenticationSteps) throws FrameworkException {
 
         if (serviceProvider == null) {
             throw new FrameworkException("ServiceProvider cannot be null");
         }
         SequenceConfig sequenceConfig = new SequenceConfig();
         sequenceConfig.setApplicationId(serviceProvider.getApplicationName());
-
-        List<ClaimMapping> requestedClaimsInRequest = null;
-        if(context != null) {
-            requestedClaimsInRequest = (List<ClaimMapping>) context.getProperty(
-                    FrameworkConstants.SP_REQUESTED_CLAIMS_IN_REQUEST);
-        }
-        ApplicationConfig applicationConfig = new ApplicationConfig(serviceProvider);
-        applicationConfig.setClaimConfigurations(serviceProvider, requestedClaimsInRequest);
-        sequenceConfig.setApplicationConfig(applicationConfig);
+        sequenceConfig.setApplicationConfig(new ApplicationConfig(serviceProvider));
 
         // setting request path authenticators
         loadRequestPathAuthenticators(sequenceConfig, serviceProvider);

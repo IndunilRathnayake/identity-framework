@@ -20,7 +20,6 @@ package org.wso2.carbon.identity.application.authentication.framework.config.bui
 
 import org.wso2.carbon.identity.application.authentication.framework.config.loader.UIBasedConfigurationLoader;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.SequenceConfig;
-import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
@@ -66,7 +65,7 @@ public class UIBasedConfigurationBuilder {
         } catch (IdentityApplicationManagementException e) {
             throw new FrameworkException(e.getMessage(), e);
         }
-        return uiBasedConfigurationLoader.getSequence(new AuthenticationContext(), serviceProvider,tenantDomain);
+        return uiBasedConfigurationLoader.getSequence(serviceProvider, tenantDomain);
     }
 
 }
