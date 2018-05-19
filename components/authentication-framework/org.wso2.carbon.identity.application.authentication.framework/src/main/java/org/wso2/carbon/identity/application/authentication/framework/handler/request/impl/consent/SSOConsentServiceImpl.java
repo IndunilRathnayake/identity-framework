@@ -17,6 +17,7 @@
 package org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent;
 
 import org.apache.axiom.om.OMElement;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,6 +37,7 @@ import org.wso2.carbon.consent.mgt.core.model.ReceiptPurposeInput;
 import org.wso2.carbon.consent.mgt.core.model.ReceiptService;
 import org.wso2.carbon.consent.mgt.core.model.ReceiptServiceInput;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.application.authentication.framework.config.model.ApplicationConfig;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent.constant
         .SSOConsentConstants;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent.exception
@@ -133,6 +135,23 @@ public class SSOConsentServiceImpl implements SSOConsentService {
     }
 
     /**
+     * Get consent required claims for a given service from a user considering existing user consents.
+     *
+     * @param applicationConfig       Application configuration of the Service provider requesting consent.
+     * @param authenticatedUser     Authenticated user requesting consent form.
+     * @return ConsentClaimsData which contains mandatory and required claims for consent.
+     * @throws SSOConsentServiceException If error occurs while building claim information.
+     */
+    @Override
+    public ConsentClaimsData getConsentRequiredClaimsWithExistingConsents(ApplicationConfig applicationConfig,
+                                                                          AuthenticatedUser authenticatedUser)
+            throws SSOConsentServiceException {
+
+        return getConsentRequiredClaims(applicationConfig, authenticatedUser, true);
+    }
+
+
+    /**
      * Get consent required claims for a given service from a user ignoring existing user consents.
      *
      * @param serviceProvider       Service provider requesting consent.
@@ -184,35 +203,94 @@ public class SSOConsentServiceImpl implements SSOConsentService {
         String subjectClaimUri = getSubjectClaimUri(serviceProvider);
 
         if (isPassThroughScenario(claimMappings, userAttributes)) {
-            for (Map.Entry<ClaimMapping, String> userAttribute : userAttributes.entrySet()) {
-                Claim remoteClaim = userAttribute.getKey().getRemoteClaim();
-                if (subjectClaimUri.equals(remoteClaim.getClaimUri())) {
-                    continue;
-                }
-                mandatoryClaims.add(remoteClaim.getClaimUri());
-            }
+            getClaimsPassthroughScenario(mandatoryClaims, userAttributes, subjectClaimUri);
         } else {
-
-            boolean isCustomClaimMapping = isCustomClaimMapping(serviceProvider);
-            for (ClaimMapping claimMapping : claimMappings) {
-                if (isCustomClaimMapping) {
-                    if (subjectClaimUri.equals(claimMapping.getRemoteClaim().getClaimUri())) {
-                        subjectClaimUri = claimMapping.getLocalClaim().getClaimUri();
-                        continue;
-                    }
-                } else {
-                    if (subjectClaimUri.equals(claimMapping.getLocalClaim().getClaimUri())) {
-                        continue;
-                    }
-                }
-                if (claimMapping.isMandatory()) {
-                    mandatoryClaims.add(claimMapping.getLocalClaim().getClaimUri());
-                } else if (claimMapping.isRequested()) {
-                    requestedClaims.add(claimMapping.getLocalClaim().getClaimUri());
-                }
-            }
+            getClaimsNonPassthroughScenario(serviceProvider, claimMappings, requestedClaims,
+                    mandatoryClaims, subjectClaimUri);
         }
         mandatoryClaims.add(subjectClaimUri);
+
+        ConsentClaimsData consentClaimsData = getConsentClaimsData(serviceProvider, authenticatedUser, useExistingConsents, spName, spTenantDomain, subject, requestedClaims, mandatoryClaims);
+        return consentClaimsData;
+    }
+
+    /**
+     * Get consent required claims for a given service from a user.
+     *
+     * @param applicationConfig   Application configuration of the Service provider requesting consent.
+     * @param authenticatedUser Authenticated user requesting consent form.
+     * @param useExistingConsents Use existing consent given by the user.
+     * @return ConsentClaimsData which contains mandatory and required claims for consent.
+     * @throws SSOConsentServiceException If error occurs while building claim information.
+     */
+    protected ConsentClaimsData getConsentRequiredClaims(ApplicationConfig applicationConfig,
+                                                         AuthenticatedUser authenticatedUser,
+                                                         boolean useExistingConsents)
+            throws SSOConsentServiceException {
+
+        ServiceProvider serviceProvider = applicationConfig.getServiceProvider();
+        if (!isSSOConsentManagementEnabled(serviceProvider)) {
+            String message = "Consent management for SSO is disabled.";
+            throw new SSOConsentDisabledException(message, message);
+        }
+        if (serviceProvider == null) {
+            throw new SSOConsentServiceException("Service provider cannot be null.");
+        }
+
+        String spName = serviceProvider.getApplicationName();
+        String spTenantDomain = getSPTenantDomain(serviceProvider);
+        String subject = buildSubjectWithUserStoreDomain(authenticatedUser);
+
+        List<ClaimMapping> selectedClaimMappings = applicationConfig.getSelectedClaimMappings();
+
+        List<String> requestedClaims = new ArrayList<>();
+        List<String> mandatoryClaims = new ArrayList<>();
+
+        Map<ClaimMapping, String> userAttributes = authenticatedUser.getUserAttributes();
+
+        String subjectClaimUri = getSubjectClaimUri(serviceProvider);
+
+        if (isPassThroughScenario(getSpClaimMappings(serviceProvider), userAttributes)) {
+            getClaimsPassthroughScenario(mandatoryClaims, userAttributes, subjectClaimUri);
+        } else {
+            getClaimsNonPassthroughScenario(serviceProvider, selectedClaimMappings, requestedClaims, mandatoryClaims,
+                    subjectClaimUri);
+        }
+        mandatoryClaims.add(subjectClaimUri);
+
+        return getConsentClaimsData(serviceProvider, authenticatedUser, useExistingConsents, spName, spTenantDomain,
+                subject, requestedClaims, mandatoryClaims);
+    }
+
+    private void getClaimsNonPassthroughScenario(ServiceProvider serviceProvider,
+                                                 List<ClaimMapping> selectedClaimMappings,
+                                                 List<String> requestedClaims,
+                                                 List<String> mandatoryClaims, String subjectClaimUri) {
+
+        boolean isCustomClaimMapping = isCustomClaimMapping(serviceProvider);
+        for (ClaimMapping claimMapping : selectedClaimMappings) {
+            if (isCustomClaimMapping) {
+                if (subjectClaimUri.equals(claimMapping.getRemoteClaim().getClaimUri())) {
+                    subjectClaimUri = claimMapping.getLocalClaim().getClaimUri();
+                    continue;
+                }
+            } else {
+                if (subjectClaimUri.equals(claimMapping.getLocalClaim().getClaimUri())) {
+                    continue;
+                }
+            }
+            if (claimMapping.isMandatory()) {
+                mandatoryClaims.add(claimMapping.getLocalClaim().getClaimUri());
+            } else if (claimMapping.isRequested()) {
+                requestedClaims.add(claimMapping.getLocalClaim().getClaimUri());
+            }
+        }
+    }
+
+    private ConsentClaimsData getConsentClaimsData(ServiceProvider serviceProvider, AuthenticatedUser authenticatedUser,
+                                                   boolean useExistingConsents, String spName, String spTenantDomain,
+                                                   String subject, List<String> requestedClaims,
+                                                   List<String> mandatoryClaims) throws SSOConsentServiceException {
 
         List<ClaimMetaData> receiptConsentMetaData = new ArrayList<>();
         Receipt receipt = getConsentReceiptOfUser(serviceProvider, authenticatedUser, spName, spTenantDomain, subject);
@@ -220,13 +298,50 @@ public class SSOConsentServiceImpl implements SSOConsentService {
             receiptConsentMetaData = getConsentClaimsFromReceipt(receipt);
             List<String> claimsWithConsent = getClaimsFromConsentMetaData(receiptConsentMetaData);
             mandatoryClaims.removeAll(claimsWithConsent);
-            // Only request consent for mandatory claims without consent when a receipt already exist for the user.
-            requestedClaims.clear();
+            if (ArrayUtils.isEmpty(serviceProvider.getClaimConfig().getSpClaimDialects())) {
+                // Only request consent for mandatory claims without consent when a receipt already exist for the user
+                // and requested claims are not requesting from the request.
+                requestedClaims.clear();
+            }
         }
         ConsentClaimsData consentClaimsData = getConsentRequiredClaimData(mandatoryClaims, requestedClaims,
                                                                           spTenantDomain);
         consentClaimsData.setClaimsWithConsent(receiptConsentMetaData);
         return consentClaimsData;
+    }
+
+    private void getClaimsNonPassthroughScenario(ServiceProvider serviceProvider, ClaimMapping[] claimMappings,
+                                                 List<String> requestedClaims, List<String> mandatoryClaims,
+                                                 String subjectClaimUri) {
+
+        boolean isCustomClaimMapping = isCustomClaimMapping(serviceProvider);
+        for (ClaimMapping claimMapping : claimMappings) {
+            if (isCustomClaimMapping) {
+                if (subjectClaimUri.equals(claimMapping.getRemoteClaim().getClaimUri())) {
+                    subjectClaimUri = claimMapping.getLocalClaim().getClaimUri();
+                    continue;
+                }
+            } else {
+                if (subjectClaimUri.equals(claimMapping.getLocalClaim().getClaimUri())) {
+                    continue;
+                }
+            }
+            if (claimMapping.isMandatory()) {
+                mandatoryClaims.add(claimMapping.getLocalClaim().getClaimUri());
+            } else if (claimMapping.isRequested()) {
+                requestedClaims.add(claimMapping.getLocalClaim().getClaimUri());
+            }
+        }
+    }
+
+    private void getClaimsPassthroughScenario(List<String> mandatoryClaims, Map<ClaimMapping, String> userAttributes, String subjectClaimUri) {
+        for (Map.Entry<ClaimMapping, String> userAttribute : userAttributes.entrySet()) {
+            Claim remoteClaim = userAttribute.getKey().getRemoteClaim();
+            if (subjectClaimUri.equals(remoteClaim.getClaimUri())) {
+                continue;
+            }
+            mandatoryClaims.add(remoteClaim.getClaimUri());
+        }
     }
 
     private boolean isCustomClaimMapping(ServiceProvider serviceProvider) {

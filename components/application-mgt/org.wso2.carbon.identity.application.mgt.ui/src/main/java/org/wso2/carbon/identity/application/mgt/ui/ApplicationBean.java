@@ -20,6 +20,9 @@ package org.wso2.carbon.identity.application.mgt.ui;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.application.common.model.script.xsd.AuthenticationScriptConfig;
 import org.wso2.carbon.identity.application.common.model.xsd.ApplicationPermission;
 import org.wso2.carbon.identity.application.common.model.xsd.AuthenticationStep;
@@ -43,8 +46,13 @@ import org.wso2.carbon.identity.application.common.model.xsd.RequestPathAuthenti
 import org.wso2.carbon.identity.application.common.model.xsd.RoleMapping;
 import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
 import org.wso2.carbon.identity.application.mgt.ui.util.ApplicationMgtUIConstants;
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementServiceImpl;
+import org.wso2.carbon.identity.claim.metadata.mgt.exception.ClaimMetadataException;
+import org.wso2.carbon.identity.claim.metadata.mgt.model.ExternalClaim;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -82,9 +90,11 @@ public class ApplicationBean {
     private String passiveSTSWReply;
     private String openid;
     private String[] claimUris;
-    private String[] claimDialectUris;
+    private List<String> claimDialectUris;
     private List<InboundAuthenticationRequestConfig> inboundAuthenticationRequestConfigs;
     private List<String> standardInboundAuthTypes;
+
+    Log log = LogFactory.getLog(ApplicationBean.class);
 
     public ApplicationBean() {
         standardInboundAuthTypes = new ArrayList<String>();
@@ -856,18 +866,19 @@ public class ApplicationBean {
     }
 
     public String[] getSPClaimDialects() {
-        if (serviceProvider.getClaimConfig() != null &&
-                !ArrayUtils.isEmpty(serviceProvider.getClaimConfig().getSpClaimDialects())) {
-            return serviceProvider.getClaimConfig().getSpClaimDialects();
-        }
-        return null;
+
+        return serviceProvider.getClaimConfig() != null &&
+                !ArrayUtils.isEmpty(serviceProvider.getClaimConfig().getSpClaimDialects()) ?
+                serviceProvider.getClaimConfig().getSpClaimDialects() : null;
     }
 
-    public void setClaimDialectUris(String[] claimDialectUris) {
+    public void setClaimDialectUris(List<String> claimDialectUris) {
+
         this.claimDialectUris = claimDialectUris;
     }
 
-    public String[] getClaimDialectUris() {
+    public List<String> getClaimDialectUris() {
+
         return claimDialectUris;
     }
 
@@ -908,7 +919,7 @@ public class ApplicationBean {
      * @param request
      */
     public void updateOutBoundAuthenticationConfig(HttpServletRequest request) {
-        
+
         String[] authSteps = request.getParameterValues("auth_step");
 
         if (authSteps != null && authSteps.length > 0) {
@@ -1394,17 +1405,39 @@ public class ApplicationBean {
             }
         }
 
+        String spClaimDialectParam = request.getParameter(ApplicationMgtUIConstants.Params.SP_CLAIM_DIALECT);
+        if (spClaimDialectParam != null) {
+            String[] spClaimDialects = spClaimDialectParam.split(",");
+            serviceProvider.getClaimConfig().setSpClaimDialects(spClaimDialects);
+            ClaimMetadataManagementService claimMetadataMgtService = new ClaimMetadataManagementServiceImpl();
+            Arrays.asList(spClaimDialects).forEach(spClaimDialect -> {
+                try {
+                    String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+                    List<ExternalClaim> externalClaims = claimMetadataMgtService.getExternalClaims(spClaimDialect,
+                            tenantDomain);
+                    externalClaims.forEach(externalClaim -> {
+                        ClaimMapping mapping = new ClaimMapping();
+                        Claim localClaim = new Claim();
+                        localClaim.setClaimUri(externalClaim.getMappedLocalClaim());
+                        Claim spClaim = new Claim();
+                        spClaim.setClaimUri(externalClaim.getClaimURI());
+                        mapping.setRequested(true);
+                        mapping.setLocalClaim(localClaim);
+                        mapping.setRemoteClaim(spClaim);
+                        claimMappingList.add(mapping);
+                    });
+                } catch (ClaimMetadataException e) {
+                    log.error("Error when getting external claims of dialect: " + spClaimDialect, e);
+                }
+            });
+        } else {
+            serviceProvider.getClaimConfig().setSpClaimDialects(null);
+        }
+
         serviceProvider.getClaimConfig().setClaimMappings(
                 claimMappingList.toArray(new ClaimMapping[claimMappingList.size()]));
 
         serviceProvider.getClaimConfig().setRoleClaimURI(request.getParameter("roleClaim"));
-
-        String spClaimDialectParam = request.getParameter(ApplicationMgtUIConstants.Params.SP_CLAIM_DIALECT);
-        if (spClaimDialectParam != null) {
-            serviceProvider.getClaimConfig().setSpClaimDialects(spClaimDialectParam.split(","));
-        } else {
-            serviceProvider.getClaimConfig().setSpClaimDialects(null);
-        }
 
         String alwaysSendMappedLocalSubjectId = request.getParameter("always_send_local_subject_id");
         serviceProvider.getClaimConfig().setAlwaysSendMappedLocalSubjectId(

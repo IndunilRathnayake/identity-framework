@@ -26,7 +26,9 @@ import org.wso2.carbon.identity.application.common.model.RoleMapping;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ApplicationConfig implements Serializable, Cloneable {
@@ -51,6 +53,7 @@ public class ApplicationConfig implements Serializable, Cloneable {
     private boolean useUserstoreDomainInLocalSubjectIdentifier = false;
     private boolean enableAuthorization = false;
     private String[] spClaimDialects = null;
+    private List<ClaimMapping> selectedClaimMappings;
 
     public ApplicationConfig(ServiceProvider application) {
         this.serviceProvider = application;
@@ -188,6 +191,7 @@ public class ApplicationConfig implements Serializable, Cloneable {
     }
 
     public void setRequestedClaims(Map<String, String> requestedClaims) {
+
         this.requestedClaims = requestedClaims;
     }
 
@@ -196,6 +200,7 @@ public class ApplicationConfig implements Serializable, Cloneable {
     }
 
     public void setMandatoryClaims(Map<String, String> mandatoryClaims) {
+
         this.mandatoryClaims = mandatoryClaims;
     }
 
@@ -270,11 +275,26 @@ public class ApplicationConfig implements Serializable, Cloneable {
     }
 
     public String[] getSpClaimDialects() {
+
         return spClaimDialects;
     }
 
     public void setSpClaimDialects(String[] spClaimDialects) {
+
         this.spClaimDialects = spClaimDialects;
+    }
+
+    public List<ClaimMapping> getSelectedClaimMappings() {
+
+        return selectedClaimMappings;
+    }
+
+    public void setSelectedClaimMappings(List<ClaimMapping> selectedClaimMappings) {
+
+        if (this.selectedClaimMappings == null) {
+            this.selectedClaimMappings = new ArrayList<>();
+        }
+        this.selectedClaimMappings.addAll(selectedClaimMappings);
     }
 
     /**

@@ -18,12 +18,19 @@
 
 package org.wso2.carbon.identity.application.mgt.ui.util;
 
+/**
+ * Holds the application UI related constants.
+ */
 public class ApplicationMgtUIConstants {
 
     private ApplicationMgtUIConstants() {
     }
 
+    /**
+     * Holds the application UI param related constants.
+     */
     public static class Params {
+
         public static final String SP_CLAIM_DIALECT = "spClaimDialects";
 
         private Params() {

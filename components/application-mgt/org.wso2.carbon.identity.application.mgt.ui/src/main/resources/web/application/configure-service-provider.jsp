@@ -77,7 +77,7 @@
     Map<String, String> roleMapping = appBean.getRoleMapping();
     boolean isLocalClaimsSelected = appBean.isLocalClaimsSelected();
     String[] spClaimDialects = appBean.getSPClaimDialects();
-    String[] dialectURIs = appBean.getClaimDialectUris();
+    List<String> claimDialectUris = appBean.getClaimDialectUris();
     String idPName = request.getParameter("idPName");
     String action = request.getParameter("action");
     String[] userStoreDomains = null;
@@ -524,6 +524,7 @@
     }
 
     function onClickAddSpClaimDialectUri() {
+
         var spClaimDialect = $("#standard_dialect").val();
         if (spClaimDialect == null || spClaimDialect.trim().length == 0) {
             CARBON.showWarningDialog("<fmt:message key='config.application.claim.dialect.sp.not.valid'/>", null, null);
@@ -579,6 +580,7 @@
     }
 
     function removeSpClaimDialect(spClaimDialect, columnId) {
+
         var spClaimDialects = $("#spClaimDialects").val();
         var newSpClaimDialects = "";
         if (spClaimDialects != null && spClaimDialects.trim().length > 0) {
@@ -1281,7 +1283,7 @@
                             <select class="leftCol-med" id="standard_dialect" name="standard_dialect" style=" margin-left: 5px; ">
                                 <option value="">---Select---</option>
                                 <%
-                                    for(String dialectURI : dialectURIs) {%>
+                                    for(String dialectURI : claimDialectUris) {%>
                                         <option value="<%=Encode.forHtmlAttribute(dialectURI)%>"> <%=Encode.forHtmlContent(dialectURI)%></option>
                                  <%
                                 } %>
