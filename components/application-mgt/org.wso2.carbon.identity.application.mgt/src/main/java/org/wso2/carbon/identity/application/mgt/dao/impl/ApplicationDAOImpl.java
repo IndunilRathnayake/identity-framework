@@ -67,6 +67,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * This class access the IDN_APPMGT database to store/update and delete application configurations.
@@ -1352,11 +1353,9 @@ public class ApplicationDAOImpl implements ApplicationDAO {
             String[] spClaimDialects = claimConfiguration.getSpClaimDialects();
             String spClaimDialectsString = null;
             if (spClaimDialects != null) {
-                StringBuilder spClaimDialectsBuilder = new StringBuilder();
-                for (String dialects : spClaimDialects) {
-                    spClaimDialectsBuilder.append(dialects).append(",");
-                }
-                spClaimDialectsString = spClaimDialectsBuilder.toString();
+                String spClaimDialectsBuilder = Arrays.stream(spClaimDialects).map(dialects -> dialects + ",")
+                        .collect(Collectors.joining());
+                spClaimDialectsString = spClaimDialectsBuilder;
             }
 
             storeSPDialectsPrepStmt = connection

@@ -20,12 +20,13 @@ package org.wso2.carbon.identity.application.authentication.framework.handler.cl
 
 import org.wso2.carbon.identity.application.authentication.framework.config.model.ApplicationConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
-import org.wso2.carbon.identity.application.common.model.ClaimConfig;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 
 import java.util.List;
-import java.util.Map;
 
+/**
+ * Filtering out and selecting the SP claims.
+ */
 public interface ClaimFilter {
 
     /**
@@ -37,11 +38,21 @@ public interface ClaimFilter {
     int getPriority();
 
     /**
-     * Filtering out and selecting the claim mappings, requested and mandatory claims
+     * Filtering out and including the selected claim mappings, requested and mandatory claims in ApplicationConfig.
      *
      * @param context Authentication context
      * @param appConfig Application Configuration
      * @return Modified Application Configuration
      */
-    ApplicationConfig getFilteredRequestedClaims(AuthenticationContext context, ApplicationConfig appConfig);
+    ApplicationConfig getFilteredClaims(AuthenticationContext context, ApplicationConfig appConfig);
+
+    /**
+     * Filtering and selecting the requested claim mappings.
+     *
+     * @param spClaimMappings SP configured claim mapping
+     * @param requestedClaimsInRequest Claims in request
+     * @return
+     */
+    List<ClaimMapping> filterRequestedClaims(List<ClaimMapping> spClaimMappings,
+                                             List<ClaimMapping> requestedClaimsInRequest);
 }

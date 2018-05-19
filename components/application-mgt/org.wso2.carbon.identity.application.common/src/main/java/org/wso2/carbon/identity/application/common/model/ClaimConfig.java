@@ -173,14 +173,13 @@ public class ClaimConfig implements Serializable {
     }
 
     public String[] getSpClaimDialects() {
+
         return spClaimDialects;
     }
 
     public void setSpClaimDialects(String[] spClaimDialects) {
-        if(this.spClaimDialects == null) {
-            this.spClaimDialects = spClaimDialects;
-        } else {
-            this.spClaimDialects = (String[]) ArrayUtils.addAll(this.spClaimDialects, spClaimDialects);
-        }
+
+        this.spClaimDialects = this.spClaimDialects == null ? spClaimDialects : (String[]) ArrayUtils.addAll(
+                this.spClaimDialects, spClaimDialects);
     }
 }

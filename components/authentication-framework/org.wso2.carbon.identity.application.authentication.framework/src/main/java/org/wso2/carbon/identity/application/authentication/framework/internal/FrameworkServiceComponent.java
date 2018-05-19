@@ -553,10 +553,12 @@ public class FrameworkServiceComponent {
     }
 
     protected void unsetClaimFilter (ClaimFilter claimFilter) {
+
         FrameworkServiceDataHolder.getInstance().setClaimFilters(null);
     }
 
     private Comparator<ClaimFilter> getClaimFilterComparator() {
+
         // Sort based on priority in descending order, ie. highest priority comes to the first element of the list.
         return Comparator.comparingInt(ClaimFilter::getPriority).reversed();
     }

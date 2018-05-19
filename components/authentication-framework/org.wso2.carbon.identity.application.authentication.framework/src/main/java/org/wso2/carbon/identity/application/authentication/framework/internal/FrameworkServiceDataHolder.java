@@ -27,7 +27,6 @@ import org.wso2.carbon.identity.application.authentication.framework.Authenticat
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticationMethodNameTranslator;
 import org.wso2.carbon.identity.application.authentication.framework.JsFunctionRegistry;
 import org.wso2.carbon.identity.application.authentication.framework.config.loader.SequenceLoader;
-import org.wso2.carbon.identity.application.authentication.framework.config.model.graph.JsFunctionRegistryImpl;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.graph.JsGraphBuilderFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.authentication.framework.handler.claims.ClaimFilter;
@@ -289,6 +288,7 @@ public class FrameworkServiceDataHolder {
      * @return The Claim Filter with the highest priority.
      */
     public ClaimFilter getHighestPriorityClaimFilter() {
+
         if (claimFilters.isEmpty()) {
             log.info("No Registered Claim Filters available. Using the default claim filter.");
             return new DefaultClaimFilter();
@@ -297,10 +297,12 @@ public class FrameworkServiceDataHolder {
     }
 
     public List<ClaimFilter> getClaimFilters() {
+
         return claimFilters;
     }
 
     public void setClaimFilters(List<ClaimFilter> claimFilters) {
+
         this.claimFilters = claimFilters;
     }
 }
