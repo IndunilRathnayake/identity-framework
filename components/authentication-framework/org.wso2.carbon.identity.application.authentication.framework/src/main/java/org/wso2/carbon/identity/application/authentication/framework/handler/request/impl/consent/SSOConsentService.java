@@ -16,7 +16,6 @@
 
 package org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent;
 
-import org.wso2.carbon.identity.application.authentication.framework.config.model.ApplicationConfig;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.consent.exception
         .SSOConsentServiceException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
@@ -38,18 +37,6 @@ public interface SSOConsentService {
      * @throws SSOConsentServiceException If error occurs while building claim information.
      */
     ConsentClaimsData getConsentRequiredClaimsWithExistingConsents(ServiceProvider serviceProvider,
-                                                                   AuthenticatedUser authenticatedUser)
-            throws SSOConsentServiceException;
-
-    /**
-     * Get consent required claims for a given service from a user considering existing user consents.
-     *
-     * @param applicationConfig       Application configuration of the Service provider requesting consent.
-     * @param authenticatedUser     Authenticated user requesting consent form.
-     * @return ConsentClaimsData which contains mandatory and required claims for consent.
-     * @throws SSOConsentServiceException If error occurs while building claim information.
-     */
-    ConsentClaimsData getConsentRequiredClaimsWithExistingConsents(ApplicationConfig applicationConfig,
                                                                    AuthenticatedUser authenticatedUser)
             throws SSOConsentServiceException;
 

@@ -17,6 +17,11 @@
  */
 package org.wso2.carbon.identity.application.authentication.framework.config.model;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.application.common.model.ApplicationPermission;
 import org.wso2.carbon.identity.application.common.model.ClaimConfig;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
@@ -24,9 +29,14 @@ import org.wso2.carbon.identity.application.common.model.LocalAndOutboundAuthent
 import org.wso2.carbon.identity.application.common.model.PermissionsAndRoleConfig;
 import org.wso2.carbon.identity.application.common.model.RoleMapping;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementServiceImpl;
+import org.wso2.carbon.identity.claim.metadata.mgt.exception.ClaimMetadataException;
+import org.wso2.carbon.identity.claim.metadata.mgt.model.ExternalClaim;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +62,9 @@ public class ApplicationConfig implements Serializable, Cloneable {
     private boolean useTenantDomainInLocalSubjectIdentifier = false;
     private boolean useUserstoreDomainInLocalSubjectIdentifier = false;
     private boolean enableAuthorization = false;
-    private String[] spClaimDialects = null;
     private List<ClaimMapping> selectedClaimMappings;
+
+    Log log = LogFactory.getLog(ApplicationConfig.class);
 
     public ApplicationConfig(ServiceProvider application) {
         this.serviceProvider = application;
@@ -75,12 +86,13 @@ public class ApplicationConfig implements Serializable, Cloneable {
         if (claimConfig != null) {
             roleClaim = claimConfig.getRoleClaimURI();
             alwaysSendMappedLocalSubjectId = claimConfig.isAlwaysSendMappedLocalSubjectId();
-            spClaimDialects = claimConfig.getSpClaimDialects();
 
-            ClaimMapping[] claimMapping = claimConfig.getClaimMappings();
+            List<ClaimMapping> spClaimMappings = Arrays.asList(claimConfig.getClaimMappings());
 
-            if (claimMapping != null && claimMapping.length > 0) {
-                for (ClaimMapping claim : claimMapping) {
+            setSpDialectClaims(claimConfig, spClaimMappings);
+
+            if (CollectionUtils.isNotEmpty(spClaimMappings)) {
+                for (ClaimMapping claim : spClaimMappings) {
                     if (claim.getRemoteClaim() != null
                         && claim.getRemoteClaim().getClaimUri() != null) {
                         if (claim.getLocalClaim() != null) {
@@ -274,16 +286,6 @@ public class ApplicationConfig implements Serializable, Cloneable {
         this.enableAuthorization = enableAuthorization;
     }
 
-    public String[] getSpClaimDialects() {
-
-        return spClaimDialects;
-    }
-
-    public void setSpClaimDialects(String[] spClaimDialects) {
-
-        this.spClaimDialects = spClaimDialects;
-    }
-
     public List<ClaimMapping> getSelectedClaimMappings() {
 
         return selectedClaimMappings;
@@ -311,5 +313,30 @@ public class ApplicationConfig implements Serializable, Cloneable {
         applicationConfig.mandatoryClaims = new HashMap<>(this.mandatoryClaims);
         applicationConfig.setPermissions(this.permissions.clone());
         return applicationConfig;
+    }
+
+    /**
+     * Set all the claim mappings of the configured SP claim dialects.
+     *
+     * @param claimConfig Application claim configuration
+     * @param spClaimMappings Application claim mappings
+     */
+    private void setSpDialectClaims(ClaimConfig claimConfig, List<ClaimMapping> spClaimMappings) {
+        String[] spClaimDialects = claimConfig.getSpClaimDialects();
+        if (!ArrayUtils.isEmpty(spClaimDialects)) {
+            ClaimMetadataManagementService claimMetadataMgtService = new ClaimMetadataManagementServiceImpl();
+            Arrays.asList(spClaimDialects).forEach(spClaimDialect -> {
+                try {
+                    String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+                    List<ExternalClaim> externalClaims = claimMetadataMgtService.getExternalClaims(spClaimDialect,
+                            tenantDomain);
+                    externalClaims.stream().map(externalClaim -> ClaimMapping.build(externalClaim
+                            .getMappedLocalClaim(), externalClaim.getClaimURI(), null, true))
+                            .forEach(spClaimMappings::add);
+                } catch (ClaimMetadataException e) {
+                    log.error("Error when getting external claims of dialect: " + spClaimDialect, e);
+                }
+            });
+        }
     }
 }

@@ -132,8 +132,7 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
                                                           AuthenticationContext context)
             throws PostAuthenticationFailedException {
 
-        ApplicationConfig applicationConfig = context.getSequenceConfig().getApplicationConfig();
-        String spName = applicationConfig.getApplicationName();
+        String spName = context.getSequenceConfig().getApplicationConfig().getApplicationName();
 
         // Due to: https://github.com/wso2/product-is/issues/2317.
         // Should be removed once the issue is fixed
@@ -145,7 +144,7 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
         ServiceProvider serviceProvider = getServiceProvider(context);
         try {
             ConsentClaimsData consentClaimsData = getSSOConsentService().getConsentRequiredClaimsWithExistingConsents
-                    (applicationConfig, authenticatedUser);
+                    (serviceProvider, authenticatedUser);
 
             if (isDebugEnabled()) {
                 String message = String.format("Retrieving required consent data of user: %s for service " +
@@ -330,8 +329,8 @@ public class ConsentMgtPostAuthnHandler extends AbstractPostAuthnHandler {
                          " SSOConsentService.");
             }
             try {
-                consentClaimsData = getSSOConsentService().getConsentRequiredClaimsWithExistingConsents(
-                        context.getSequenceConfig().getApplicationConfig(), authenticatedUser);
+                consentClaimsData = getSSOConsentService().getConsentRequiredClaimsWithExistingConsents(serviceProvider,
+                                                                                                   authenticatedUser);
             } catch (SSOConsentDisabledException e) {
                 String error = "Authentication Failure: Consent management is disabled for SSO.";
                 String errorDesc = "Illegal operation. Consent management is disabled, but post authentication for " +

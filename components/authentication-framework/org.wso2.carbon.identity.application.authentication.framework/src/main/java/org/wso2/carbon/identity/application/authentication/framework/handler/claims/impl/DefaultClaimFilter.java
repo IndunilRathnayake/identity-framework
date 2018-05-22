@@ -18,25 +18,17 @@
 
 package org.wso2.carbon.identity.application.authentication.framework.handler.claims.impl;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.ApplicationConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.handler.claims.ClaimFilter;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
-import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
-import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementServiceImpl;
-import org.wso2.carbon.identity.claim.metadata.mgt.exception.ClaimMetadataException;
-import org.wso2.carbon.identity.claim.metadata.mgt.model.ExternalClaim;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -48,12 +40,15 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
  */
 public class DefaultClaimFilter implements ClaimFilter {
 
+    // priority of the default claim handler
+    private static int priority = 0;
+
     Log log = LogFactory.getLog(DefaultClaimFilter.class);
 
     @Override
     public int getPriority() {
 
-        return 56;
+        return priority;
     }
 
     @Override
@@ -126,8 +121,6 @@ public class DefaultClaimFilter implements ClaimFilter {
         Map<String, String> mandatoryClaims = new HashMap<>();
 
         if (isNotEmpty(selectedRequestedClaims)) {
-            setLocalClaimsFromSPDialectClaims(appConfig, selectedRequestedClaims);
-
             selectedRequestedClaims.stream().filter(claim -> claim.getRemoteClaim() != null
                     && claim.getRemoteClaim().getClaimUri() != null).forEach(claim -> {
                 if (claim.getLocalClaim() != null) {
@@ -141,37 +134,6 @@ public class DefaultClaimFilter implements ClaimFilter {
         appConfig.setRequestedClaims(requestedClaims);
         appConfig.setMandatoryClaims(mandatoryClaims);
         appConfig.setSelectedClaimMappings(selectedRequestedClaims);
-    }
-
-    private void setLocalClaimsFromSPDialectClaims(ApplicationConfig appConfig,
-                                                   List<ClaimMapping> selectedRequestedClaims) {
-
-        String[] spClaimDialects = appConfig.getSpClaimDialects();
-        if (!ArrayUtils.isEmpty(spClaimDialects)) {
-            Map<String, String> spDialectClaimToLocal = new HashMap<>();
-            ClaimMetadataManagementService claimMetadataMgtService = new ClaimMetadataManagementServiceImpl();
-            Arrays.asList(spClaimDialects).forEach(spClaimDialect -> {
-                try {
-                    String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
-                    List<ExternalClaim> externalClaims = claimMetadataMgtService.getExternalClaims(spClaimDialect,
-                            tenantDomain);
-                    externalClaims.forEach(externalClaim -> {
-                        spDialectClaimToLocal.put(externalClaim.getClaimURI(), externalClaim.getMappedLocalClaim());
-                    });
-                } catch (ClaimMetadataException e) {
-                    log.error("Error when getting external claims of dialect: " + spClaimDialect, e);
-                }
-            });
-
-            Iterator<ClaimMapping> iterator = selectedRequestedClaims.iterator();
-            while (iterator.hasNext()) {
-                ClaimMapping claimMapping = iterator.next();
-                String remoteClaimUri = claimMapping.getRemoteClaim().getClaimUri();
-                if (spDialectClaimToLocal.containsKey(remoteClaimUri)) {
-                    claimMapping.getLocalClaim().setClaimUri(spDialectClaimToLocal.get(remoteClaimUri));
-                }
-            }
-        }
     }
 
     private boolean requestedClaimsFromSpConfigAndRequest(List<ClaimMapping> claimMappings,
