@@ -48,7 +48,7 @@
             SpFileContent spFileContent = new SpFileContent();
             spFileContent.setContent(content);
             spFileContent.setFileName(fileName);
-            ImportResponse importResponse = serviceClient.importApplication(spFileContent);
+            ImportResponse importResponse = serviceClient.importApplication(spFileContent, null);
             if (importResponse.getResponseCode() == CREATED) {
                 String appName = importResponse.getApplicationName();
         %>

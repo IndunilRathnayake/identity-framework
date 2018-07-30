@@ -24,11 +24,11 @@ import org.wso2.carbon.core.AbstractAdmin;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
 import org.wso2.carbon.identity.application.common.model.ApplicationBasicInfo;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
-import org.wso2.carbon.identity.application.common.model.SpFileContent;
 import org.wso2.carbon.identity.application.common.model.ImportResponse;
 import org.wso2.carbon.identity.application.common.model.LocalAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.RequestPathAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
+import org.wso2.carbon.identity.application.common.model.SpFileContent;
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationManagementServiceComponentHolder;
 
 import java.util.ArrayList;
@@ -61,6 +61,18 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
             log.error("Error while creating application: " + serviceProvider.getApplicationName() + " for tenant: " +
                     getTenantDomain(), idpException);
             throw idpException;
+        }
+    }
+
+    public ServiceProvider addApplication(ServiceProvider serviceProvider) throws IdentityApplicationManagementException {
+
+        try {
+            applicationMgtService = ApplicationManagementService.getInstance();
+            return applicationMgtService.addApplication(serviceProvider, getTenantDomain(), getUsername());
+        } catch (IdentityApplicationManagementException spException) {
+            log.error("Error while creating application: " + serviceProvider.getApplicationName() + " for tenant: " +
+                    getTenantDomain(), spException);
+            throw spException;
         }
     }
 
@@ -278,14 +290,17 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
      * Import application from XML file from UI.
      *
      * @param spFileContent xml string of the SP and file name
+     * @param spBasicInfo SP basic information
      * @return Created application name
      * @throws IdentityApplicationManagementException Identity Application Management Exception
      */
-    public ImportResponse importApplication(SpFileContent spFileContent) throws IdentityApplicationManagementException {
+    public ImportResponse importApplication(SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo)
+            throws IdentityApplicationManagementException {
 
         try {
             applicationMgtService = ApplicationManagementService.getInstance();
-            return applicationMgtService.importSPApplication(spFileContent, getTenantDomain(), getUsername(), false);
+            return applicationMgtService.importSPApplication(spFileContent, spBasicInfo, getTenantDomain(),
+                    getUsername(), false);
         } catch (IdentityApplicationManagementException idpException) {
             log.error("Error while importing application for tenant: " + getTenantDomain(), idpException);
             throw idpException;

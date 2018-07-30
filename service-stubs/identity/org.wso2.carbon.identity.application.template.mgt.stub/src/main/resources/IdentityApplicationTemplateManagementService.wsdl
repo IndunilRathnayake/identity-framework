@@ -1,0 +1,220 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://mgt.template.application.identity.carbon.wso2.org" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:ax2175="http://mgt.template.application.identity.carbon.wso2.org/xsd" xmlns:ns1="http://org.apache.axis2/xsd" xmlns:ax2177="http://dto.mgt.template.application.identity.carbon.wso2.org/xsd" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="http://mgt.template.application.identity.carbon.wso2.org">
+    <wsdl:documentation>IdentityApplicationTemplateManagementService</wsdl:documentation>
+    <wsdl:types>
+        <xs:schema attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://mgt.template.application.identity.carbon.wso2.org/xsd">
+            <xs:complexType name="IdentityApplicationTemplateMgtException">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="message" nillable="true" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:schema>
+        <xs:schema xmlns:ns="http://org.apache.axis2/xsd" xmlns:ax2176="http://mgt.template.application.identity.carbon.wso2.org/xsd" xmlns:ax2178="http://dto.mgt.template.application.identity.carbon.wso2.org/xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://org.apache.axis2/xsd">
+            <xs:import namespace="http://mgt.template.application.identity.carbon.wso2.org/xsd"/>
+            <xs:import namespace="http://dto.mgt.template.application.identity.carbon.wso2.org/xsd"/>
+            <xs:element name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="IdentityApplicationTemplateMgtException" nillable="true" type="ax2175:IdentityApplicationTemplateMgtException"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="loadApplicationTemplate">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="templateName" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="loadApplicationTemplateResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="return" nillable="true" type="ax2177:SpTemplateDTO"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="importApplicationTemplate">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="spTemplateDTO" nillable="true" type="ax2177:SpTemplateDTO"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getAllApplicationTemplateNames">
+                <xs:complexType>
+                    <xs:sequence/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getAllApplicationTemplateNamesResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:schema>
+        <xs:schema attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://dto.mgt.template.application.identity.carbon.wso2.org/xsd">
+            <xs:complexType name="SpTemplateDTO">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="description" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="name" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="spContent" nillable="true" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:message name="importApplicationTemplateRequest">
+        <wsdl:part name="parameters" element="ns1:importApplicationTemplate"/>
+    </wsdl:message>
+    <wsdl:message name="importApplicationTemplateResponse"/>
+    <wsdl:message name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
+        <wsdl:part name="parameters" element="ns1:IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+    </wsdl:message>
+    <wsdl:message name="loadApplicationTemplateRequest">
+        <wsdl:part name="parameters" element="ns1:loadApplicationTemplate"/>
+    </wsdl:message>
+    <wsdl:message name="loadApplicationTemplateResponse">
+        <wsdl:part name="parameters" element="ns1:loadApplicationTemplateResponse"/>
+    </wsdl:message>
+    <wsdl:message name="getAllApplicationTemplateNamesRequest">
+        <wsdl:part name="parameters" element="ns1:getAllApplicationTemplateNames"/>
+    </wsdl:message>
+    <wsdl:message name="getAllApplicationTemplateNamesResponse">
+        <wsdl:part name="parameters" element="ns1:getAllApplicationTemplateNamesResponse"/>
+    </wsdl:message>
+    <wsdl:portType name="IdentityApplicationTemplateManagementServicePortType">
+        <wsdl:operation name="importApplicationTemplate">
+            <wsdl:input message="tns:importApplicationTemplateRequest" wsaw:Action="urn:importApplicationTemplate"/>
+            <wsdl:output message="tns:importApplicationTemplateResponse" wsaw:Action="urn:importApplicationTemplateResponse"/>
+            <wsdl:fault message="tns:IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException" wsaw:Action="urn:importApplicationTemplateIdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+        </wsdl:operation>
+        <wsdl:operation name="loadApplicationTemplate">
+            <wsdl:input message="tns:loadApplicationTemplateRequest" wsaw:Action="urn:loadApplicationTemplate"/>
+            <wsdl:output message="tns:loadApplicationTemplateResponse" wsaw:Action="urn:loadApplicationTemplateResponse"/>
+            <wsdl:fault message="tns:IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException" wsaw:Action="urn:loadApplicationTemplateIdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+        </wsdl:operation>
+        <wsdl:operation name="getAllApplicationTemplateNames">
+            <wsdl:input message="tns:getAllApplicationTemplateNamesRequest" wsaw:Action="urn:getAllApplicationTemplateNames"/>
+            <wsdl:output message="tns:getAllApplicationTemplateNamesResponse" wsaw:Action="urn:getAllApplicationTemplateNamesResponse"/>
+            <wsdl:fault message="tns:IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException" wsaw:Action="urn:getAllApplicationTemplateNamesIdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="IdentityApplicationTemplateManagementServiceSoap11Binding" type="tns:IdentityApplicationTemplateManagementServicePortType">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <wsdl:operation name="importApplicationTemplate">
+            <soap:operation soapAction="urn:importApplicationTemplate" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
+                <soap:fault use="literal" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="loadApplicationTemplate">
+            <soap:operation soapAction="urn:loadApplicationTemplate" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
+                <soap:fault use="literal" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getAllApplicationTemplateNames">
+            <soap:operation soapAction="urn:getAllApplicationTemplateNames" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
+                <soap:fault use="literal" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+            </wsdl:fault>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:binding name="IdentityApplicationTemplateManagementServiceSoap12Binding" type="tns:IdentityApplicationTemplateManagementServicePortType">
+        <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <wsdl:operation name="importApplicationTemplate">
+            <soap12:operation soapAction="urn:importApplicationTemplate" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
+                <soap12:fault use="literal" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="loadApplicationTemplate">
+            <soap12:operation soapAction="urn:loadApplicationTemplate" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
+                <soap12:fault use="literal" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getAllApplicationTemplateNames">
+            <soap12:operation soapAction="urn:getAllApplicationTemplateNames" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
+                <soap12:fault use="literal" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+            </wsdl:fault>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:binding name="IdentityApplicationTemplateManagementServiceHttpBinding" type="tns:IdentityApplicationTemplateManagementServicePortType">
+        <http:binding verb="POST"/>
+        <wsdl:operation name="importApplicationTemplate">
+            <http:operation location="importApplicationTemplate"/>
+            <wsdl:input>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="loadApplicationTemplate">
+            <http:operation location="loadApplicationTemplate"/>
+            <wsdl:input>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="getAllApplicationTemplateNames">
+            <http:operation location="getAllApplicationTemplateNames"/>
+            <wsdl:input>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="IdentityApplicationTemplateManagementService">
+        <wsdl:port name="IdentityApplicationTemplateManagementServiceHttpsSoap11Endpoint" binding="tns:IdentityApplicationTemplateManagementServiceSoap11Binding">
+            <soap:address location="https://localhost:9443/services/IdentityApplicationTemplateManagementService.IdentityApplicationTemplateManagementServiceHttpsSoap11Endpoint/"/>
+        </wsdl:port>
+        <wsdl:port name="IdentityApplicationTemplateManagementServiceHttpsSoap12Endpoint" binding="tns:IdentityApplicationTemplateManagementServiceSoap12Binding">
+            <soap12:address location="https://localhost:9443/services/IdentityApplicationTemplateManagementService.IdentityApplicationTemplateManagementServiceHttpsSoap12Endpoint/"/>
+        </wsdl:port>
+        <wsdl:port name="IdentityApplicationTemplateManagementServiceHttpsEndpoint" binding="tns:IdentityApplicationTemplateManagementServiceHttpBinding">
+            <http:address location="https://localhost:9443/services/IdentityApplicationTemplateManagementService.IdentityApplicationTemplateManagementServiceHttpsEndpoint/"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>
