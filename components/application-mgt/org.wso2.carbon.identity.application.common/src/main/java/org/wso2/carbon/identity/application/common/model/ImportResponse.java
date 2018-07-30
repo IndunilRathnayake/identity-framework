@@ -27,6 +27,8 @@ public class ImportResponse {
 
     private String applicationName;
 
+    private ServiceProvider application;
+
     private String[] errors;
 
     public String getApplicationName() {
@@ -57,5 +59,25 @@ public class ImportResponse {
     public void setResponseCode(int responseCode) {
 
         this.responseCode = responseCode;
+    }
+
+    /**
+     * Get the service provider.
+     *
+     * @return service provider
+     */
+    public ServiceProvider getApplication() {
+
+        return application;
+    }
+
+    /**
+     * Set the service provider.
+     *
+     * @param application service provider
+     */
+    public void setApplication(ServiceProvider application) {
+
+        this.application = application;
     }
 }

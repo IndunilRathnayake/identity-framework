@@ -220,12 +220,15 @@ public abstract class ApplicationManagementService {
      * Import Service Provider application.
      *
      * @param spFileContent xml string of the SP and file name
+     * @param spBasicInfo   SP basic information
      * @param tenantDomain  tenant Domain
      * @param username      username
      * @param isUpdate      isUpdate
      * @return ImportResponse
      * @throws IdentityApplicationManagementException Identity Application Management Exception
      */
-    public abstract ImportResponse importSPApplication(SpFileContent spFileContent, String tenantDomain, String
-            username, boolean isUpdate) throws IdentityApplicationManagementException;
+    public abstract ImportResponse importSPApplication(SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo,
+                                                       String tenantDomain, String username, boolean isUpdate)
+            throws IdentityApplicationManagementException;
+
 }

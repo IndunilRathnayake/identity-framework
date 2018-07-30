@@ -287,7 +287,6 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                 throw new IdentityApplicationManagementException(errorMessage);
             }
 
-            ApplicationPermission[] permissions = serviceProvider.getPermissionAndRoleConfig().getPermissions();
             String applicationNode = ApplicationMgtUtil.getApplicationPermissionPath() + RegistryConstants
                     .PATH_SEPARATOR + storedAppName;
             org.wso2.carbon.registry.api.Registry tenantGovReg = CarbonContext.getThreadLocalCarbonContext()
@@ -921,8 +920,9 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         return serviceProvider;
     }
 
-    public ImportResponse importSPApplication(SpFileContent spFileContent, String tenantDomain, String username,
-                                              boolean isUpdate) throws IdentityApplicationManagementException {
+    public ImportResponse importSPApplication(SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo,
+                                              String tenantDomain, String username, boolean isUpdate)
+            throws IdentityApplicationManagementException {
 
         if (log.isDebugEnabled()) {
             log.debug("Importing service provider from file " + spFileContent.getFileName());
@@ -930,7 +930,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
 
         ImportResponse importResponse = new ImportResponse();
         ServiceProvider serviceProvider = unmarshalSP(spFileContent, tenantDomain);
-
+        applySPBasicInfo(spBasicInfo, serviceProvider);
 
         Collection<ApplicationMgtListener> listeners =
                 ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
@@ -976,16 +976,18 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             }
             importResponse.setResponseCode(ImportResponse.CREATED);
             importResponse.setApplicationName(serviceProvider.getApplicationName());
+            importResponse.setApplication(serviceProvider);
             importResponse.setErrors(new String[0]);
             return importResponse;
         } catch (IdentityApplicationManagementValidationException e) {
             deleteCreatedSP(savedSP, tenantDomain, username, isUpdate);
             importResponse.setResponseCode(ImportResponse.FAILED);
             importResponse.setApplicationName(null);
+            importResponse.setApplication(null);
             importResponse.setErrors(e.getValidationMsg());
             return importResponse;
         } catch (IdentityApplicationManagementException e) {
-           deleteCreatedSP(savedSP, tenantDomain, username, isUpdate);
+            deleteCreatedSP(savedSP, tenantDomain, username, isUpdate);
             String errorMsg = String.format("Error in importing provided service provider %s@%s from file ",
                     serviceProvider.getApplicationName(), tenantDomain);
             log.error(errorMsg, e);
@@ -1264,6 +1266,20 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                         savedSP.getApplicationName(), tenantDomain);
                 log.error(errorMsg, e);
                 throw new IdentityApplicationManagementException(errorMsg, e);
+            }
+        }
+    }
+
+    private void applySPBasicInfo(ApplicationBasicInfo spBasicInfo, ServiceProvider serviceProvider) {
+
+        if (spBasicInfo != null) {
+            String spName = spBasicInfo.getApplicationName();
+            String spDescription = spBasicInfo.getDescription();
+            if(spName != null) {
+                serviceProvider.setApplicationName(spName);
+            }
+            if(spDescription != null) {
+                serviceProvider.setDescription(spDescription);
             }
         }
     }

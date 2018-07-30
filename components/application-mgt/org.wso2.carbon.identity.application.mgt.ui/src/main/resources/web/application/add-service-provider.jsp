@@ -16,6 +16,13 @@
 ~ specific language governing permissions and limitations
 ~ under the License.
 -->
+<%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ApplicationTemplateMgtServiceClient"%>
+<%@ page import="org.wso2.carbon.ui.CarbonUIUtil" %>
+<%@ page import="org.wso2.carbon.utils.ServerConstants" %>
+<%@ page import="org.apache.axis2.context.ConfigurationContext" %>
+<%@ page import="org.wso2.carbon.CarbonConstants" %>
+<%@ page import="org.owasp.encoder.Encode" %>
+<%@ page import="org.wso2.carbon.identity.application.template.mgt.dto.xsd.SpTemplateDTO" %>
 
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="carbon" uri="http://wso2.org/projects/carbon/taglibs/carbontags.jar"%>
@@ -33,6 +40,26 @@
     String[] importError = (String[]) request.getSession().getAttribute("importError");
     if (importError == null) {
         importError = new String[0];
+    }
+
+    SpTemplateDTO[] spTemplateDTOS = null;
+    try {
+        String cookie = (String) session.getAttribute(ServerConstants.ADMIN_SERVICE_COOKIE);
+        String backendServerURL = CarbonUIUtil.getServerURL(config.getServletContext(), session);
+        ConfigurationContext configContext =
+                (ConfigurationContext) config.getServletContext()
+                        .getAttribute(CarbonConstants.CONFIGURATION_CONTEXT);
+
+        ApplicationTemplateMgtServiceClient serviceClient = new ApplicationTemplateMgtServiceClient(cookie,
+                backendServerURL, configContext);
+        spTemplateDTOS = serviceClient.getAllApplicationTemplates();
+    } catch (Exception e) {
+        CarbonUIMessage.sendCarbonUIMessage(e.getMessage(), CarbonUIMessage.ERROR, request, e);
+%>
+<script>
+    location.href = 'add-service-provider.jsp';
+</script>
+<%
     }
 %>
 <script type="text/javascript">
@@ -80,14 +107,27 @@ function importAppOnclick() {
         return true;
     }
 }
+
+function useSpTemplateOnclick() {
+    $("#template-sp-form").submit();
+    return true;
+}
 function showManual() {
     $("#add-sp-form").show();
+    $("#template-sp-form").hide();
     $("#upload-sp-form").hide();
 }
 
 function showFile() {
     $("#add-sp-form").hide();
+    $("#template-sp-form").hide();
     $("#upload-sp-form").show();
+}
+
+function showFromTemplate() {
+    $("#add-sp-form").hide();
+    $("#upload-sp-form").hide();
+    $("#template-sp-form").show();
 }
 $(function() {
     $( "#importErrorMsgDialog" ).dialog({
@@ -111,6 +151,8 @@ window.onload = function() {
         $( "#importErrorMsgDialog" ).dialog( "open" );
     <% } %>
 };
+
+
 </script>
 
 <fmt:bundle basename="org.wso2.carbon.identity.application.mgt.ui.i18n.Resources">
@@ -139,7 +181,12 @@ window.onload = function() {
                         <label for="file-option">File Configuration</label>
                     </td>
                 </tr>
-                
+                <tr>
+                    <td><input type="radio" id="template-option" name="upload-type-selector"
+                               onclick="showFromTemplate();">
+                        <label for="template-option">Template Configuration</label>
+                    </td>
+                </tr>
                 </tbody>
             </table>
             <br/>
@@ -199,6 +246,62 @@ window.onload = function() {
                     </tr>
                     </tbody>
                 </table>
+            </form>
+            <form id="template-sp-form" name="template-sp-form" method="post"
+                  action="add-service-provider-template-finish-ajaxprocessor.jsp">
+                <div class="sectionSeperator togglebleTitle"><fmt:message key='title.select.sp.template'/></div>
+                <div class="sectionSub">
+                    <table class="carbonFormTable">
+                        <tr>
+                            <td style="width:15%" class="leftCol-med labelField"><fmt:message key='config.application.info.basic.name'/>:<span class="required">*</span></td>
+                            <td>
+                                <input id="template-sp-name" name="template-sp-name" type="text" value="" white-list-patterns="^[a-zA-Z0-9\s._-]*$" autofocus/>
+                                <div class="sectionHelp">
+                                    <fmt:message key='help.name'/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width:15%" class="leftCol-med labelField"><fmt:message key='config.application.info.basic.description'/>:</td>
+                            <td>
+                                <textarea style="width:50%" type="text" name="template-sp-description" id="template-sp-description" class="text-box-big"></textarea>
+                                <div class="sectionHelp">
+                                    <fmt:message key='help.desc'/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width:15%" class="leftCol-med labelField"><fmt:message key='config.application.info.basic.template'/>:</td>
+                            <td>
+                                <select style="min-width: 250px;" id="sp-template" name="sp-template">
+                                    <option value="">---Select---</option>
+                                    <%
+                                        if (spTemplateDTOS != null && spTemplateDTOS.length > 0) {
+                                            for (SpTemplateDTO spTemplate : spTemplateDTOS) {
+                                                if (spTemplate != null) {
+                                    %>
+                                    <option
+                                            value="<%=Encode.forHtmlAttribute(spTemplate.getName())%>"
+                                            title="<%=Encode.forHtmlAttribute(spTemplate.getDescription())%>">
+                                        <%=Encode.forHtmlContent(spTemplate.getName())%>
+                                    </option>
+                                    <%
+                                                }
+                                            }
+                                        }
+                                    %>
+                                </select>
+                                <div class="sectionHelp">
+                                    <fmt:message key='help.template'/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="buttonRow">
+                    <input type="button" class="button"  value="<fmt:message key='button.add.service.providers.from.template'/>" onclick="useSpTemplateOnclick();"/>
+                    <input type="button" class="button" onclick="javascript:location.href='list-service-providers.jsp'" value="<fmt:message key='button.cancel'/>" />
+                </div>
             </form>
         </div>
     </div>

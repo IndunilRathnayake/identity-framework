@@ -76,6 +76,11 @@
                 /permission/admin/manage/identity/applicationmgt/create
             </parameter>
         </operation>
+        <operation name="importServiceProvider">
+            <parameter name="AuthorizationAction" locked="true">
+                /permission/admin/manage/identity/applicationmgt/create
+            </parameter>
+        </operation>
         <operation name="exportApplication">
             <parameter name="AuthorizationAction" locked="true">
                 /permission/admin/manage/identity/applicationmgt/view
