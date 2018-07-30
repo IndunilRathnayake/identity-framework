@@ -54,6 +54,7 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.mgt.ApplicationConstants;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -70,6 +71,7 @@ import javax.servlet.http.HttpServletResponse;
 import static org.wso2.carbon.identity.application.authentication.framework.AuthenticatorFlowStatus.FAIL_COMPLETED;
 import static org.wso2.carbon.identity.application.authentication.framework.AuthenticatorFlowStatus.INCOMPLETE;
 import static org.wso2.carbon.identity.application.authentication.framework.AuthenticatorFlowStatus.SUCCESS_COMPLETED;
+import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.AdaptiveAuthentication.ADAPTIVE_AUTH_LONG_WAIT_TIMEOUT;
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils.promptOnLongWait;
 
 public class GraphBasedSequenceHandler extends DefaultStepBasedSequenceHandler implements SequenceHandler {
@@ -471,12 +473,14 @@ public class GraphBasedSequenceHandler extends DefaultStepBasedSequenceHandler i
         if (caller != null) {
             FrameworkServiceDataHolder.getInstance().getAsyncSequenceExecutor().exec(caller, asyncReturn, context);
             if (!promptOnLongWait()) {
+                int waitTimeout = getLongWaitTimeout();
                 synchronized (context) {
                     try {
-                        context.wait();
+                        context.wait(waitTimeout);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        log.error("Error while waiting for the external call the complete. ", e);
+                        log.error("Thread interrupted while waiting for the external call to complete for session " +
+                                "data key: " + context.getContextIdentifier() + ". ", e);
                     }
                 }
                 resumeLongWait(request, response, context);
@@ -484,6 +488,21 @@ public class GraphBasedSequenceHandler extends DefaultStepBasedSequenceHandler i
             return true;
         }
         return false;
+    }
+
+    private int getLongWaitTimeout() {
+
+        String waitTimeoutPropValue = IdentityUtil.getProperty(ADAPTIVE_AUTH_LONG_WAIT_TIMEOUT);
+        int waitTimeout = 10000;
+        try {
+            if (waitTimeoutPropValue != null) {
+                waitTimeout = Integer.parseInt(waitTimeoutPropValue);
+            }
+        } catch (NumberFormatException e) {
+            //ignore. Default value will be used.
+            log.warn("Error while reading the wait timeout. Default value of 10 seconds will be used. ", e);
+        }
+        return waitTimeout;
     }
 
     private void handleDecisionPoint(HttpServletRequest request, HttpServletResponse response,
@@ -499,21 +518,21 @@ public class GraphBasedSequenceHandler extends DefaultStepBasedSequenceHandler i
                 .getAttribute(FrameworkConstants.RequestParams.FLOW_STATUS);
         if (flowStatus != null) {
             switch (flowStatus) {
-            case SUCCESS_COMPLETED:
-                executeFunction("onSuccess", dynamicDecisionNode, context);
-                break;
-            case FAIL_COMPLETED:
-                executeFunction("onFail", dynamicDecisionNode, context);
-                if (dynamicDecisionNode.getDefaultEdge() instanceof EndStep) {
-                    dynamicDecisionNode.setDefaultEdge(new FailNode());
-                }
-                break;
-            case FALLBACK:
-                executeFunction("onFallback", dynamicDecisionNode, context);
-                break;
-            case USER_ABORT:
-                executeFunction("onUserAbort", dynamicDecisionNode, context);
-                break;
+                case SUCCESS_COMPLETED:
+                    executeFunction("onSuccess", dynamicDecisionNode, context);
+                    break;
+                case FAIL_COMPLETED:
+                    executeFunction("onFail", dynamicDecisionNode, context);
+                    if (dynamicDecisionNode.getDefaultEdge() instanceof EndStep) {
+                        dynamicDecisionNode.setDefaultEdge(new FailNode());
+                    }
+                    break;
+                case FALLBACK:
+                    executeFunction("onFallback", dynamicDecisionNode, context);
+                    break;
+                case USER_ABORT:
+                    executeFunction("onUserAbort", dynamicDecisionNode, context);
+                    break;
             }
         }
 
