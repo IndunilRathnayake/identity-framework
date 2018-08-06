@@ -49,6 +49,8 @@ public interface ApplicationTemplateDAO {
     SpTemplateDTO loadApplicationTemplate(String templateName, String tenantDomain)
             throws IdentityApplicationTemplateMgtException;
 
+    boolean isExistingTemplate(String templateName, String tenantDomain) throws IdentityApplicationTemplateMgtException;
+
     /**
      * Get all application templates.
      *

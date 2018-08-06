@@ -29,6 +29,9 @@ public class ApplicationTemplateMgtDBQueries {
     public static final String LOAD_SP_TEMPLATE_CONTENT = "SELECT CONTENT FROM SP_TEMPLATE WHERE NAME = ? " +
             "AND TENANT_ID = ?";
 
+    public static final String IS_SP_TEMPLATE_EXISTS = "SELECT ID FROM SP_TEMPLATE WHERE NAME = ? " +
+            "AND TENANT_ID = ?";
+
     public static final String GET_ALL_SP_TEMPLATES = "SELECT NAME, DESCRIPTION,CONTENT FROM SP_TEMPLATE WHERE " +
             "TENANT_ID = ?";
 

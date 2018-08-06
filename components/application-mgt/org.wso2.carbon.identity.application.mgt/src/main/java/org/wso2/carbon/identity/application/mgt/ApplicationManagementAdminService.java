@@ -166,6 +166,32 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
     }
 
     /**
+     * Update application from a Service provider template.
+     *
+     * @param spFileContent xml string of the SP and file name
+     * @throws org.wso2.carbon.identity.application.common.IdentityApplicationManagementException
+     */
+    /**
+     * Update application from a Service provider template.
+     *
+     * @param applicationName name of the application to be updated
+     * @param spFileContent service provider configurations to be updated
+     * @param spBasicInfo service provider basic info to be updated
+     * @throws IdentityApplicationManagementException
+     */
+    public void updateApplicationFromTemplate(String applicationName, SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo)
+            throws IdentityApplicationManagementException {
+
+        try {
+            applicationMgtService = ApplicationManagementService.getInstance();
+            applicationMgtService.updateApplication(applicationName, spFileContent, spBasicInfo, getTenantDomain(),
+                    getUsername());
+        } catch (IdentityApplicationManagementException idpException) {
+            throw idpException;
+        }
+    }
+
+    /**
      * Delete Application
      *
      * @param applicationName Application name
@@ -300,11 +326,13 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
      * @return Created application name
      * @throws IdentityApplicationManagementException Identity Application Management Exception
      */
-    public ImportResponse importApplication(SpFileContent spFileContent) throws IdentityApplicationManagementException {
+    public ImportResponse importApplication(SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo)
+            throws IdentityApplicationManagementException {
 
         try {
             applicationMgtService = ApplicationManagementService.getInstance();
-            return applicationMgtService.importSPApplication(spFileContent, getTenantDomain(), getUsername(), false);
+            return applicationMgtService.importSPApplication(spFileContent, spBasicInfo, getTenantDomain(), getUsername(),
+                    false);
         } catch (IdentityApplicationManagementException idpException) {
             log.error("Error while importing application for tenant: " + getTenantDomain(), idpException);
             throw idpException;
@@ -318,7 +346,7 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
      * @return response of importing SP
      * @throws IdentityApplicationManagementException
      */
-    public ImportResponse importServiceProvider(ServiceProvider serviceProvider)
+    /*public ImportResponse importServiceProvider(ServiceProvider serviceProvider)
             throws IdentityApplicationManagementException {
 
         try {
@@ -328,7 +356,7 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
             log.error("Error while importing service provider for tenant: " + getTenantDomain(), idpException);
             throw idpException;
         }
-    }
+    }*/
 
     /**
      * Export service provider as XML.

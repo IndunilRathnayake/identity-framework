@@ -18,6 +18,13 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="createApplication">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="serviceProvider" nillable="true" type="ax2171:ServiceProvider"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="addApplication">
                 <xs:complexType>
                     <xs:sequence>
@@ -29,13 +36,6 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="return" nillable="true" type="ax2171:ServiceProvider"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="createApplication">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="serviceProvider" nillable="true" type="ax2171:ServiceProvider"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -55,6 +55,15 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="serviceProvider" nillable="true" type="ax2171:ServiceProvider"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="updateApplicationFromTemplate">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="applicationName" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="0" name="spFileContent" nillable="true" type="ax2171:SpFileContent"/>
+                        <xs:element minOccurs="0" name="spBasicInfo" nillable="true" type="ax2171:ApplicationBasicInfo"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -443,6 +452,7 @@
             </xs:complexType>
             <xs:complexType name="ImportResponse">
                 <xs:sequence>
+                    <xs:element minOccurs="0" name="application" nillable="true" type="ax2171:ServiceProvider"/>
                     <xs:element minOccurs="0" name="applicationName" nillable="true" type="xs:string"/>
                     <xs:element maxOccurs="unbounded" minOccurs="0" name="errors" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="responseCode" type="xs:int"/>
@@ -508,6 +518,10 @@
     <wsdl:message name="getAllLocalAuthenticatorsResponse">
         <wsdl:part name="parameters" element="ns1:getAllLocalAuthenticatorsResponse"/>
     </wsdl:message>
+    <wsdl:message name="updateApplicationFromTemplateRequest">
+        <wsdl:part name="parameters" element="ns1:updateApplicationFromTemplate"/>
+    </wsdl:message>
+    <wsdl:message name="updateApplicationFromTemplateResponse"/>
     <wsdl:message name="createApplicationRequest">
         <wsdl:part name="parameters" element="ns1:createApplication"/>
     </wsdl:message>
@@ -540,6 +554,8 @@
     <wsdl:message name="importApplicationResponse">
         <wsdl:part name="parameters" element="ns1:importApplicationResponse"/>
     </wsdl:message>
+    <wsdl:message name="importServiceProviderRequest"/>
+    <wsdl:message name="importServiceProviderResponse"/>
     <wsdl:portType name="IdentityApplicationManagementServicePortType">
         <wsdl:operation name="getAllLocalClaimUris">
             <wsdl:input message="tns:getAllLocalClaimUrisRequest" wsaw:Action="urn:getAllLocalClaimUris"/>
@@ -581,6 +597,11 @@
             <wsdl:output message="tns:getAllLocalAuthenticatorsResponse" wsaw:Action="urn:getAllLocalAuthenticatorsResponse"/>
             <wsdl:fault message="tns:IdentityApplicationManagementServiceIdentityApplicationManagementException" name="IdentityApplicationManagementServiceIdentityApplicationManagementException" wsaw:Action="urn:getAllLocalAuthenticatorsIdentityApplicationManagementServiceIdentityApplicationManagementException"/>
         </wsdl:operation>
+        <wsdl:operation name="updateApplicationFromTemplate">
+            <wsdl:input message="tns:updateApplicationFromTemplateRequest" wsaw:Action="urn:updateApplicationFromTemplate"/>
+            <wsdl:output message="tns:updateApplicationFromTemplateResponse" wsaw:Action="urn:updateApplicationFromTemplateResponse"/>
+            <wsdl:fault message="tns:IdentityApplicationManagementServiceIdentityApplicationManagementException" name="IdentityApplicationManagementServiceIdentityApplicationManagementException" wsaw:Action="urn:updateApplicationFromTemplateIdentityApplicationManagementServiceIdentityApplicationManagementException"/>
+        </wsdl:operation>
         <wsdl:operation name="createApplication">
             <wsdl:input message="tns:createApplicationRequest" wsaw:Action="urn:createApplication"/>
             <wsdl:output message="tns:createApplicationResponse" wsaw:Action="urn:createApplicationResponse"/>
@@ -609,6 +630,10 @@
             <wsdl:input message="tns:importApplicationRequest" wsaw:Action="urn:importApplication"/>
             <wsdl:output message="tns:importApplicationResponse" wsaw:Action="urn:importApplicationResponse"/>
             <wsdl:fault message="tns:IdentityApplicationManagementServiceIdentityApplicationManagementException" name="IdentityApplicationManagementServiceIdentityApplicationManagementException" wsaw:Action="urn:importApplicationIdentityApplicationManagementServiceIdentityApplicationManagementException"/>
+        </wsdl:operation>
+        <wsdl:operation name="importServiceProvider">
+            <wsdl:input message="tns:importServiceProviderRequest" wsaw:Action="urn:importServiceProvider"/>
+            <wsdl:output message="tns:importServiceProviderResponse" wsaw:Action="urn:importServiceProviderResponse"/>
         </wsdl:operation>
     </wsdl:portType>
     <wsdl:binding name="IdentityApplicationManagementServiceSoap11Binding" type="tns:IdentityApplicationManagementServicePortType">
@@ -709,6 +734,18 @@
                 <soap:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
             </wsdl:fault>
         </wsdl:operation>
+        <wsdl:operation name="updateApplicationFromTemplate">
+            <soap:operation soapAction="urn:updateApplicationFromTemplate" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="IdentityApplicationManagementServiceIdentityApplicationManagementException">
+                <soap:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
+            </wsdl:fault>
+        </wsdl:operation>
         <wsdl:operation name="createApplication">
             <soap:operation soapAction="urn:createApplication" style="document"/>
             <wsdl:input>
@@ -777,6 +814,15 @@
             <wsdl:fault name="IdentityApplicationManagementServiceIdentityApplicationManagementException">
                 <soap:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
             </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="importServiceProvider">
+            <soap:operation soapAction="urn:importServiceProvider" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
         </wsdl:operation>
     </wsdl:binding>
     <wsdl:binding name="IdentityApplicationManagementServiceSoap12Binding" type="tns:IdentityApplicationManagementServicePortType">
@@ -877,6 +923,18 @@
                 <soap12:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
             </wsdl:fault>
         </wsdl:operation>
+        <wsdl:operation name="updateApplicationFromTemplate">
+            <soap12:operation soapAction="urn:updateApplicationFromTemplate" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="IdentityApplicationManagementServiceIdentityApplicationManagementException">
+                <soap12:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
+            </wsdl:fault>
+        </wsdl:operation>
         <wsdl:operation name="createApplication">
             <soap12:operation soapAction="urn:createApplication" style="document"/>
             <wsdl:input>
@@ -945,6 +1003,15 @@
             <wsdl:fault name="IdentityApplicationManagementServiceIdentityApplicationManagementException">
                 <soap12:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
             </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="importServiceProvider">
+            <soap12:operation soapAction="urn:importServiceProvider" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
         </wsdl:operation>
     </wsdl:binding>
     <wsdl:binding name="IdentityApplicationManagementServiceHttpBinding" type="tns:IdentityApplicationManagementServicePortType">
@@ -1021,6 +1088,15 @@
                 <mime:content type="text/xml" part="parameters"/>
             </wsdl:output>
         </wsdl:operation>
+        <wsdl:operation name="updateApplicationFromTemplate">
+            <http:operation location="updateApplicationFromTemplate"/>
+            <wsdl:input>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:output>
+        </wsdl:operation>
         <wsdl:operation name="createApplication">
             <http:operation location="createApplication"/>
             <wsdl:input>
@@ -1068,6 +1144,15 @@
         </wsdl:operation>
         <wsdl:operation name="importApplication">
             <http:operation location="importApplication"/>
+            <wsdl:input>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="importServiceProvider">
+            <http:operation location="importServiceProvider"/>
             <wsdl:input>
                 <mime:content type="text/xml" part="parameters"/>
             </wsdl:input>

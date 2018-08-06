@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.application.template.mgt;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.template.mgt.cache.ServiceProviderTemplateCache;
@@ -68,14 +69,50 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
     public SpTemplateDTO loadApplicationTemplate(String templateName, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
-        ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(templateName,
+        String loadingSpTemplateName = templateName;
+        if (StringUtils.isNotBlank(loadingSpTemplateName) && !isExistingTemplate(loadingSpTemplateName, tenantDomain)) {
+            throw new IdentityApplicationTemplateMgtException(String.format("Template with name: %s, is not configured " +
+                    "for tenant: %s.", loadingSpTemplateName, tenantDomain));
+        }
+        if (StringUtils.isEmpty(loadingSpTemplateName)) {
+            if (isExistingTemplate(ApplicationTemplateMgtConstants.TENANT_DEFAULT_SP_TEMPLATE_NAME, tenantDomain)) {
+                loadingSpTemplateName = ApplicationTemplateMgtConstants.TENANT_DEFAULT_SP_TEMPLATE_NAME;
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Template name is not specified. Checking for the default template of " +
+                            "tenant: %s", tenantDomain));
+                }
+            } else {
+                loadingSpTemplateName = ApplicationTemplateMgtConstants.SYSTEM_DEFAULT_SP_TEMPLATE_NAME;
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Template name is not specified. Checking for the system wide " +
+                            "default template"));
+                }
+            }
+
+        }
+
+        ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(loadingSpTemplateName,
                 tenantDomain);
-        SpTemplateDTO spTemplateDTO = ServiceProviderTemplateCache.getInstance().getValueFromCache(templateCacheKey);
+        SpTemplateDTO spTemplateDTO = getSpTemplateFromCache(loadingSpTemplateName, tenantDomain, templateCacheKey);
         if (spTemplateDTO != null) {
             return spTemplateDTO;
         }
+
+        spTemplateDTO = getSpTemplateFromDB(loadingSpTemplateName, tenantDomain, templateCacheKey);
+        if (spTemplateDTO != null) {
+            return spTemplateDTO;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Template with name: %s is not registered.", loadingSpTemplateName));
+        }
+        return new SpTemplateDTO();
+    }
+
+    @Override
+    public boolean isExistingTemplate(String templateName, String tenantDomain) throws IdentityApplicationTemplateMgtException {
+
         ApplicationTemplateDAO applicationTemplateDAO = new ApplicationTemplateDAOImpl();
-        return applicationTemplateDAO.loadApplicationTemplate(templateName, tenantDomain);
+        return applicationTemplateDAO.isExistingTemplate(templateName, tenantDomain);
     }
 
     @Override
@@ -110,5 +147,37 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
             throws IdentityApplicationTemplateMgtException {
 
         return loadApplicationTemplate(templateName, tenantDomain).getSpContent();
+    }
+
+    private SpTemplateDTO getSpTemplateFromDB(String templateName, String tenantDomain,
+                                              ServiceProviderTemplateCacheKey templateCacheKey)
+            throws IdentityApplicationTemplateMgtException {
+
+        SpTemplateDTO spTemplateDTO;ApplicationTemplateDAO applicationTemplateDAO = new ApplicationTemplateDAOImpl();
+        spTemplateDTO = applicationTemplateDAO.loadApplicationTemplate(templateName, tenantDomain);
+
+        if (spTemplateDTO != null) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Template with name: %s, is taken from database for tenant: %s ",
+                        templateName, tenantDomain));
+            }
+            ServiceProviderTemplateCache.getInstance().addToCache(templateCacheKey, spTemplateDTO);
+            return spTemplateDTO;
+        }
+        return null;
+    }
+
+    private SpTemplateDTO getSpTemplateFromCache(String templateName, String tenantDomain,
+                                                 ServiceProviderTemplateCacheKey templateCacheKey) {
+
+        SpTemplateDTO spTemplateDTO = ServiceProviderTemplateCache.getInstance().getValueFromCache(templateCacheKey);
+        if (spTemplateDTO != null) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Template with name: %s, is taken from cache of tenant: %s ",
+                        templateName, tenantDomain));
+            }
+            return spTemplateDTO;
+        }
+        return null;
     }
 }

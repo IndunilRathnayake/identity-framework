@@ -107,6 +107,20 @@ public abstract class ApplicationManagementService {
             throws IdentityApplicationManagementException;
 
     /**
+     * Update Application.
+     *
+     * @param applicationName name of the application to be updated
+     * @param spFileContent service provider configurations to be updated
+     * @param spBasicInfo service provider basic info to be updated
+     * @param tenantDomain tenant domain
+     * @param username application owner
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract void updateApplication(String applicationName, SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo,
+                                           String tenantDomain, String username)
+            throws IdentityApplicationManagementException;
+
+    /**
      * Delete Application
      *
      * @param tenantDomain Tenant Domain

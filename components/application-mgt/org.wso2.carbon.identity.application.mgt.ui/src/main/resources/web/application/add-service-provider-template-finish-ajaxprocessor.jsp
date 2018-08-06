@@ -17,12 +17,10 @@
   --%>
 
 <%@ page import="org.apache.axis2.context.ConfigurationContext" %>
-<%@ page import="org.apache.commons.lang.StringUtils" %>
 <%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="org.wso2.carbon.CarbonConstants" %>
 <%@ page import="org.wso2.carbon.identity.application.common.model.xsd.ApplicationBasicInfo" %>
 <%@ page import="org.wso2.carbon.identity.application.common.model.xsd.ImportResponse" %>
-<%@ page import="org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider" %>
 <%@ page import="org.wso2.carbon.identity.application.common.model.xsd.SpFileContent" %>
 <%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ApplicationManagementServiceClient" %>
 <%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ApplicationTemplateMgtServiceClient" %>
@@ -44,54 +42,46 @@
     String description = request.getParameter("template-sp-description");
     String templateName = request.getParameter("sp-template");
 
-    if (StringUtils.isNotEmpty(templateName)) {
-        try {
-            String cookie = (String) session.getAttribute(ServerConstants.ADMIN_SERVICE_COOKIE);
-            String backendServerURL = CarbonUIUtil.getServerURL(config.getServletContext(), session);
-            ConfigurationContext configContext = (ConfigurationContext) config.getServletContext()
-                    .getAttribute(CarbonConstants.CONFIGURATION_CONTEXT);
+    try {
+        String cookie = (String) session.getAttribute(ServerConstants.ADMIN_SERVICE_COOKIE);
+        String backendServerURL = CarbonUIUtil.getServerURL(config.getServletContext(), session);
+        ConfigurationContext configContext = (ConfigurationContext) config.getServletContext()
+                .getAttribute(CarbonConstants.CONFIGURATION_CONTEXT);
 
-            ApplicationTemplateMgtServiceClient templateMgtServiceClient = new ApplicationTemplateMgtServiceClient(
-                    cookie, backendServerURL, configContext);
-            SpTemplateDTO spTemplateDTO = templateMgtServiceClient.loadSpFromApplicationTemplate(templateName);
+        ApplicationTemplateMgtServiceClient templateMgtServiceClient = new ApplicationTemplateMgtServiceClient(
+                cookie, backendServerURL, configContext);
+        SpTemplateDTO spTemplateDTO = templateMgtServiceClient.loadSpFromApplicationTemplate(templateName);
 
-            ApplicationManagementServiceClient applicationMgtServiceClient = new ApplicationManagementServiceClient(
-                    cookie, backendServerURL, configContext);
-            SpFileContent spFileContent = new SpFileContent();
-            spFileContent.setContent(spTemplateDTO.getSpContent());
-            ApplicationBasicInfo spBasicInfo = new ApplicationBasicInfo();
-            spBasicInfo.setApplicationName(name);
-            spBasicInfo.setDescription(description);
-            ImportResponse importResponse = applicationMgtServiceClient.importApplication(spFileContent, spBasicInfo);
-            if (importResponse.getResponseCode() == CREATED) {
-                String appName = importResponse.getApplicationName();
-%>
-<script>
-    location.href = 'load-service-provider.jsp?spName=<%=Encode.forUriComponent(appName)%>';
-</script>
-<%
-} else {
-    String[] errors = importResponse.getErrors();
-    session.setAttribute("importError", errors);
-%>
-<script>
-    location.href = 'add-service-provider.jsp?importError=true';
-</script>
-<%
-    }
-} catch (Exception e) {
-    CarbonUIMessage.sendCarbonUIMessage(e.getMessage(), CarbonUIMessage.ERROR, request, e);
-%>
-<script>
-    location.href = 'add-service-provider.jsp';
-</script>
-<%
-    }
-} else {
-%>
-<script>
-    location.href = 'add-service-provider.jsp';
-</script>
-<%
-    }
-%>
+        ApplicationManagementServiceClient applicationMgtServiceClient = new ApplicationManagementServiceClient(
+                cookie, backendServerURL, configContext);
+        SpFileContent spFileContent = new SpFileContent();
+        spFileContent.setContent(spTemplateDTO.getSpContent());
+        ApplicationBasicInfo spBasicInfo = new ApplicationBasicInfo();
+        spBasicInfo.setApplicationName(name);
+        spBasicInfo.setDescription(description);
+        ImportResponse importResponse = applicationMgtServiceClient.importApplication(spFileContent, spBasicInfo);
+        if (importResponse.getResponseCode() == CREATED) {
+            String appName = importResponse.getApplicationName();
+        %>
+        <script>
+            location.href = 'load-service-provider.jsp?spName=<%=Encode.forUriComponent(appName)%>';
+        </script>
+        <%
+        } else {
+            String[] errors = importResponse.getErrors();
+            session.setAttribute("importError", errors);
+        %>
+        <script>
+            location.href = 'add-service-provider.jsp?importError=true';
+        </script>
+        <%
+            }
+    } catch (Exception e) {
+        CarbonUIMessage.sendCarbonUIMessage(e.getMessage(), CarbonUIMessage.ERROR, request, e);
+    %>
+    <script>
+        location.href = 'add-service-provider.jsp';
+    </script>
+    <%
+        }
+    %>

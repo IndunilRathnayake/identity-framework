@@ -49,6 +49,17 @@ public abstract class ApplicationTemplateManagementService {
             throws IdentityApplicationTemplateMgtException;
 
     /**
+     * Check existence of a application template.
+     *
+     * @param templateName template name
+     * @param tenantDomain tenant domain
+     * @return true if a template with the specified name exists
+     * @throws IdentityApplicationTemplateMgtException
+     */
+    public abstract boolean isExistingTemplate(String templateName, String tenantDomain)
+            throws IdentityApplicationTemplateMgtException;
+
+    /**
      * Get all service provider templates.
      *
      * @param tenantDomain tenant domain

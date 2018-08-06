@@ -56,7 +56,16 @@
 
             <script type="text/javascript">
 
-                function removeItem(templateName) {
+                function viewSPTemplate(templateName) {
+                    location.href = "view-sp-template.jsp?templateName=" + templateName;
+
+                }
+
+                function editSPTemplate(templateName) {
+                    location.href = "temp.jsp?templateName=" + templateName;
+                }
+
+                function removeSPTemplate(templateName) {
                     function doDelete() {
                         $.ajax({
                             type: 'POST',
@@ -78,20 +87,20 @@
                         doDelete, null);
                 }
 
-                function exportSP(templateName) {
+                /*function exportSPTemplate(templateName) {
 
                     function doInclude() {
                         document.getElementById('exportSecrets').value = "true";
-                        jQuery('#spExportData').submit();
+                        location.href = "export-sp-template-finish-ajaxprocessor.jsp?templateName=" + templateName;
                     }
                     function doExclude() {
                         document.getElementById('exportSecrets').value = "false";
-                        jQuery('#spExportData').submit();
+                        location.href = "export-sp-template-finish-ajaxprocessor.jsp?templateName=" + templateName;
                     }
                     document.getElementById('templateName').value = templateName;
                     CARBON.showConfirmationDialog('Do you want include the secret keys of "' + templateName + '"' +
                         ' export in the file ? (hashed or encrypted secret willn\'t be included)', doInclude, doExclude);
-                }
+                }*/
             </script>
 
             <form id="spTemplateExportData" name="sp-template-export-data" method="post"
@@ -104,13 +113,15 @@
 
                 String BUNDLE = "org.wso2.carbon.identity.application.template.mgt.ui.i18n.Resources";
                 ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE, request.getLocale());
-                SpTemplateDTO[] applicationsToDisplay = new SpTemplateDTO[0];
+                SpTemplateDTO[] templatesToDisplay = new SpTemplateDTO[0];
                 String paginationValue = "region=region1&item=sp_template_list";
                 String pageNumber = request.getParameter("pageNumber");
 
                 int pageNumberInt = 0;
                 int numberOfPages = 0;
                 int resultsPerPage = 10;
+
+                String system_template = "system-default";
 
                 if (pageNumber != null) {
                     try {
@@ -134,10 +145,10 @@
                         numberOfPages = (int) Math.ceil((double) spTemplateDTOS.length / resultsPerPage);
                         int startIndex = pageNumberInt * resultsPerPage;
                         int endIndex = (pageNumberInt + 1) * resultsPerPage;
-                        applicationsToDisplay = new SpTemplateDTO[resultsPerPage];
+                        templatesToDisplay = new SpTemplateDTO[resultsPerPage];
 
                         for (int i = startIndex, j = 0; i < endIndex && i < spTemplateDTOS.length; i++, j++) {
-                            applicationsToDisplay[j] = spTemplateDTOS[i];
+                            templatesToDisplay[j] = spTemplateDTOS[i];
                         }
                     }
                 } catch (Exception e) {
@@ -162,29 +173,57 @@
                             </tr>
                             </thead>
                             <%
+                                boolean canView = CarbonUIUtil.isUserAuthorized(request, "/permission/admin/manage/identity/apptemplatemgt/view");
+                                boolean canEdit = CarbonUIUtil.isUserAuthorized(request, "/permission/admin/manage/identity/apptemplatemgt/update");
+                                boolean canDelete = CarbonUIUtil.isUserAuthorized(request, "/permission/admin/manage/identity/apptemplatemgt/delete");
                                 if (spTemplateDTOS != null && spTemplateDTOS.length > 0) {
                             %>
                             <tbody>
                             <%
-                                for (SpTemplateDTO app : applicationsToDisplay) {
-                                    if (app != null) {
+                                for (SpTemplateDTO template : templatesToDisplay) {
+                                    if (template != null) {
                             %>
                             <tr>
-                                <td><%=Encode.forHtml(app.getName())%>
+                                <td><%=Encode.forHtml(template.getName())%>
                                 </td>
-                                <td><%=app.getDescription() != null ? Encode.forHtml(app.getDescription()) : ""%>
+                                <td><%=template.getDescription() != null ? Encode.forHtml(template.getDescription()) : ""%>
                                 </td>
                                 <td style="width: 100px; white-space: nowrap;">
+                                    <%
+                                        if (canView) {
+                                    %>
+                                    <a title="Edit Service Provider Template"
+                                       onclick="viewSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
+                                       class="icon-link"
+                                       style="background-image: url(../application-template/images/edit.gif)">View
+                                    </a>
+                                    <%
+                                        }
+                                        if (canEdit && template.getName() != system_template) {
+                                    %>
+                                    <a title="Edit Service Provider Template"
+                                       onclick="editSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
+                                       class="icon-link"
+                                       style="background-image: url(../application-template/images/edit.gif)">Edit
+                                    </a>
+                                    <%
+                                        }
+                                        if (canDelete && template.getName() != system_template) {
+                                    %>
                                     <a title="Remove Service Provider Template"
-                                       onclick="removeItem('<%=Encode.forJavaScriptAttribute(app.getName())%>');return false;" href="#"
+                                       onclick="removeSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
                                        class="icon-link"
                                        style="background-image: url(../application-template/images/delete.gif)">Delete
                                     </a>
-                                    <a title="Export Service Provider Template"
-                                       onclick="exportSP('<%=Encode.forJavaScriptAttribute(app.getName())%>');return false;" href="#"
+                                    <%
+                                        }
+                                    %>
+                                    <%--<a title="Export Service Provider Template"
+                                       onclick="exportSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
                                        class="icon-link"
                                        style="background-image: url(../application-template/images/publish.gif)">Export
-                                    </a></td>
+                                    </a>--%>
+                                </td>
                             </tr>
                             <%
                                     }

@@ -54,19 +54,14 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
     public void createApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
-        // get logged-in users tenant identifier.
-        int tenantID = MultitenantConstants.INVALID_TENANT_ID;
-
-        if (tenantDomain != null) {
-            tenantID = IdentityTenantUtil.getTenantId(tenantDomain);
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Creating application template: %s in tenant %s", spTemplateDTO.getName(),
+                    tenantDomain));
         }
 
+        int tenantID = getTenantID(tenantDomain);
         String templateName = spTemplateDTO.getName();
         String templateDescription = spTemplateDTO.getDescription();
-
-        if (log.isDebugEnabled()) {
-            log.debug("Creating Application Template " + templateName);
-        }
 
         Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement storeAppTemplatePrepStmt = null;
@@ -109,16 +104,11 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
     public SpTemplateDTO loadApplicationTemplate(String templateName, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
-        // get logged-in users tenant identifier.
-        int tenantID = MultitenantConstants.INVALID_TENANT_ID;
-
-        if (tenantDomain != null) {
-            tenantID = IdentityTenantUtil.getTenantId(tenantDomain);
-        }
-
         if (log.isDebugEnabled()) {
-            log.debug("Loading Application Template " + templateName);
+            log.debug(String.format("Loading application template: %s of tenant %s", templateName, tenantDomain));
         }
+
+        int tenantID = getTenantID(tenantDomain);
 
         Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement loadAppTemplatePrepStmt = null;
@@ -177,15 +167,65 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
     }
 
     @Override
+    public boolean isExistingTemplate(String templateName, String tenantDomain) throws IdentityApplicationTemplateMgtException {
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Checking application template exists for name: %s in tenant: %s", templateName,
+                    tenantDomain));
+        }
+
+        int tenantID = getTenantID(tenantDomain);
+
+        Connection connection = IdentityDatabaseUtil.getDBConnection();
+        PreparedStatement isAppTemplateExistsPrepStmt = null;
+        boolean isTemplateExists = false;
+        ResultSet results = null;
+
+        try {
+            isAppTemplateExistsPrepStmt = connection.prepareStatement(
+                    ApplicationTemplateMgtDBQueries.IS_SP_TEMPLATE_EXISTS);
+
+            isAppTemplateExistsPrepStmt.setString(1, templateName);
+            isAppTemplateExistsPrepStmt.setInt(2, tenantID);
+
+            try (ResultSet isTemplateExistsResultSet = isAppTemplateExistsPrepStmt
+                    .executeQuery()) {
+                if (!connection.getAutoCommit()) {
+                    connection.commit();
+                }
+                if (isTemplateExistsResultSet.next()) {
+                    isTemplateExists = true;
+                }
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Application Template Loaded successfully with name " + templateName);
+            }
+        } catch (SQLException e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException sql) {
+                throw new IdentityApplicationTemplateMgtException(
+                        "Error while checking existence of Application Template", sql);
+            }
+            throw new IdentityApplicationTemplateMgtException("Error while checking existence of Application Template",
+                    e);
+        } finally {
+            IdentityDatabaseUtil.closeAllConnections(connection, results, isAppTemplateExistsPrepStmt);
+        }
+        return isTemplateExists;
+    }
+
+    @Override
     public List<SpTemplateDTO> getAllApplicationTemplates(String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
-        // get logged-in users tenant identifier.
-        int tenantID = MultitenantConstants.INVALID_TENANT_ID;
-
-        if (tenantDomain != null) {
-            tenantID = IdentityTenantUtil.getTenantId(tenantDomain);
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Getting all the application templates of tenant: %s", tenantDomain));
         }
+
+        int tenantID = getTenantID(tenantDomain);
 
         Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement getAllAppTemplatePrepStmt = null;
@@ -235,12 +275,11 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
     public List<String> getAllApplicationTemplateNames(String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
-        // get logged-in users tenant identifier.
-        int tenantID = MultitenantConstants.INVALID_TENANT_ID;
-
-        if (tenantDomain != null) {
-            tenantID = IdentityTenantUtil.getTenantId(tenantDomain);
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Getting all the application template names of tenant: %s", tenantDomain));
         }
+
+        int tenantID = getTenantID(tenantDomain);
 
         Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement getAllAppTemplateNamesPrepStmt = null;
@@ -286,12 +325,13 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
     @Override
     public void deleteApplicationTemplate(String templateName, String tenantDomain) throws IdentityApplicationTemplateMgtException {
 
-        int tenantID = CarbonContext.getThreadLocalCarbonContext().getTenantId();
-        Connection connection = IdentityDatabaseUtil.getDBConnection();
-
         if (log.isDebugEnabled()) {
-            log.debug("Deleting Application Template" + templateName);
+            log.debug(String.format("Deleting Application Template: %s", templateName));
         }
+
+        int tenantID = getTenantID(tenantDomain);
+
+        Connection connection = IdentityDatabaseUtil.getDBConnection();
 
         // Now, delete the application
         PreparedStatement deleteClientPrepStmt = null;
@@ -319,5 +359,16 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, deleteClientPrepStmt);
         }
+    }
+
+    private int getTenantID(String tenantDomain) {
+
+        // get logged-in users tenant identifier.
+        int tenantID = MultitenantConstants.INVALID_TENANT_ID;
+
+        if (tenantDomain != null) {
+            tenantID = IdentityTenantUtil.getTenantId(tenantDomain);
+        }
+        return tenantID;
     }
 }

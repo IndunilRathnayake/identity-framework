@@ -28,8 +28,14 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.core.multitenancy.utils.TenantUtils;
 import org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateManagementService;
 import org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateManagementServiceImpl;
+import org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtUtil;
+import org.wso2.carbon.identity.core.util.IdentityCoreInitializedEvent;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
@@ -48,6 +54,7 @@ public class ApplicationTemplateManagementServiceComponent {
             BundleContext bundleContext = context.getBundleContext();
             bundleContext.registerService(ApplicationTemplateManagementService.class.getName(),
                     ApplicationTemplateManagementServiceImpl.getInstance(), null);
+            ApplicationTemplateMgtUtil.setGlobalSPTemplateConfiguration();
             if (log.isDebugEnabled()) {
                 log.debug("Identity ApplicationTemplateManagementComponent bundle is activated");
             }
@@ -131,5 +138,22 @@ public class ApplicationTemplateManagementServiceComponent {
             log.debug("Unsetting the Configuration Context Service");
         }
         ApplicationTemplateManagementServiceComponentHolder.getInstance().setConfigContextService(null);
+    }
+
+    @Reference(
+            name = "identityCoreInitializedEventService",
+            service = IdentityCoreInitializedEvent.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetIdentityCoreInitializedEventService"
+    )
+    protected void setIdentityCoreInitializedEventService(IdentityCoreInitializedEvent identityCoreInitializedEvent) {
+                /* reference IdentityCoreInitializedEvent service to guarantee that this component will wait until
+                identity core is started */
+    }
+
+    protected void unsetIdentityCoreInitializedEventService(IdentityCoreInitializedEvent identityCoreInitializedEvent) {
+                 /* reference IdentityCoreInitializedEvent service to guarantee that this component will wait until
+                 identity core is started */
     }
 }

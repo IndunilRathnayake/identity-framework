@@ -24,6 +24,7 @@ import org.apache.axis2.client.ServiceClient;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.identity.application.authentication.framework.config.builder.FileBasedConfigurationBuilder;
 import org.wso2.carbon.identity.application.template.mgt.dto.xsd.SpTemplateDTO;
 import org.wso2.carbon.identity.application.template.mgt.stub.IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException;
 import org.wso2.carbon.identity.application.template.mgt.stub.IdentityApplicationTemplateManagementServiceStub;

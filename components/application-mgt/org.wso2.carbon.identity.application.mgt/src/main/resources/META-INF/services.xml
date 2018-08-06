@@ -71,6 +71,11 @@
                 /permission/admin/manage/identity/applicationmgt/update
             </parameter>
         </operation>
+        <operation name="updateApplicationFromTemplate">
+            <parameter name="AuthorizationAction" locked="true">
+                /permission/admin/manage/identity/applicationmgt/update
+            </parameter>
+        </operation>
         <operation name="importApplication">
             <parameter name="AuthorizationAction" locked="true">
                 /permission/admin/manage/identity/applicationmgt/create

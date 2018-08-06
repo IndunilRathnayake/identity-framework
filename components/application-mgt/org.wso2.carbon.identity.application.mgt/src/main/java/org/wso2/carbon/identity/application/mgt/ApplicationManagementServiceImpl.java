@@ -74,16 +74,21 @@ import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -228,7 +233,45 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
     @Override
     public void updateApplication(ServiceProvider serviceProvider, String tenantDomain, String username)
             throws IdentityApplicationManagementException {
+        doUpdateApplication(serviceProvider, tenantDomain, username);
+    }
 
+    @Override
+    public void updateApplication(String applicationName, SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo,
+                                  String tenantDomain, String username) throws IdentityApplicationManagementException {
+
+        ServiceProvider actualSP = getApplicationExcludingFileBasedSPs(applicationName, tenantDomain);
+        // check whether use is authorized to update the application.
+        if (!ApplicationConstants.LOCAL_SP.equals(applicationName) &&
+                !ApplicationMgtUtil.isUserAuthorized(applicationName, username,
+                        actualSP.getApplicationID())) {
+            log.warn("Illegal Access! User " + CarbonContext.getThreadLocalCarbonContext().getUsername() +
+                    " does not have access to the application " + applicationName);
+            throw new IdentityApplicationManagementException("User not authorized");
+        }
+
+        ServiceProvider spFromTemplate = unmarshalSP(spFileContent, spBasicInfo, tenantDomain);
+        Field[] fieldsSpTemplate = spFromTemplate.getClass().getDeclaredFields();
+        for (Field field : fieldsSpTemplate) {
+            try {
+                Field fieldSpTemplate = spFromTemplate.getClass().getDeclaredField(field.getName());
+                fieldSpTemplate.setAccessible(true);
+                Object value = fieldSpTemplate.get(spFromTemplate);
+                if(value != null && fieldSpTemplate.getAnnotation(XmlElement.class) != null) {
+                    Field fieldActualSp = actualSP.getClass().getDeclaredField(field.getName());
+                    fieldActualSp.setAccessible(true);
+                    fieldActualSp.set(actualSP, value);
+                }
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                throw new IdentityApplicationManagementException("Error when updating SP template configurations" +
+                        "into the actual service provider");
+            }
+        }
+        applySPBasicInfo(spBasicInfo, actualSP);
+        doUpdateApplication(actualSP, tenantDomain, username);
+    }
+
+    private void doUpdateApplication(ServiceProvider serviceProvider, String tenantDomain, String username) throws IdentityApplicationManagementException {
         // invoking the listeners
         Collection<ApplicationMgtListener> listeners = ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
         for (ApplicationMgtListener listener : listeners) {
@@ -929,7 +972,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         }
 
         ImportResponse importResponse = new ImportResponse();
-        ServiceProvider serviceProvider = unmarshalSP(spFileContent, tenantDomain);
+        ServiceProvider serviceProvider = unmarshalSP(spFileContent, spBasicInfo, tenantDomain);
         applySPBasicInfo(spBasicInfo, serviceProvider);
 
         Collection<ApplicationMgtListener> listeners =
@@ -1173,13 +1216,19 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
      * @return Service Provider
      * @throws IdentityApplicationManagementException Identity Application Management Exception
      */
-    private ServiceProvider unmarshalSP(SpFileContent spFileContent, String tenantDomain)
+    private ServiceProvider unmarshalSP(SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo,
+                                        String tenantDomain)
             throws IdentityApplicationManagementException {
 
-        if (StringUtils.isEmpty(spFileContent.getContent())) {
+        if (StringUtils.isBlank(spFileContent.getContent()) &&
+                StringUtils.isNotBlank(spBasicInfo.getApplicationName())) {
+            return new ServiceProvider();
+        } else if (StringUtils.isBlank(spFileContent.getContent()) &&
+                StringUtils.isBlank(spBasicInfo.getApplicationName())) {
             throw new IdentityApplicationManagementException(String.format("Empty Service Provider configuration file" +
                     " %s uploaded by tenant: %s", spFileContent.getFileName(), tenantDomain));
         }
+
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(ServiceProvider.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();

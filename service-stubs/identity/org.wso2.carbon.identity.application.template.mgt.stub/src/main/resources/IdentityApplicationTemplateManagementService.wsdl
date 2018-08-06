@@ -18,25 +18,6 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="getAllApplicationTemplates">
-                <xs:complexType>
-                    <xs:sequence/>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="getAllApplicationTemplatesResponse">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="ax2177:SpTemplateDTO"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="importApplicationTemplate">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="spTemplateDTO" nillable="true" type="ax2177:SpTemplateDTO"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
             <xs:element name="loadApplicationTemplate">
                 <xs:complexType>
                     <xs:sequence>
@@ -48,6 +29,18 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="return" nillable="true" type="ax2177:SpTemplateDTO"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getAllApplicationTemplates">
+                <xs:complexType>
+                    <xs:sequence/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getAllApplicationTemplatesResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="ax2177:SpTemplateDTO"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -84,13 +77,19 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="importApplicationTemplate">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="spTemplateDTO" nillable="true" type="ax2177:SpTemplateDTO"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
         </xs:schema>
         <xs:schema attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://dto.mgt.template.application.identity.carbon.wso2.org/xsd">
             <xs:complexType name="SpTemplateDTO">
                 <xs:sequence>
                     <xs:element minOccurs="0" name="description" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="name" nillable="true" type="xs:string"/>
-                    <xs:element minOccurs="0" name="placeholders" nillable="true" type="xs:anyType"/>
                     <xs:element minOccurs="0" name="spContent" nillable="true" type="xs:string"/>
                 </xs:sequence>
             </xs:complexType>
