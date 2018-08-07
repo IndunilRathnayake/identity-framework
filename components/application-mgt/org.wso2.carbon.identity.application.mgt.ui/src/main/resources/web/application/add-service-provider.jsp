@@ -98,7 +98,7 @@ var openFile = function (event) {
     reader.readAsText(input.files[0]);
 };
 
-function uploadTemplate() {
+function importAppOnclick() {
     if (document.getElementById('sp-file-content').value === null || document.getElementById('sp-file-content').value === "") {
         CARBON.showWarningDialog('Please specify service provider configuration file.');
         location.href = '#';
@@ -108,17 +108,14 @@ function uploadTemplate() {
         return true;
     }
 }
-
 function showManual() {
     $("#add-sp-form").show();
     $("#upload-sp-form").hide();
 }
-
 function showFile() {
     $("#add-sp-form").hide();
     $("#upload-sp-form").show();
 }
-
 $(function() {
     $( "#importErrorMsgDialog" ).dialog({
         autoOpen: false,
@@ -141,8 +138,6 @@ window.onload = function() {
         $( "#importErrorMsgDialog" ).dialog( "open" );
     <% } %>
 };
-
-
 </script>
 
 <fmt:bundle basename="org.wso2.carbon.identity.application.mgt.ui.i18n.Resources">
@@ -259,7 +254,7 @@ window.onload = function() {
                     <tr>
                         <td>
                             <input type="button" class="button"  value="<fmt:message key='button.import.service.providers'/>"
-                                   onclick="uploadTemplate();"/>
+                                   onclick="importAppOnclick();"/>
                             <input type="button" class="button" onclick="javascript:location.href='list-service-providers.jsp'" value="<fmt:message key='button.cancel'/>" />
                         </td>
                     </tr>

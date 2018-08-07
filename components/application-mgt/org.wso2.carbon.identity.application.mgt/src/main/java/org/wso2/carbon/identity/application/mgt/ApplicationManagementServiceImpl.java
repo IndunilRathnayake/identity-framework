@@ -258,10 +258,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
     @Override
     public void updateApplication(ServiceProvider serviceProvider, String tenantDomain, String username)
             throws IdentityApplicationManagementException {
-        doUpdateApplication(serviceProvider, tenantDomain, username);
-    }
 
-    private void doUpdateApplication(ServiceProvider serviceProvider, String tenantDomain, String username) throws IdentityApplicationManagementException {
         // invoking the listeners
         Collection<ApplicationMgtListener> listeners = ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
         for (ApplicationMgtListener listener : listeners) {
@@ -305,7 +302,8 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             ApplicationDAO appDAO = ApplicationMgtSystemConfig.getInstance().getApplicationDAO();
             String storedAppName = appDAO.getApplicationName(serviceProvider.getApplicationID());
 
-            validateConsentPurposes(serviceProvider);
+            // Will be supported with 'Advance Consent Management Feature'.
+            // validateConsentPurposes(serviceProvider);
             appDAO.updateApplication(serviceProvider, tenantDomain);
             if (isOwnerUpdateRequest(serviceProvider)) {
                 //It is not required to validate the user here, as the user is validating inside the updateApplication
@@ -1353,20 +1351,6 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                         savedSP.getApplicationName(), tenantDomain);
                 log.error(errorMsg, e);
                 throw new IdentityApplicationManagementException(errorMsg, e);
-            }
-        }
-    }
-
-    private void applySPBasicInfo(ApplicationBasicInfo spBasicInfo, ServiceProvider serviceProvider) {
-
-        if (spBasicInfo != null) {
-            String spName = spBasicInfo.getApplicationName();
-            String spDescription = spBasicInfo.getDescription();
-            if (spName != null) {
-                serviceProvider.setApplicationName(spName);
-            }
-            if (spDescription != null) {
-                serviceProvider.setDescription(spDescription);
             }
         }
     }
