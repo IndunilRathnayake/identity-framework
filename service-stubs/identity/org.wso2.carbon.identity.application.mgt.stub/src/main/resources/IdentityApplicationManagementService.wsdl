@@ -22,20 +22,7 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="serviceProvider" nillable="true" type="ax2171:ServiceProvider"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="addApplication">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="serviceProvider" nillable="true" type="ax2171:ServiceProvider"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="addApplicationResponse">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="return" nillable="true" type="ax2171:ServiceProvider"/>
+                        <xs:element minOccurs="0" name="templateName" nillable="true" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -55,15 +42,6 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="serviceProvider" nillable="true" type="ax2171:ServiceProvider"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="updateApplicationFromTemplate">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="applicationName" nillable="true" type="xs:string"/>
-                        <xs:element minOccurs="0" name="spFileContent" nillable="true" type="ax2171:SpFileContent"/>
-                        <xs:element minOccurs="0" name="spBasicInfo" nillable="true" type="ax2171:ApplicationBasicInfo"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -138,7 +116,6 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="spFileContent" nillable="true" type="ax2171:SpFileContent"/>
-                        <xs:element minOccurs="0" name="spBasicInfo" nillable="true" type="ax2171:ApplicationBasicInfo"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -490,12 +467,6 @@
     <wsdl:message name="getAllRequestPathAuthenticatorsResponse">
         <wsdl:part name="parameters" element="ns1:getAllRequestPathAuthenticatorsResponse"/>
     </wsdl:message>
-    <wsdl:message name="addApplicationRequest">
-        <wsdl:part name="parameters" element="ns1:addApplication"/>
-    </wsdl:message>
-    <wsdl:message name="addApplicationResponse">
-        <wsdl:part name="parameters" element="ns1:addApplicationResponse"/>
-    </wsdl:message>
     <wsdl:message name="getAllIdentityProvidersRequest">
         <wsdl:part name="parameters" element="ns1:getAllIdentityProviders"/>
     </wsdl:message>
@@ -518,9 +489,7 @@
     <wsdl:message name="getAllLocalAuthenticatorsResponse">
         <wsdl:part name="parameters" element="ns1:getAllLocalAuthenticatorsResponse"/>
     </wsdl:message>
-    <wsdl:message name="updateApplicationFromTemplateRequest">
-        <wsdl:part name="parameters" element="ns1:updateApplicationFromTemplate"/>
-    </wsdl:message>
+    <wsdl:message name="updateApplicationFromTemplateRequest"/>
     <wsdl:message name="updateApplicationFromTemplateResponse"/>
     <wsdl:message name="createApplicationRequest">
         <wsdl:part name="parameters" element="ns1:createApplication"/>
@@ -572,11 +541,6 @@
             <wsdl:output message="tns:getAllRequestPathAuthenticatorsResponse" wsaw:Action="urn:getAllRequestPathAuthenticatorsResponse"/>
             <wsdl:fault message="tns:IdentityApplicationManagementServiceIdentityApplicationManagementException" name="IdentityApplicationManagementServiceIdentityApplicationManagementException" wsaw:Action="urn:getAllRequestPathAuthenticatorsIdentityApplicationManagementServiceIdentityApplicationManagementException"/>
         </wsdl:operation>
-        <wsdl:operation name="addApplication">
-            <wsdl:input message="tns:addApplicationRequest" wsaw:Action="urn:addApplication"/>
-            <wsdl:output message="tns:addApplicationResponse" wsaw:Action="urn:addApplicationResponse"/>
-            <wsdl:fault message="tns:IdentityApplicationManagementServiceIdentityApplicationManagementException" name="IdentityApplicationManagementServiceIdentityApplicationManagementException" wsaw:Action="urn:addApplicationIdentityApplicationManagementServiceIdentityApplicationManagementException"/>
-        </wsdl:operation>
         <wsdl:operation name="getAllIdentityProviders">
             <wsdl:input message="tns:getAllIdentityProvidersRequest" wsaw:Action="urn:getAllIdentityProviders"/>
             <wsdl:output message="tns:getAllIdentityProvidersResponse" wsaw:Action="urn:getAllIdentityProvidersResponse"/>
@@ -600,7 +564,6 @@
         <wsdl:operation name="updateApplicationFromTemplate">
             <wsdl:input message="tns:updateApplicationFromTemplateRequest" wsaw:Action="urn:updateApplicationFromTemplate"/>
             <wsdl:output message="tns:updateApplicationFromTemplateResponse" wsaw:Action="urn:updateApplicationFromTemplateResponse"/>
-            <wsdl:fault message="tns:IdentityApplicationManagementServiceIdentityApplicationManagementException" name="IdentityApplicationManagementServiceIdentityApplicationManagementException" wsaw:Action="urn:updateApplicationFromTemplateIdentityApplicationManagementServiceIdentityApplicationManagementException"/>
         </wsdl:operation>
         <wsdl:operation name="createApplication">
             <wsdl:input message="tns:createApplicationRequest" wsaw:Action="urn:createApplication"/>
@@ -674,18 +637,6 @@
                 <soap:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
             </wsdl:fault>
         </wsdl:operation>
-        <wsdl:operation name="addApplication">
-            <soap:operation soapAction="urn:addApplication" style="document"/>
-            <wsdl:input>
-                <soap:body use="literal"/>
-            </wsdl:input>
-            <wsdl:output>
-                <soap:body use="literal"/>
-            </wsdl:output>
-            <wsdl:fault name="IdentityApplicationManagementServiceIdentityApplicationManagementException">
-                <soap:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
-            </wsdl:fault>
-        </wsdl:operation>
         <wsdl:operation name="getAllIdentityProviders">
             <soap:operation soapAction="urn:getAllIdentityProviders" style="document"/>
             <wsdl:input>
@@ -742,9 +693,6 @@
             <wsdl:output>
                 <soap:body use="literal"/>
             </wsdl:output>
-            <wsdl:fault name="IdentityApplicationManagementServiceIdentityApplicationManagementException">
-                <soap:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
-            </wsdl:fault>
         </wsdl:operation>
         <wsdl:operation name="createApplication">
             <soap:operation soapAction="urn:createApplication" style="document"/>
@@ -863,18 +811,6 @@
                 <soap12:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
             </wsdl:fault>
         </wsdl:operation>
-        <wsdl:operation name="addApplication">
-            <soap12:operation soapAction="urn:addApplication" style="document"/>
-            <wsdl:input>
-                <soap12:body use="literal"/>
-            </wsdl:input>
-            <wsdl:output>
-                <soap12:body use="literal"/>
-            </wsdl:output>
-            <wsdl:fault name="IdentityApplicationManagementServiceIdentityApplicationManagementException">
-                <soap12:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
-            </wsdl:fault>
-        </wsdl:operation>
         <wsdl:operation name="getAllIdentityProviders">
             <soap12:operation soapAction="urn:getAllIdentityProviders" style="document"/>
             <wsdl:input>
@@ -931,9 +867,6 @@
             <wsdl:output>
                 <soap12:body use="literal"/>
             </wsdl:output>
-            <wsdl:fault name="IdentityApplicationManagementServiceIdentityApplicationManagementException">
-                <soap12:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
-            </wsdl:fault>
         </wsdl:operation>
         <wsdl:operation name="createApplication">
             <soap12:operation soapAction="urn:createApplication" style="document"/>
@@ -1036,15 +969,6 @@
         </wsdl:operation>
         <wsdl:operation name="getAllRequestPathAuthenticators">
             <http:operation location="getAllRequestPathAuthenticators"/>
-            <wsdl:input>
-                <mime:content type="text/xml" part="parameters"/>
-            </wsdl:input>
-            <wsdl:output>
-                <mime:content type="text/xml" part="parameters"/>
-            </wsdl:output>
-        </wsdl:operation>
-        <wsdl:operation name="addApplication">
-            <http:operation location="addApplication"/>
             <wsdl:input>
                 <mime:content type="text/xml" part="parameters"/>
             </wsdl:input>

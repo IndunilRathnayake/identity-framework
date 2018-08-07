@@ -63,6 +63,20 @@ public abstract class ApplicationManagementService {
             throws IdentityApplicationManagementException;
 
     /**
+     * Creates a service provider with basic information and returns the created service provider. First we need to
+     * create an internal role with the application name. Only the users in this role will be able to edit/update
+     * the application.Then the user will assigned to the created role.
+     * @param serviceProvider Service Provider Name
+     * @param tenantDomain Tenant Domain
+     * @param username User Name
+     * @param templateName Template Name
+     * @return created service provider
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract ServiceProvider addApplication(ServiceProvider serviceProvider, String tenantDomain, String
+            username, String templateName) throws IdentityApplicationManagementException;
+
+    /**
      * Get Application for given application name
      *
      * @param applicationName Application Name
@@ -93,20 +107,6 @@ public abstract class ApplicationManagementService {
      * @throws org.wso2.carbon.identity.application.common.IdentityApplicationManagementException
      */
     public abstract void updateApplication(ServiceProvider serviceProvider, String tenantDomain, String username)
-            throws IdentityApplicationManagementException;
-
-    /**
-     * Update Application.
-     *
-     * @param applicationName name of the application to be updated
-     * @param spFileContent service provider configurations to be updated
-     * @param spBasicInfo service provider basic info to be updated
-     * @param tenantDomain tenant domain
-     * @param username application owner
-     * @throws IdentityApplicationManagementException
-     */
-    public abstract void updateApplication(String applicationName, SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo,
-                                           String tenantDomain, String username)
             throws IdentityApplicationManagementException;
 
     /**
@@ -223,15 +223,13 @@ public abstract class ApplicationManagementService {
      * Import Service Provider application.
      *
      * @param spFileContent xml string of the SP and file name
-     * @param spBasicInfo   SP basic information
      * @param tenantDomain  tenant Domain
      * @param username      username
      * @param isUpdate      isUpdate
      * @return ImportResponse
      * @throws IdentityApplicationManagementException Identity Application Management Exception
      */
-    public abstract ImportResponse importSPApplication(SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo,
-                                                       String tenantDomain, String username, boolean isUpdate)
-            throws IdentityApplicationManagementException;
+    public abstract ImportResponse importSPApplication(SpFileContent spFileContent, String tenantDomain, String username,
+                                                       boolean isUpdate) throws IdentityApplicationManagementException;
 
 }

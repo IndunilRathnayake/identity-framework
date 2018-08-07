@@ -211,7 +211,7 @@ public class ApplicationManagementServiceComponent {
 
     @Reference(
             name = "application.template.mgt.service",
-            service = RegistryService.class,
+            service = ApplicationTemplateManagementService.class,
             cardinality = ReferenceCardinality.MANDATORY,
             policy = ReferencePolicy.DYNAMIC,
             unbind = "unsetApplicationTemplateMgtService"

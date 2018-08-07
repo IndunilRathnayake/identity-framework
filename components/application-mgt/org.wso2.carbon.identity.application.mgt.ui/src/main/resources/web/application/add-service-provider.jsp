@@ -23,6 +23,7 @@
 <%@ page import="org.wso2.carbon.CarbonConstants" %>
 <%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="org.wso2.carbon.identity.application.template.mgt.dto.xsd.SpTemplateDTO" %>
+<%@ page import="org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtConstants" %>
 
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="carbon" uri="http://wso2.org/projects/carbon/taglibs/carbontags.jar"%>
@@ -206,13 +207,22 @@ window.onload = function() {
                                     if (spTemplateDTOS != null && spTemplateDTOS.length > 0) {
                                         for (SpTemplateDTO spTemplate : spTemplateDTOS) {
                                             if (spTemplate != null) {
+                                                if (spTemplate.getName().equals(ApplicationTemplateMgtConstants
+                                                .TENANT_DEFAULT_SP_TEMPLATE_NAME)) {
                                 %>
+                                <option
+                                        value="<%=Encode.forHtmlAttribute(spTemplate.getName())%>"
+                                        title="<%=Encode.forHtmlAttribute(spTemplate.getDescription())%>" selected>
+                                    <%=Encode.forHtmlContent(spTemplate.getName())%>
+                                </option>
+                                <%              } else { %>
                                 <option
                                         value="<%=Encode.forHtmlAttribute(spTemplate.getName())%>"
                                         title="<%=Encode.forHtmlAttribute(spTemplate.getDescription())%>">
                                     <%=Encode.forHtmlContent(spTemplate.getName())%>
                                 </option>
                                 <%
+                                                }
                                             }
                                         }
                                     }

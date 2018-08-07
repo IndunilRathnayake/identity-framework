@@ -23,9 +23,5 @@ public class ApplicationTemplateMgtConstants {
     private ApplicationTemplateMgtConstants(){
     }
 
-    public static final String SYSTEM_DEFAULT_SP_TEMPLATE_NAME = "system-default";
-    public static final String SYSTEM_DEFAULT_SP_TEMPLATE_DESC = "System default SP template";
-    public static final String SYSTEM_DEFAULT_SP_TEMPLATE_CONFIG = "default-sp-template.xml";
-
     public static final String TENANT_DEFAULT_SP_TEMPLATE_NAME = "default";
 }

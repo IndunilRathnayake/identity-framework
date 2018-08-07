@@ -199,7 +199,7 @@
                                     </a>
                                     <%
                                         }
-                                        if (canEdit && !template.getName().equals(system_template)) {
+                                        if (canEdit) {
                                     %>
                                     <a title="Edit Service Provider Template"
                                        onclick="editSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
@@ -208,7 +208,7 @@
                                     </a>
                                     <%
                                         }
-                                        if (canDelete && !template.getName().equals(system_template)) {
+                                        if (canDelete) {
                                     %>
                                     <a title="Remove Service Provider Template"
                                        onclick="removeSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"

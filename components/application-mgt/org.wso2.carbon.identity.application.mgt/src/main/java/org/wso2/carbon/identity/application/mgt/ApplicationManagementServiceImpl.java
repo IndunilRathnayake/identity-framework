@@ -144,13 +144,40 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
     public void createApplication(ServiceProvider serviceProvider, String tenantDomain, String username,
                                   String templateName) throws IdentityApplicationManagementException {
 
+        addApplication(serviceProvider, tenantDomain, username, templateName);
+    }
+
+
+    @Override
+    public ServiceProvider addApplication(ServiceProvider serviceProvider, String tenantDomain, String username,
+                                          String templateName)
+            throws IdentityApplicationManagementException {
+
         SpTemplateDTO spTemplateDTO = getTemplateInfo(tenantDomain, templateName);
-        ServiceProvider updatedSP = getSPFromTemplate(serviceProvider, tenantDomain, spTemplateDTO);
-        doAddApplication(updatedSP, tenantDomain, username);
+        ServiceProvider updatedSp = getSPFromTemplate(serviceProvider, tenantDomain, spTemplateDTO);
+
+        ServiceProvider savedSP = doAddApplication(updatedSp, tenantDomain, username);
+        updatedSp.setApplicationID(savedSP.getApplicationID());
+        updatedSp.setOwner(getUser(tenantDomain, username));
 
         if (spTemplateDTO != null) {
-            updateApplication(updatedSP, tenantDomain, username);
+            Collection<ApplicationMgtListener> listeners =
+                    ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
+            for (ApplicationMgtListener listener : listeners) {
+                if (listener.isEnable()) {
+                    listener.onPreCreateInbound(updatedSp, false);
+                }
+            }
+
+            updateApplication(updatedSp, tenantDomain, username);
+
+            for (ApplicationMgtListener listener : listeners) {
+                if (listener.isEnable()) {
+                    listener.doImportServiceProvider(updatedSp);
+                }
+            }
         }
+        return updatedSp;
     }
 
     @Override
@@ -233,41 +260,6 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             throws IdentityApplicationManagementException {
         doUpdateApplication(serviceProvider, tenantDomain, username);
     }
-
-    /*@Override
-    public void updateApplication(String applicationName, SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo,
-                                  String tenantDomain, String username) throws IdentityApplicationManagementException {
-
-        ServiceProvider actualSP = getApplicationExcludingFileBasedSPs(applicationName, tenantDomain);
-        // check whether use is authorized to update the application.
-        if (!ApplicationConstants.LOCAL_SP.equals(applicationName) &&
-                !ApplicationMgtUtil.isUserAuthorized(applicationName, username,
-                        actualSP.getApplicationID())) {
-            log.warn("Illegal Access! User " + CarbonContext.getThreadLocalCarbonContext().getUsername() +
-                    " does not have access to the application " + applicationName);
-            throw new IdentityApplicationManagementException("User not authorized");
-        }
-
-        ServiceProvider spFromTemplate = unmarshalSP(spFileContent, spBasicInfo, tenantDomain);
-        Field[] fieldsSpTemplate = spFromTemplate.getClass().getDeclaredFields();
-        for (Field field : fieldsSpTemplate) {
-            try {
-                Field fieldSpTemplate = spFromTemplate.getClass().getDeclaredField(field.getName());
-                fieldSpTemplate.setAccessible(true);
-                Object value = fieldSpTemplate.get(spFromTemplate);
-                if (value != null && fieldSpTemplate.getAnnotation(XmlElement.class) != null) {
-                    Field fieldActualSp = actualSP.getClass().getDeclaredField(field.getName());
-                    fieldActualSp.setAccessible(true);
-                    fieldActualSp.set(actualSP, value);
-                }
-            } catch (IllegalAccessException | NoSuchFieldException e) {
-                throw new IdentityApplicationManagementException("Error when updating SP template configurations" +
-                        "into the actual service provider");
-            }
-        }
-        applySPBasicInfo(spBasicInfo, actualSP);
-        doUpdateApplication(actualSP, tenantDomain, username);
-    }*/
 
     private void doUpdateApplication(ServiceProvider serviceProvider, String tenantDomain, String username) throws IdentityApplicationManagementException {
         // invoking the listeners
@@ -961,17 +953,16 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         return serviceProvider;
     }
 
-    public ImportResponse importSPApplication(SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo,
-                                              String tenantDomain, String username, boolean isUpdate)
-            throws IdentityApplicationManagementException {
+    public ImportResponse importSPApplication(SpFileContent spFileContent, String tenantDomain, String username,
+                                              boolean isUpdate) throws IdentityApplicationManagementException {
 
         if (log.isDebugEnabled()) {
             log.debug("Importing service provider from file " + spFileContent.getFileName());
         }
 
         ImportResponse importResponse = new ImportResponse();
-        ServiceProvider serviceProvider = unmarshalSP(spFileContent, spBasicInfo, tenantDomain);
-        applySPBasicInfo(spBasicInfo, serviceProvider);
+        ServiceProvider serviceProvider = unmarshalSP(spFileContent, tenantDomain);
+
 
         Collection<ApplicationMgtListener> listeners =
                 ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
@@ -992,7 +983,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                 ServiceProvider basicApplication = new ServiceProvider();
                 basicApplication.setApplicationName(serviceProvider.getApplicationName());
                 basicApplication.setDescription(serviceProvider.getDescription());
-                savedSP = addApplication(basicApplication, tenantDomain, username);
+                savedSP = addApplication(basicApplication, tenantDomain, username, null);
             }
             serviceProvider.setApplicationID(savedSP.getApplicationID());
             serviceProvider.setOwner(getUser(tenantDomain, username));
@@ -1017,14 +1008,12 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             }
             importResponse.setResponseCode(ImportResponse.CREATED);
             importResponse.setApplicationName(serviceProvider.getApplicationName());
-            importResponse.setApplication(serviceProvider);
             importResponse.setErrors(new String[0]);
             return importResponse;
         } catch (IdentityApplicationManagementValidationException e) {
             deleteCreatedSP(savedSP, tenantDomain, username, isUpdate);
             importResponse.setResponseCode(ImportResponse.FAILED);
             importResponse.setApplicationName(null);
-            importResponse.setApplication(null);
             importResponse.setErrors(e.getValidationMsg());
             return importResponse;
         } catch (IdentityApplicationManagementException e) {

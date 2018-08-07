@@ -82,36 +82,16 @@ public class ApplicationManagementServiceClient {
      * @param serviceProvider
      * @throws AxisFault
      */
-    public void createApplication(ServiceProvider serviceProvider) throws AxisFault {
+    public void createApplication(ServiceProvider serviceProvider, String spTemplateName) throws AxisFault {
         try {
             if (debugEnabled) {
                 log.debug("Registering Service Provider " + serviceProvider.getApplicationName());
             }
-            stub.createApplication(serviceProvider);
+            stub.createApplication(serviceProvider, spTemplateName);
         } catch (RemoteException | IdentityApplicationManagementServiceIdentityApplicationManagementException e) {
             handleException(e);
         }
 
-    }
-
-    /**
-     * Add application.
-     *
-     * @param serviceProvider service provider info
-     * @return created service provider
-     * @throws AxisFault
-     */
-    public ServiceProvider addApplication(ServiceProvider serviceProvider) throws AxisFault {
-
-        try {
-            if (debugEnabled) {
-                log.debug("Registering Service Provider " + serviceProvider.getApplicationName());
-            }
-            return stub.addApplication(serviceProvider);
-        } catch (RemoteException | IdentityApplicationManagementServiceIdentityApplicationManagementException e) {
-            handleException(e);
-        }
-        return null;
     }
 
     /**
@@ -274,18 +254,17 @@ public class ApplicationManagementServiceClient {
      * Import Application from a file.
      *
      * @param spFileContent File content of the Service Provider
-     * @param spBasicInfo Service provider basic information
      * @return Response of Importing Service provider
      * @throws AxisFault
      */
-    public ImportResponse importApplication(SpFileContent spFileContent, ApplicationBasicInfo spBasicInfo)
+    public ImportResponse importApplication(SpFileContent spFileContent)
             throws AxisFault {
 
         try {
             if (debugEnabled) {
                 log.debug("Importing Service Provider from file : " + spFileContent.getFileName());
             }
-            return stub.importApplication(spFileContent, spBasicInfo);
+            return stub.importApplication(spFileContent);
         } catch (RemoteException | IdentityApplicationManagementServiceIdentityApplicationManagementException e) {
             handleException(e);
         }
