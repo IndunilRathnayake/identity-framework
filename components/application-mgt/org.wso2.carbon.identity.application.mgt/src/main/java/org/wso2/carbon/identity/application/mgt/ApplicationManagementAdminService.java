@@ -24,11 +24,11 @@ import org.wso2.carbon.core.AbstractAdmin;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
 import org.wso2.carbon.identity.application.common.model.ApplicationBasicInfo;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
-import org.wso2.carbon.identity.application.common.model.SpFileContent;
 import org.wso2.carbon.identity.application.common.model.ImportResponse;
 import org.wso2.carbon.identity.application.common.model.LocalAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.RequestPathAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
+import org.wso2.carbon.identity.application.common.model.SpFileContent;
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationManagementServiceComponentHolder;
 
 import java.util.ArrayList;
@@ -52,11 +52,12 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
      * @return application id
      * @throws org.wso2.carbon.identity.application.common.IdentityApplicationManagementException
      */
-    public void createApplication(ServiceProvider serviceProvider) throws IdentityApplicationManagementException {
+    public void createApplication(ServiceProvider serviceProvider, String templateName)
+            throws IdentityApplicationManagementException {
 
         try {
             applicationMgtService = ApplicationManagementService.getInstance();
-            applicationMgtService.createApplication(serviceProvider, getTenantDomain(), getUsername());
+            applicationMgtService.createApplication(serviceProvider, getTenantDomain(), getUsername(), templateName);
         } catch (IdentityApplicationManagementException idpException) {
             log.error("Error while creating application: " + serviceProvider.getApplicationName() + " for tenant: " +
                     getTenantDomain(), idpException);
@@ -285,7 +286,8 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
 
         try {
             applicationMgtService = ApplicationManagementService.getInstance();
-            return applicationMgtService.importSPApplication(spFileContent, getTenantDomain(), getUsername(), false);
+            return applicationMgtService.importSPApplication(spFileContent, getTenantDomain(), getUsername(),
+                    false);
         } catch (IdentityApplicationManagementException idpException) {
             log.error("Error while importing application for tenant: " + getTenantDomain(), idpException);
             throw idpException;

@@ -82,12 +82,12 @@ public class ApplicationManagementServiceClient {
      * @param serviceProvider
      * @throws AxisFault
      */
-    public void createApplication(ServiceProvider serviceProvider) throws AxisFault {
+    public void createApplication(ServiceProvider serviceProvider, String spTemplateName) throws AxisFault {
         try {
             if (debugEnabled) {
                 log.debug("Registering Service Provider " + serviceProvider.getApplicationName());
             }
-            stub.createApplication(serviceProvider);
+            stub.createApplication(serviceProvider, spTemplateName);
         } catch (RemoteException | IdentityApplicationManagementServiceIdentityApplicationManagementException e) {
             handleException(e);
         }
@@ -250,7 +250,16 @@ public class ApplicationManagementServiceClient {
         }
     }
 
-    public ImportResponse importApplication(SpFileContent spFileContent) throws AxisFault {
+    /**
+     * Import Application from a file.
+     *
+     * @param spFileContent File content of the Service Provider
+     * @return Response of Importing Service provider
+     * @throws AxisFault
+     */
+    public ImportResponse importApplication(SpFileContent spFileContent)
+            throws AxisFault {
+
         try {
             if (debugEnabled) {
                 log.debug("Importing Service Provider from file : " + spFileContent.getFileName());
