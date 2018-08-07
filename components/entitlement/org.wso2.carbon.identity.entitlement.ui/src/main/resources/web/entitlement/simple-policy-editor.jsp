@@ -123,7 +123,7 @@
 <script type="text/javascript" src="resources/js/main.js"></script>
 <!--Yahoo includes for dom event handling-->
 <script src="../yui/build/yahoo-dom-event/yahoo-dom-event.js" type="text/javascript"></script>
-<script src="../entitlement/js/policy-editor.js" type="text/javascript"></script>
+<script src="../entitlement/js/template-editor.js" type="text/javascript"></script>
 <link href="../entitlement/css/entitlement.css" rel="stylesheet" type="text/css" media="all"/>
 
 

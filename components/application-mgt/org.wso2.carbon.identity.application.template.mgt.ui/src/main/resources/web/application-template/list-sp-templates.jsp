@@ -62,7 +62,7 @@
                 }
 
                 function editSPTemplate(templateName) {
-                    location.href = "temp.jsp?templateName=" + templateName;
+                    location.href = "edit-sp-template.jsp?templateName=" + templateName;
                 }
 
                 function removeSPTemplate(templateName) {
@@ -192,14 +192,14 @@
                                     <%
                                         if (canView) {
                                     %>
-                                    <a title="Edit Service Provider Template"
+                                    <a title="View Service Provider Template"
                                        onclick="viewSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
                                        class="icon-link"
                                        style="background-image: url(../application-template/images/edit.gif)">View
                                     </a>
                                     <%
                                         }
-                                        if (canEdit && template.getName() != system_template) {
+                                        if (canEdit && !template.getName().equals(system_template)) {
                                     %>
                                     <a title="Edit Service Provider Template"
                                        onclick="editSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
@@ -208,7 +208,7 @@
                                     </a>
                                     <%
                                         }
-                                        if (canDelete && template.getName() != system_template) {
+                                        if (canDelete && !template.getName().equals(system_template)) {
                                     %>
                                     <a title="Remove Service Provider Template"
                                        onclick="removeSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"

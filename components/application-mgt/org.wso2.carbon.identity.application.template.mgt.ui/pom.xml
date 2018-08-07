@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.wso2.carbon.identity.framework</groupId>
         <artifactId>application-mgt</artifactId>
-        <version>5.12.76-SNAPSHOT</version>
+        <version>5.12.72</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -88,7 +88,9 @@
                             org.wso2.carbon.utils; version="${carbon.kernel.package.import.version.range}",
 
                             org.wso2.carbon.identity.core.*;version="${carbon.identity.package.import.version.range}",
-                            org.wso2.carbon.identity.application.template.mgt.stub.*;version="${carbon.identity.package.import.version.range}"
+                            org.wso2.carbon.identity.application.template.mgt.stub.*;version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.identity.application.template.mgt.xsd.*;version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.identity.application.template.mgt.dto.xsd.*;version="${carbon.identity.package.import.version.range}"
                         </Import-Package>
                         <Export-Package>org.wso2.carbon.identity.application.template.mgt.ui.*</Export-Package>
                         <Carbon-Component>UIBundle</Carbon-Component>

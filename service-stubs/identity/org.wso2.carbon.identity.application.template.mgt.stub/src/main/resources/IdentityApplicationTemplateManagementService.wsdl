@@ -18,6 +18,13 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="importApplicationTemplate">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="spTemplateDTO" nillable="true" type="ax2177:SpTemplateDTO"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="loadApplicationTemplate">
                 <xs:complexType>
                     <xs:sequence>
@@ -63,6 +70,13 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="updateApplicationTemplate">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="spTemplateDTO" nillable="true" type="ax2177:SpTemplateDTO"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="exportApplicationTemplate">
                 <xs:complexType>
                     <xs:sequence>
@@ -74,13 +88,6 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="return" nillable="true" type="xs:string"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="importApplicationTemplate">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="spTemplateDTO" nillable="true" type="ax2177:SpTemplateDTO"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -105,6 +112,11 @@
     <wsdl:message name="deleteApplicationTemplateRequest">
         <wsdl:part name="parameters" element="ns1:deleteApplicationTemplate"/>
     </wsdl:message>
+    <wsdl:message name="deleteApplicationTemplateResponse"/>
+    <wsdl:message name="updateApplicationTemplateRequest">
+        <wsdl:part name="parameters" element="ns1:updateApplicationTemplate"/>
+    </wsdl:message>
+    <wsdl:message name="updateApplicationTemplateResponse"/>
     <wsdl:message name="exportApplicationTemplateRequest">
         <wsdl:part name="parameters" element="ns1:exportApplicationTemplate"/>
     </wsdl:message>
@@ -137,7 +149,13 @@
         </wsdl:operation>
         <wsdl:operation name="deleteApplicationTemplate">
             <wsdl:input message="tns:deleteApplicationTemplateRequest" wsaw:Action="urn:deleteApplicationTemplate"/>
+            <wsdl:output message="tns:deleteApplicationTemplateResponse" wsaw:Action="urn:deleteApplicationTemplateResponse"/>
             <wsdl:fault message="tns:IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException" wsaw:Action="urn:deleteApplicationTemplateIdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+        </wsdl:operation>
+        <wsdl:operation name="updateApplicationTemplate">
+            <wsdl:input message="tns:updateApplicationTemplateRequest" wsaw:Action="urn:updateApplicationTemplate"/>
+            <wsdl:output message="tns:updateApplicationTemplateResponse" wsaw:Action="urn:updateApplicationTemplateResponse"/>
+            <wsdl:fault message="tns:IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException" wsaw:Action="urn:updateApplicationTemplateIdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
         </wsdl:operation>
         <wsdl:operation name="exportApplicationTemplate">
             <wsdl:input message="tns:exportApplicationTemplateRequest" wsaw:Action="urn:exportApplicationTemplate"/>
@@ -179,6 +197,21 @@
             <wsdl:input>
                 <soap:body use="literal"/>
             </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
+                <soap:fault use="literal" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="updateApplicationTemplate">
+            <soap:operation soapAction="urn:updateApplicationTemplate" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
             <wsdl:fault name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
                 <soap:fault use="literal" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
             </wsdl:fault>
@@ -251,6 +284,21 @@
             <wsdl:input>
                 <soap12:body use="literal"/>
             </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
+                <soap12:fault use="literal" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="updateApplicationTemplate">
+            <soap12:operation soapAction="urn:updateApplicationTemplate" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
             <wsdl:fault name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException">
                 <soap12:fault use="literal" name="IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException"/>
             </wsdl:fault>
@@ -320,6 +368,18 @@
             <wsdl:input>
                 <mime:content type="text/xml" part="parameters"/>
             </wsdl:input>
+            <wsdl:output>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="updateApplicationTemplate">
+            <http:operation location="updateApplicationTemplate"/>
+            <wsdl:input>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:output>
         </wsdl:operation>
         <wsdl:operation name="exportApplicationTemplate">
             <http:operation location="exportApplicationTemplate"/>

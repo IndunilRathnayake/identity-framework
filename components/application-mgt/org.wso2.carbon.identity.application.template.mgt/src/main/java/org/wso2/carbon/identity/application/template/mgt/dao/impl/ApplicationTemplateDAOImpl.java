@@ -334,13 +334,13 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
         Connection connection = IdentityDatabaseUtil.getDBConnection();
 
         // Now, delete the application
-        PreparedStatement deleteClientPrepStmt = null;
+        PreparedStatement deleteTemplatePrepStmt = null;
         try {
-            deleteClientPrepStmt = connection
+            deleteTemplatePrepStmt = connection
                     .prepareStatement(ApplicationTemplateMgtDBQueries.DELETE_SP_TEMPLATE_BY_NAME);
-            deleteClientPrepStmt.setString(1, templateName);
-            deleteClientPrepStmt.setInt(2, tenantID);
-            deleteClientPrepStmt.execute();
+            deleteTemplatePrepStmt.setString(1, templateName);
+            deleteTemplatePrepStmt.setInt(2, tenantID);
+            deleteTemplatePrepStmt.execute();
 
             if (!connection.getAutoCommit()) {
                 connection.commit();
@@ -357,7 +357,48 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
             log.error(errorMessege, e);
             throw new IdentityApplicationTemplateMgtException(errorMessege, e);
         } finally {
-            IdentityDatabaseUtil.closeAllConnections(connection, null, deleteClientPrepStmt);
+            IdentityDatabaseUtil.closeAllConnections(connection, null, deleteTemplatePrepStmt);
+        }
+    }
+
+    @Override
+    public void updateApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
+            throws IdentityApplicationTemplateMgtException {
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Updating Application Template: %s", spTemplateDTO.getName()));
+        }
+
+        int tenantID = getTenantID(tenantDomain);
+
+        Connection connection = IdentityDatabaseUtil.getDBConnection();
+
+        // Now, delete the application
+        PreparedStatement updateTemplatePrepStmt = null;
+        try {
+            updateTemplatePrepStmt = connection
+                    .prepareStatement(ApplicationTemplateMgtDBQueries.UPDATE_SP_TEMPLATE_BY_NAME);
+            updateTemplatePrepStmt.setCharacterStream(1, new StringReader(spTemplateDTO.getSpContent()));
+            updateTemplatePrepStmt.setString(2, spTemplateDTO.getName());
+            updateTemplatePrepStmt.setInt(3, tenantID);
+            updateTemplatePrepStmt.execute();
+
+            if (!connection.getAutoCommit()) {
+                connection.commit();
+            }
+
+        } catch (SQLException e) {
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ignore) {
+                }
+            }
+            String errorMessege = "An error occurred while update the application template : " + spTemplateDTO.getName();
+            log.error(errorMessege, e);
+            throw new IdentityApplicationTemplateMgtException(errorMessege, e);
+        } finally {
+            IdentityDatabaseUtil.closeAllConnections(connection, null, updateTemplatePrepStmt);
         }
     }
 

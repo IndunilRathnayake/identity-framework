@@ -26,7 +26,13 @@ import org.wso2.carbon.identity.application.template.mgt.cache.ServiceProviderTe
 import org.wso2.carbon.identity.application.template.mgt.dao.ApplicationTemplateDAO;
 import org.wso2.carbon.identity.application.template.mgt.dao.impl.ApplicationTemplateDAOImpl;
 import org.wso2.carbon.identity.application.template.mgt.dto.SpTemplateDTO;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.List;
 
 /**
@@ -57,6 +63,8 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
     public void importApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
+        validateTemplateXMLSyntax(spTemplateDTO);
+
         ApplicationTemplateDAO applicationTemplateDAO = new ApplicationTemplateDAOImpl();
         applicationTemplateDAO.createApplicationTemplate(spTemplateDTO, tenantDomain);
 
@@ -81,14 +89,7 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
                     log.debug(String.format("Template name is not specified. Checking for the default template of " +
                             "tenant: %s", tenantDomain));
                 }
-            } else {
-                loadingSpTemplateName = ApplicationTemplateMgtConstants.SYSTEM_DEFAULT_SP_TEMPLATE_NAME;
-                if (log.isDebugEnabled()) {
-                    log.debug(String.format("Template name is not specified. Checking for the system wide " +
-                            "default template"));
-                }
             }
-
         }
 
         ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(loadingSpTemplateName,
@@ -105,7 +106,7 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
         if (log.isDebugEnabled()) {
             log.debug(String.format("Template with name: %s is not registered.", loadingSpTemplateName));
         }
-        return new SpTemplateDTO();
+        return null;
     }
 
     @Override
@@ -142,6 +143,19 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
         ServiceProviderTemplateCache.getInstance().clearCacheEntry(templateCacheKey);
     }
 
+    public void updateApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
+            throws IdentityApplicationTemplateMgtException {
+
+        validateTemplateXMLSyntax(spTemplateDTO);
+
+        ApplicationTemplateDAO applicationTemplateDAO = new ApplicationTemplateDAOImpl();
+        applicationTemplateDAO.updateApplicationTemplate(spTemplateDTO, tenantDomain);
+
+        ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(spTemplateDTO.getName(),
+                tenantDomain);
+        ServiceProviderTemplateCache.getInstance().clearCacheEntry(templateCacheKey);
+    }
+
     @Override
     public String exportApplicationTemplate(String templateName, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
@@ -149,11 +163,25 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
         return loadApplicationTemplate(templateName, tenantDomain).getSpContent();
     }
 
+    private void validateTemplateXMLSyntax(SpTemplateDTO spTemplateDTO) throws IdentityApplicationTemplateMgtException {
+        try {
+            XMLReader reader = XMLReaderFactory.createXMLReader();
+            reader.parse(new InputSource(new StringReader(spTemplateDTO.getSpContent())));
+        } catch (SAXException e) {
+            throw new IdentityApplicationTemplateMgtException(String.format("Template: %s is not well-formed.",
+                    spTemplateDTO.getName()), e);
+        } catch (IOException e) {
+            throw new IdentityApplicationTemplateMgtException(String.format("Error in validating the xml syntax of " +
+                    "template :", spTemplateDTO.getName()), e);
+        }
+    }
+
     private SpTemplateDTO getSpTemplateFromDB(String templateName, String tenantDomain,
                                               ServiceProviderTemplateCacheKey templateCacheKey)
             throws IdentityApplicationTemplateMgtException {
 
-        SpTemplateDTO spTemplateDTO;ApplicationTemplateDAO applicationTemplateDAO = new ApplicationTemplateDAOImpl();
+        SpTemplateDTO spTemplateDTO;
+        ApplicationTemplateDAO applicationTemplateDAO = new ApplicationTemplateDAOImpl();
         spTemplateDTO = applicationTemplateDAO.loadApplicationTemplate(templateName, tenantDomain);
 
         if (spTemplateDTO != null) {

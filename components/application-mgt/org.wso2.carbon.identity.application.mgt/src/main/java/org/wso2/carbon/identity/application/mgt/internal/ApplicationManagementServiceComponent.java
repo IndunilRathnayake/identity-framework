@@ -48,6 +48,7 @@ import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtAuditLogg
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtListener;
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtValidationListener;
 import org.wso2.carbon.identity.application.mgt.listener.STSApplicationMgtListener;
+import org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateManagementService;
 import org.wso2.carbon.idp.mgt.listener.IdentityProviderMgtListener;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -206,6 +207,29 @@ public class ApplicationManagementServiceComponent {
     protected void unsetConsentMgtService(ConsentManager consentManager) {
 
         ApplicationManagementServiceComponentHolder.getInstance().setConsentManager(null);
+    }
+
+    @Reference(
+            name = "application.template.mgt.service",
+            service = RegistryService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetApplicationTemplateMgtService"
+    )
+    protected void setApplicationTemplateMgtService(ApplicationTemplateManagementService applicationTemplateMgtService) {
+        if (log.isDebugEnabled()) {
+            log.debug("ApplicationTemplateManagementService set in Identity ApplicationManagementComponent bundle");
+        }
+        ApplicationManagementServiceComponentHolder.getInstance().setApplicationTemplateMgtService(
+                applicationTemplateMgtService);
+    }
+
+    protected void unsetApplicationTemplateMgtService(
+            ApplicationTemplateManagementService applicationTemplateManagementService) {
+        if (log.isDebugEnabled()) {
+            log.debug("ApplicationTemplateManagementService unset in Identity ApplicationManagementComponent bundle");
+        }
+        ApplicationManagementServiceComponentHolder.getInstance().setApplicationTemplateMgtService(null);
     }
 
     private void buildFileBasedSPList() {

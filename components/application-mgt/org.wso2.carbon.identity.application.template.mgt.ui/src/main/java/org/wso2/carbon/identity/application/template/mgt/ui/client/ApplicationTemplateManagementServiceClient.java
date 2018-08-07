@@ -138,6 +138,25 @@ public class ApplicationTemplateManagementServiceClient {
     }
 
     /**
+     * Update an application template.
+     *
+     * @param spTemplateDTO SP template info to be updated
+     * @throws AxisFault
+     */
+    public void updateApplicationTemplate(SpTemplateDTO spTemplateDTO) throws AxisFault {
+
+        try {
+            if (debugEnabled) {
+                log.debug(String.format("Updating Service Provider template: ", spTemplateDTO.getName()));
+            }
+            stub.updateApplicationTemplate(spTemplateDTO);
+        } catch (RemoteException |
+                IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException e) {
+            handleException(e);
+        }
+    }
+
+    /**
      * Export a application template.
      *
      * @param templateName name of the template

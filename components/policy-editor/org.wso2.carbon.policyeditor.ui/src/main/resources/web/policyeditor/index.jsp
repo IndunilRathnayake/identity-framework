@@ -45,10 +45,10 @@
 <script type="text/javascript" src="js/xml-for-script/tinyxmlsax.js"></script>
 <script type="text/javascript" src="js/xml-for-script/tinyxmlw3cdom.js"></script>
 
-<script type="text/javascript" src="js/sax-tree.js"></script>
-<script type="text/javascript" src="js/sax-policy-menu.js"></script>
-<script type="text/javascript" src="js/policy-editor-service-stub.js"></script>
-<script type="text/javascript" src="js/policy-editor.js"></script>
+<script type="text/javascript" src="js/sax-tree.js.bak"></script>
+<script type="text/javascript" src="js/sax-policy-menu.js.bak"></script>
+<script type="text/javascript" src="js/template-editor-service-stub.js.bak"></script>
+<script type="text/javascript" src="js/template-editor.js"></script>
 
 <!--EditArea javascript syntax hylighter -->
 <script language="javascript" type="text/javascript" src="../editarea/edit_area_full.js"></script>

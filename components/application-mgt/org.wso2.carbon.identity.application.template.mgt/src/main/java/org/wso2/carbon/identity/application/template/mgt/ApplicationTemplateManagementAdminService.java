@@ -107,7 +107,7 @@ public class ApplicationTemplateManagementAdminService extends AbstractAdmin {
     }
 
     /**
-     * Delete a application template.
+     * Delete an application template.
      *
      * @param templateName name of the template
      * @throws IdentityApplicationTemplateMgtException
@@ -120,6 +120,24 @@ public class ApplicationTemplateManagementAdminService extends AbstractAdmin {
         } catch (IdentityApplicationTemplateMgtException idpException) {
             log.error("Error while deleting application template:" + templateName + " in tenant: " + getTenantDomain(),
                     idpException);
+            throw idpException;
+        }
+    }
+
+    /**
+     * Update an application template.
+     *
+     * @param spTemplateDTO SP template info to be updated
+     * @throws IdentityApplicationTemplateMgtException
+     */
+    public void updateApplicationTemplate(SpTemplateDTO spTemplateDTO) throws IdentityApplicationTemplateMgtException {
+
+        try {
+            applicationTemplateMgtService = ApplicationTemplateManagementServiceImpl.getInstance();
+            applicationTemplateMgtService.updateApplicationTemplate(spTemplateDTO, getTenantDomain());
+        } catch (IdentityApplicationTemplateMgtException idpException) {
+            log.error("Error while updating application template:" + spTemplateDTO.getName() + " in tenant: " +
+                            getTenantDomain(), idpException);
             throw idpException;
         }
     }

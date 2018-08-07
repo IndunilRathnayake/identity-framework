@@ -78,4 +78,14 @@ public interface ApplicationTemplateDAO {
      */
     void deleteApplicationTemplate(String templateName, String tenantDomain)
             throws IdentityApplicationTemplateMgtException;
+
+    /**
+     * Update an application template.
+     *
+     * @param spTemplateDTO SP template info to be updated
+     * @param tenantDomain tenant domain
+     * @throws IdentityApplicationTemplateMgtException
+     */
+    void updateApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
+            throws IdentityApplicationTemplateMgtException;
 }

@@ -90,6 +90,16 @@ public abstract class ApplicationTemplateManagementService {
             throws IdentityApplicationTemplateMgtException;
 
     /**
+     * Update an application template.
+     *
+     * @param spTemplateDTO SP template info to be updated
+     * @param tenantDomain tenant domain
+     * @throws IdentityApplicationTemplateMgtException
+     */
+    public abstract void updateApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
+            throws IdentityApplicationTemplateMgtException;
+
+    /**
      * Export a application template.
      *
      * @param templateName name of the template

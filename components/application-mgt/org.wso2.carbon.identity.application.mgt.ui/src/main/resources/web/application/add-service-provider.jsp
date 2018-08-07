@@ -97,7 +97,7 @@ var openFile = function (event) {
     reader.readAsText(input.files[0]);
 };
 
-function importAppOnclick() {
+function uploadTemplate() {
     if (document.getElementById('sp-file-content').value === null || document.getElementById('sp-file-content').value === "") {
         CARBON.showWarningDialog('Please specify service provider configuration file.');
         location.href = '#';
@@ -108,27 +108,16 @@ function importAppOnclick() {
     }
 }
 
-function useSpTemplateOnclick() {
-    $("#template-sp-form").submit();
-    return true;
-}
 function showManual() {
     $("#add-sp-form").show();
-    $("#template-sp-form").hide();
     $("#upload-sp-form").hide();
 }
 
 function showFile() {
     $("#add-sp-form").hide();
-    $("#template-sp-form").hide();
     $("#upload-sp-form").show();
 }
 
-function showFromTemplate() {
-    $("#add-sp-form").hide();
-    $("#upload-sp-form").hide();
-    $("#template-sp-form").show();
-}
 $(function() {
     $( "#importErrorMsgDialog" ).dialog({
         autoOpen: false,
@@ -181,12 +170,6 @@ window.onload = function() {
                         <label for="file-option">File Configuration</label>
                     </td>
                 </tr>
-                <tr>
-                    <td><input type="radio" id="template-option" name="upload-type-selector"
-                               onclick="showFromTemplate();">
-                        <label for="template-option">Template Configuration</label>
-                    </td>
-                </tr>
                 </tbody>
             </table>
             <br/>
@@ -211,6 +194,32 @@ window.onload = function() {
                         <textarea style="width:50%" type="text" name="sp-description" id="sp-description" class="text-box-big"></textarea>
                         <div class="sectionHelp">
                                 <fmt:message key='help.desc'/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:15%" class="leftCol-med labelField"><fmt:message key='config.application.info.basic.template'/>:</td>
+                        <td>
+                            <select style="min-width: 250px;" id="sp-template" name="sp-template">
+                                <option value="">---Select---</option>
+                                <%
+                                    if (spTemplateDTOS != null && spTemplateDTOS.length > 0) {
+                                        for (SpTemplateDTO spTemplate : spTemplateDTOS) {
+                                            if (spTemplate != null) {
+                                %>
+                                <option
+                                        value="<%=Encode.forHtmlAttribute(spTemplate.getName())%>"
+                                        title="<%=Encode.forHtmlAttribute(spTemplate.getDescription())%>">
+                                    <%=Encode.forHtmlContent(spTemplate.getName())%>
+                                </option>
+                                <%
+                                            }
+                                        }
+                                    }
+                                %>
+                            </select>
+                            <div class="sectionHelp">
+                                <fmt:message key='help.template'/>
                             </div>
                         </td>
                     </tr>
@@ -240,68 +249,12 @@ window.onload = function() {
                     <tr>
                         <td>
                             <input type="button" class="button"  value="<fmt:message key='button.import.service.providers'/>"
-                                   onclick="importAppOnclick();"/>
+                                   onclick="uploadTemplate();"/>
                             <input type="button" class="button" onclick="javascript:location.href='list-service-providers.jsp'" value="<fmt:message key='button.cancel'/>" />
                         </td>
                     </tr>
                     </tbody>
                 </table>
-            </form>
-            <form id="template-sp-form" name="template-sp-form" method="post"
-                  action="add-service-provider-template-finish-ajaxprocessor.jsp">
-                <div class="sectionSeperator togglebleTitle"><fmt:message key='title.select.sp.template'/></div>
-                <div class="sectionSub">
-                    <table class="carbonFormTable">
-                        <tr>
-                            <td style="width:15%" class="leftCol-med labelField"><fmt:message key='config.application.info.basic.name'/>:<span class="required">*</span></td>
-                            <td>
-                                <input id="template-sp-name" name="template-sp-name" type="text" value="" white-list-patterns="^[a-zA-Z0-9\s._-]*$" autofocus/>
-                                <div class="sectionHelp">
-                                    <fmt:message key='help.name'/>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:15%" class="leftCol-med labelField"><fmt:message key='config.application.info.basic.description'/>:</td>
-                            <td>
-                                <textarea style="width:50%" type="text" name="template-sp-description" id="template-sp-description" class="text-box-big"></textarea>
-                                <div class="sectionHelp">
-                                    <fmt:message key='help.desc'/>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:15%" class="leftCol-med labelField"><fmt:message key='config.application.info.basic.template'/>:</td>
-                            <td>
-                                <select style="min-width: 250px;" id="sp-template" name="sp-template">
-                                    <option value="">---Select---</option>
-                                    <%
-                                        if (spTemplateDTOS != null && spTemplateDTOS.length > 0) {
-                                            for (SpTemplateDTO spTemplate : spTemplateDTOS) {
-                                                if (spTemplate != null) {
-                                    %>
-                                    <option
-                                            value="<%=Encode.forHtmlAttribute(spTemplate.getName())%>"
-                                            title="<%=Encode.forHtmlAttribute(spTemplate.getDescription())%>">
-                                        <%=Encode.forHtmlContent(spTemplate.getName())%>
-                                    </option>
-                                    <%
-                                                }
-                                            }
-                                        }
-                                    %>
-                                </select>
-                                <div class="sectionHelp">
-                                    <fmt:message key='help.template'/>
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="buttonRow">
-                    <input type="button" class="button"  value="<fmt:message key='button.add.service.providers.from.template'/>" onclick="useSpTemplateOnclick();"/>
-                    <input type="button" class="button" onclick="javascript:location.href='list-service-providers.jsp'" value="<fmt:message key='button.cancel'/>" />
-                </div>
             </form>
         </div>
     </div>

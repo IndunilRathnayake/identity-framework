@@ -52,6 +52,11 @@
                 /permission/admin/manage/identity/apptemplatemgt/delete
             </parameter>
         </operation>
+        <operation name="updateApplicationTemplate">
+            <parameter name="AuthorizationAction" locked="true">
+                /permission/admin/manage/identity/apptemplatemgt/update
+            </parameter>
+        </operation>
         <operation name="exportApplicationTemplate">
             <parameter name="AuthorizationAction" locked="true">
                 /permission/admin/manage/identity/apptemplatemgt/view

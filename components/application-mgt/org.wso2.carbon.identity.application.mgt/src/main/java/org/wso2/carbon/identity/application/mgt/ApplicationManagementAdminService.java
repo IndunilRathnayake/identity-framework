@@ -52,34 +52,16 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
      * @return application id
      * @throws org.wso2.carbon.identity.application.common.IdentityApplicationManagementException
      */
-    public void createApplication(ServiceProvider serviceProvider) throws IdentityApplicationManagementException {
+    public void createApplication(ServiceProvider serviceProvider, String templateName)
+            throws IdentityApplicationManagementException {
 
         try {
             applicationMgtService = ApplicationManagementService.getInstance();
-            applicationMgtService.createApplication(serviceProvider, getTenantDomain(), getUsername());
+            applicationMgtService.createApplication(serviceProvider, getTenantDomain(), getUsername(), templateName);
         } catch (IdentityApplicationManagementException idpException) {
             log.error("Error while creating application: " + serviceProvider.getApplicationName() + " for tenant: " +
                     getTenantDomain(), idpException);
             throw idpException;
-        }
-    }
-
-    /**
-     * Add Application.
-     *
-     * @param serviceProvider service provider info
-     * @return created service provider
-     * @throws IdentityApplicationManagementException
-     */
-    public ServiceProvider addApplication(ServiceProvider serviceProvider) throws IdentityApplicationManagementException {
-
-        try {
-            applicationMgtService = ApplicationManagementService.getInstance();
-            return applicationMgtService.addApplication(serviceProvider, getTenantDomain(), getUsername());
-        } catch (IdentityApplicationManagementException spException) {
-            log.error("Error while creating application: " + serviceProvider.getApplicationName() + " for tenant: " +
-                    getTenantDomain(), spException);
-            throw spException;
         }
     }
 
@@ -338,25 +320,6 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
             throw idpException;
         }
     }
-
-    /**
-     * Import Service Provider from XML file from UI.
-     *
-     * @param serviceProvider Service provider
-     * @return response of importing SP
-     * @throws IdentityApplicationManagementException
-     */
-    /*public ImportResponse importServiceProvider(ServiceProvider serviceProvider)
-            throws IdentityApplicationManagementException {
-
-        try {
-            applicationMgtService = ApplicationManagementService.getInstance();
-            return applicationMgtService.importServiceProvider(serviceProvider, getTenantDomain(), getUsername(), false);
-        } catch (IdentityApplicationManagementException idpException) {
-            log.error("Error while importing service provider for tenant: " + getTenantDomain(), idpException);
-            throw idpException;
-        }
-    }*/
 
     /**
      * Export service provider as XML.
