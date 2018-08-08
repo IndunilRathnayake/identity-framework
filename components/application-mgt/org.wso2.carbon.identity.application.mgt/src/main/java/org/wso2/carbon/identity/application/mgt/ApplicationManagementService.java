@@ -52,12 +52,14 @@ public abstract class ApplicationManagementService {
      * @param serviceProvider Service Provider Name
      * @param tenantDomain Tenant Domain
      * @param username User Name
+     * @param templateName SP template name
      * @return
      * @throws IdentityApplicationManagementException
      * @deprecated  This method is replaced by {@link #addApplication}
      */
     @Deprecated
-    public abstract void createApplication(ServiceProvider serviceProvider, String tenantDomain, String username)
+    public abstract void createApplication(ServiceProvider serviceProvider, String tenantDomain, String username,
+                                           String templateName)
             throws IdentityApplicationManagementException;
 
     /**
@@ -67,11 +69,12 @@ public abstract class ApplicationManagementService {
      * @param serviceProvider Service Provider Name
      * @param tenantDomain Tenant Domain
      * @param username User Name
+     * @param templateName Template Name
      * @return created service provider
      * @throws IdentityApplicationManagementException
      */
     public abstract ServiceProvider addApplication(ServiceProvider serviceProvider, String tenantDomain, String
-            username) throws IdentityApplicationManagementException;
+            username, String templateName) throws IdentityApplicationManagementException;
 
     /**
      * Get Application for given application name
@@ -226,6 +229,7 @@ public abstract class ApplicationManagementService {
      * @return ImportResponse
      * @throws IdentityApplicationManagementException Identity Application Management Exception
      */
-    public abstract ImportResponse importSPApplication(SpFileContent spFileContent, String tenantDomain, String
-            username, boolean isUpdate) throws IdentityApplicationManagementException;
+    public abstract ImportResponse importSPApplication(SpFileContent spFileContent, String tenantDomain, String username,
+                                                       boolean isUpdate) throws IdentityApplicationManagementException;
+
 }

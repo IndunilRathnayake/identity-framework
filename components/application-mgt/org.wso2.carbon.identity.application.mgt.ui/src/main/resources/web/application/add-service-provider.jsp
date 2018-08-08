@@ -16,6 +16,14 @@
 ~ specific language governing permissions and limitations
 ~ under the License.
 -->
+<%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ApplicationTemplateMgtServiceClient"%>
+<%@ page import="org.wso2.carbon.ui.CarbonUIUtil" %>
+<%@ page import="org.wso2.carbon.utils.ServerConstants" %>
+<%@ page import="org.apache.axis2.context.ConfigurationContext" %>
+<%@ page import="org.wso2.carbon.CarbonConstants" %>
+<%@ page import="org.owasp.encoder.Encode" %>
+<%@ page import="org.wso2.carbon.identity.application.template.mgt.dto.xsd.SpTemplateDTO" %>
+<%@ page import="org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtConstants" %>
 
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="carbon" uri="http://wso2.org/projects/carbon/taglibs/carbontags.jar"%>
@@ -33,6 +41,26 @@
     String[] importError = (String[]) request.getSession().getAttribute("importError");
     if (importError == null) {
         importError = new String[0];
+    }
+
+    SpTemplateDTO[] spTemplateDTOS = null;
+    try {
+        String cookie = (String) session.getAttribute(ServerConstants.ADMIN_SERVICE_COOKIE);
+        String backendServerURL = CarbonUIUtil.getServerURL(config.getServletContext(), session);
+        ConfigurationContext configContext =
+                (ConfigurationContext) config.getServletContext()
+                        .getAttribute(CarbonConstants.CONFIGURATION_CONTEXT);
+
+        ApplicationTemplateMgtServiceClient serviceClient = new ApplicationTemplateMgtServiceClient(cookie,
+                backendServerURL, configContext);
+        spTemplateDTOS = serviceClient.getAllApplicationTemplates();
+    } catch (Exception e) {
+        CarbonUIMessage.sendCarbonUIMessage(e.getMessage(), CarbonUIMessage.ERROR, request, e);
+%>
+<script>
+    location.href = 'add-service-provider.jsp';
+</script>
+<%
     }
 %>
 <script type="text/javascript">
@@ -84,7 +112,6 @@ function showManual() {
     $("#add-sp-form").show();
     $("#upload-sp-form").hide();
 }
-
 function showFile() {
     $("#add-sp-form").hide();
     $("#upload-sp-form").show();
@@ -139,7 +166,6 @@ window.onload = function() {
                         <label for="file-option">File Configuration</label>
                     </td>
                 </tr>
-                
                 </tbody>
             </table>
             <br/>
@@ -164,6 +190,41 @@ window.onload = function() {
                         <textarea style="width:50%" type="text" name="sp-description" id="sp-description" class="text-box-big"></textarea>
                         <div class="sectionHelp">
                                 <fmt:message key='help.desc'/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:15%" class="leftCol-med labelField"><fmt:message key='config.application.info.basic.template'/>:</td>
+                        <td>
+                            <select style="min-width: 250px;" id="sp-template" name="sp-template">
+                                <option value="">---Select---</option>
+                                <%
+                                    if (spTemplateDTOS != null && spTemplateDTOS.length > 0) {
+                                        for (SpTemplateDTO spTemplate : spTemplateDTOS) {
+                                            if (spTemplate != null) {
+                                                if (spTemplate.getName().equals(ApplicationTemplateMgtConstants
+                                                .TENANT_DEFAULT_SP_TEMPLATE_NAME)) {
+                                %>
+                                <option
+                                        value="<%=Encode.forHtmlAttribute(spTemplate.getName())%>"
+                                        title="<%=Encode.forHtmlAttribute(spTemplate.getDescription())%>" selected>
+                                    <%=Encode.forHtmlContent(spTemplate.getName())%>
+                                </option>
+                                <%              } else { %>
+                                <option
+                                        value="<%=Encode.forHtmlAttribute(spTemplate.getName())%>"
+                                        title="<%=Encode.forHtmlAttribute(spTemplate.getDescription())%>">
+                                    <%=Encode.forHtmlContent(spTemplate.getName())%>
+                                </option>
+                                <%
+                                                }
+                                            }
+                                        }
+                                    }
+                                %>
+                            </select>
+                            <div class="sectionHelp">
+                                <fmt:message key='help.template'/>
                             </div>
                         </td>
                     </tr>

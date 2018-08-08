@@ -61,6 +61,8 @@ import org.wso2.carbon.identity.application.mgt.internal.ApplicationManagementSe
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationManagementServiceComponentHolder;
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationMgtListenerServiceComponent;
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtListener;
+import org.wso2.carbon.identity.application.template.mgt.IdentityApplicationTemplateMgtException;
+import org.wso2.carbon.identity.application.template.mgt.dto.SpTemplateDTO;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.registry.api.RegistryException;
 import org.wso2.carbon.registry.core.Registry;
@@ -72,18 +74,11 @@ import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -92,6 +87,15 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -137,17 +141,43 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
     }
 
     @Override
-    public void createApplication(ServiceProvider serviceProvider, String tenantDomain, String username)
-            throws IdentityApplicationManagementException {
+    public void createApplication(ServiceProvider serviceProvider, String tenantDomain, String username,
+                                  String templateName) throws IdentityApplicationManagementException {
 
-        doAddApplication(serviceProvider, tenantDomain, username);
+        addApplication(serviceProvider, tenantDomain, username, templateName);
     }
 
+
     @Override
-    public ServiceProvider addApplication(ServiceProvider serviceProvider, String tenantDomain, String username)
+    public ServiceProvider addApplication(ServiceProvider serviceProvider, String tenantDomain, String username,
+                                          String templateName)
             throws IdentityApplicationManagementException {
 
-        return doAddApplication(serviceProvider, tenantDomain, username);
+        SpTemplateDTO spTemplateDTO = getTemplateInfo(tenantDomain, templateName);
+        ServiceProvider updatedSp = getSPFromTemplate(serviceProvider, tenantDomain, spTemplateDTO);
+
+        ServiceProvider savedSP = doAddApplication(updatedSp, tenantDomain, username);
+        updatedSp.setApplicationID(savedSP.getApplicationID());
+        updatedSp.setOwner(getUser(tenantDomain, username));
+
+        if (spTemplateDTO != null) {
+            Collection<ApplicationMgtListener> listeners =
+                    ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
+            for (ApplicationMgtListener listener : listeners) {
+                if (listener.isEnable()) {
+                    listener.onPreCreateInbound(updatedSp, false);
+                }
+            }
+
+            updateApplication(updatedSp, tenantDomain, username);
+
+            for (ApplicationMgtListener listener : listeners) {
+                if (listener.isEnable()) {
+                    listener.doImportServiceProvider(updatedSp);
+                }
+            }
+        }
+        return updatedSp;
     }
 
     @Override
@@ -272,7 +302,8 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             ApplicationDAO appDAO = ApplicationMgtSystemConfig.getInstance().getApplicationDAO();
             String storedAppName = appDAO.getApplicationName(serviceProvider.getApplicationID());
 
-            validateConsentPurposes(serviceProvider);
+            // Will be supported with 'Advance Consent Management Feature'.
+            // validateConsentPurposes(serviceProvider);
             appDAO.updateApplication(serviceProvider, tenantDomain);
             if (isOwnerUpdateRequest(serviceProvider)) {
                 //It is not required to validate the user here, as the user is validating inside the updateApplication
@@ -287,7 +318,6 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                 throw new IdentityApplicationManagementException(errorMessage);
             }
 
-            ApplicationPermission[] permissions = serviceProvider.getPermissionAndRoleConfig().getPermissions();
             String applicationNode = ApplicationMgtUtil.getApplicationPermissionPath() + RegistryConstants
                     .PATH_SEPARATOR + storedAppName;
             org.wso2.carbon.registry.api.Registry tenantGovReg = CarbonContext.getThreadLocalCarbonContext()
@@ -340,9 +370,9 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
 
                             if (!isSPSpecificPurpose(serviceProvider, purpose) && !isSharedPurpose(purpose)) {
                                 String message = "Purpose: %s with ID: %s is not defined under purposes for SP:" +
-                                                 " %s or 'SHARED' purposes.";
+                                        " %s or 'SHARED' purposes.";
                                 String error = String.format(message, purpose.getName(), purpose.getId(),
-                                                             serviceProvider.getApplicationName());
+                                        serviceProvider.getApplicationName());
                                 throw new IdentityApplicationManagementException(error);
                             }
                         } catch (ConsentManagementException e) {
@@ -350,7 +380,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                                 throw new IdentityApplicationManagementException("Invalid purpose ID: " + purposeId, e);
                             }
                             throw new IdentityApplicationManagementException("Error while retrieving consent purpose " +
-                                                                             "with ID: " + purposeId, e);
+                                    "with ID: " + purposeId, e);
                         }
                     }
                 }
@@ -366,7 +396,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
 
     private boolean isSPSpecificPurpose(ServiceProvider serviceProvider, Purpose purpose) {
 
-        return serviceProvider.getApplicationName().equals(purpose.getGroup())&& PURPOSE_GROUP_TYPE_SP.equals(
+        return serviceProvider.getApplicationName().equals(purpose.getGroup()) && PURPOSE_GROUP_TYPE_SP.equals(
                 purpose.getGroupType());
     }
 
@@ -951,7 +981,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                 ServiceProvider basicApplication = new ServiceProvider();
                 basicApplication.setApplicationName(serviceProvider.getApplicationName());
                 basicApplication.setDescription(serviceProvider.getDescription());
-                savedSP = addApplication(basicApplication, tenantDomain, username);
+                savedSP = addApplication(basicApplication, tenantDomain, username, null);
             }
             serviceProvider.setApplicationID(savedSP.getApplicationID());
             serviceProvider.setOwner(getUser(tenantDomain, username));
@@ -985,7 +1015,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             importResponse.setErrors(e.getValidationMsg());
             return importResponse;
         } catch (IdentityApplicationManagementException e) {
-           deleteCreatedSP(savedSP, tenantDomain, username, isUpdate);
+            deleteCreatedSP(savedSP, tenantDomain, username, isUpdate);
             String errorMsg = String.format("Error in importing provided service provider %s@%s from file ",
                     serviceProvider.getApplicationName(), tenantDomain);
             log.error(errorMsg, e);
@@ -1124,6 +1154,45 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         return serviceProvider;
     }
 
+    private ServiceProvider getSPFromTemplate(ServiceProvider serviceProvider, String tenantDomain,
+                                              SpTemplateDTO spTemplateDTO)
+            throws IdentityApplicationManagementException {
+
+        if (spTemplateDTO != null) {
+            ServiceProvider spConfigFromTemplate = unmarshalSP(spTemplateDTO.getSpContent(), tenantDomain);
+
+            Field[] fieldsSpTemplate = spConfigFromTemplate.getClass().getDeclaredFields();
+            for (Field field : fieldsSpTemplate) {
+                try {
+                    Field fieldSpTemplate = spConfigFromTemplate.getClass().getDeclaredField(field.getName());
+                    fieldSpTemplate.setAccessible(true);
+                    Object value = fieldSpTemplate.get(spConfigFromTemplate);
+                    if (value != null && fieldSpTemplate.getAnnotation(XmlElement.class) != null) {
+                        Field fieldActualSp = serviceProvider.getClass().getDeclaredField(field.getName());
+                        fieldActualSp.setAccessible(true);
+                        fieldActualSp.set(serviceProvider, value);
+                    }
+                } catch (IllegalAccessException | NoSuchFieldException e) {
+                    throw new IdentityApplicationManagementException("Error when updating SP template configurations" +
+                            "into the actual service provider");
+                }
+            }
+        }
+        return serviceProvider;
+    }
+
+    private SpTemplateDTO getTemplateInfo(String tenantDomain, String templateName)
+            throws IdentityApplicationManagementException {
+
+        try {
+            return ApplicationManagementServiceComponentHolder.getInstance().getApplicationTemplateMgtService()
+                    .loadApplicationTemplate(templateName, tenantDomain);
+        } catch (IdentityApplicationTemplateMgtException e) {
+            throw new IdentityApplicationManagementException(String.format("Error in loading application template " +
+                    "with name", templateName), e);
+        }
+    }
+
     private boolean isOwnerUpdateRequest(ServiceProvider serviceProvider) {
 
         return serviceProvider.getOwner() != null && StringUtils.isNotEmpty(serviceProvider.getOwner().getUserName())
@@ -1167,7 +1236,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
      * Convert xml file of service provider to object.
      *
      * @param spFileContent xml string of the SP and file name
-     * @param tenantDomain tenant domain name
+     * @param tenantDomain  tenant domain name
      * @return Service Provider
      * @throws IdentityApplicationManagementException Identity Application Management Exception
      */
@@ -1187,6 +1256,24 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         } catch (JAXBException e) {
             throw new IdentityApplicationManagementException(String.format("Error in reading Service Provider " +
                     "configuration file %s uploaded by tenant: %s", spFileContent.getFileName(), tenantDomain), e);
+        }
+    }
+
+    private ServiceProvider unmarshalSP(String spTemplateXml, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        if (StringUtils.isEmpty(spTemplateXml)) {
+            throw new IdentityApplicationManagementException("Empty SP template configuration is provided to unmarshal");
+        }
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(ServiceProvider.class);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            return (ServiceProvider) unmarshaller.unmarshal(new ByteArrayInputStream(
+                    spTemplateXml.getBytes(StandardCharsets.UTF_8)));
+
+        } catch (JAXBException e) {
+            throw new IdentityApplicationManagementException("Error in reading Service Provider template configuration ",
+                    e);
         }
     }
 
