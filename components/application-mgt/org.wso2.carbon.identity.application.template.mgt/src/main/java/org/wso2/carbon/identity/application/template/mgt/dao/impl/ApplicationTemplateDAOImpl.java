@@ -20,28 +20,22 @@ package org.wso2.carbon.identity.application.template.mgt.dao.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.context.CarbonContext;
+import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
+import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtDBQueries;
 import org.wso2.carbon.identity.application.template.mgt.IdentityApplicationTemplateMgtException;
 import org.wso2.carbon.identity.application.template.mgt.dao.ApplicationTemplateDAO;
 import org.wso2.carbon.identity.application.template.mgt.dto.SpTemplateDTO;
-import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
-import org.wso2.carbon.utils.DBUtils;
+import org.wso2.carbon.identity.application.template.mgt.util.JdbcUtils;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.StringReader;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class is used to access the data storage to retrieve, store, delete and update service provider templates.
+ * Default implementation of {@link ApplicationTemplateDAO}. This handles {@link SpTemplateDTO} related db layer operations.
  */
 public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
 
@@ -63,7 +57,17 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
         String templateName = spTemplateDTO.getName();
         String templateDescription = spTemplateDTO.getDescription();
 
-        Connection connection = IdentityDatabaseUtil.getDBConnection();
+        try {
+            JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+            jdbcTemplate.executeInsert(ApplicationTemplateMgtDBQueries.ADD_SP_TEMPLATE,
+                    (preparedStatement -> {
+                        preparedStatement.setInt(1, tenantID);
+                        preparedStatement.setString(2, templateName);
+                        preparedStatement.setString(3, templateDescription);
+                        preparedStatement.setCharacterStream(4, new StringReader(spTemplateDTO.getSpContent()));
+                    }), null, true);
+
+        /*Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement storeAppTemplatePrepStmt = null;
         ResultSet results = null;
 
@@ -81,11 +85,13 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
 
             if (!connection.getAutoCommit()) {
                 connection.commit();
-            }
+            }*/
             if (log.isDebugEnabled()) {
                 log.debug("Application Template Stored successfully with name " + templateName);
             }
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
+            throw new IdentityApplicationTemplateMgtException("Error while Creating Application Template\"", e);
+        } /*catch (SQLException e) {
             try {
                 if (connection != null) {
                     connection.rollback();
@@ -97,26 +103,47 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
             throw new IdentityApplicationTemplateMgtException("Error while Creating Application Template", e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, results, storeAppTemplatePrepStmt);
-        }
+        }*/
     }
 
     @Override
     public SpTemplateDTO loadApplicationTemplate(String templateName, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
-        if (log.isDebugEnabled()) {
+        /*if (log.isDebugEnabled()) {
             log.debug(String.format("Loading application template: %s of tenant %s", templateName, tenantDomain));
         }
 
         int tenantID = getTenantID(tenantDomain);
 
-        Connection connection = IdentityDatabaseUtil.getDBConnection();
+        *//*Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement loadAppTemplatePrepStmt = null;
         SpTemplateDTO spTemplateDTO = null;
-        ResultSet results = null;
+        ResultSet results = null;*//*
 
         try {
-            loadAppTemplatePrepStmt = connection.prepareStatement(
+           *//* JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+
+            jdbcTemplate.executeQuery(ApplicationTemplateMgtDBQueries.LOAD_SP_TEMPLATE_CONTENT,
+                    (resultSet, i) -> {
+                        SpTemplateDTO spTemplateDTO = new SpTemplateDTO();
+                        StringBuilder sb = new StringBuilder();
+                        BufferedReader br = new BufferedReader(
+                                resultSet.getCharacterStream(1));
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line).append("\r\n");
+                        }
+                        String spContent = sb.toString();
+                        spTemplateDTO.setName(templateName);
+                        spTemplateDTO.setSpContent(spContent);
+                        return spTemplateDTO;
+                    }, preparedStatement ->
+                    {
+                        preparedStatement.setString(1, templateName);
+                        preparedStatement.setInt(2, tenantID);
+                    });*//*
+            *//*loadAppTemplatePrepStmt = connection.prepareStatement(
                     ApplicationTemplateMgtDBQueries.LOAD_SP_TEMPLATE_CONTENT);
 
             loadAppTemplatePrepStmt.setString(1, templateName);
@@ -146,11 +173,16 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
                                 "Could not read the template information for : " + templateName, e);
                     }
                 }
-            }
+            }*//*
             if (log.isDebugEnabled()) {
                 log.debug("Application Template Loaded successfully with name " + templateName);
             }
-        } catch (SQLException e) {
+        }*//*catch (DataAccessException e) {
+            throw new IdentityApplicationTemplateMgtException("Error while Loading Application Template", e);
+        }catch (IOException e) {
+            throw new IdentityApplicationTemplateMgtException(
+                    "Could not read the template information for : " + templateName, e);
+        }*//* *//*catch (SQLException e) {
             try {
                 if (connection != null) {
                     connection.rollback();
@@ -162,8 +194,9 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
             throw new IdentityApplicationTemplateMgtException("Error while Loading Application Template", e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, results, loadAppTemplatePrepStmt);
-        }
-        return spTemplateDTO;
+        }*//*
+return spTemplateDTO;*/
+        return null;
     }
 
     @Override
@@ -173,10 +206,26 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
             log.debug(String.format("Checking application template exists for name: %s in tenant: %s", templateName,
                     tenantDomain));
         }
-
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
         int tenantID = getTenantID(tenantDomain);
 
-        Connection connection = IdentityDatabaseUtil.getDBConnection();
+        try {
+            jdbcTemplate.fetchSingleRecord(ApplicationTemplateMgtDBQueries.IS_SP_TEMPLATE_EXISTS, (resultSet, rowNumber) -> {
+                        if (resultSet.next()) {
+                            return true;
+                        }
+                        return false;
+                    },
+                    preparedStatement -> {
+                        preparedStatement.setString(1, templateName);
+                        preparedStatement.setInt(2, tenantID);
+                    });
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+        }
+        return false;
+
+        /*Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement isAppTemplateExistsPrepStmt = null;
         boolean isTemplateExists = false;
         ResultSet results = null;
@@ -214,7 +263,7 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, results, isAppTemplateExistsPrepStmt);
         }
-        return isTemplateExists;
+        return isTemplateExists;*/
     }
 
     @Override
@@ -226,8 +275,24 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
         }
 
         int tenantID = getTenantID(tenantDomain);
+        List<SpTemplateDTO> spTemplateDTOList = new ArrayList<>();
 
-        Connection connection = IdentityDatabaseUtil.getDBConnection();
+       JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+
+        try {
+            spTemplateDTOList = jdbcTemplate.executeQuery(ApplicationTemplateMgtDBQueries.GET_ALL_SP_TEMPLATES,
+                    (resultSet, rowNumber) -> new SpTemplateDTO (resultSet.getString(1),
+                        resultSet.getString(2), resultSet.getString(3)),
+                    preparedStatement ->
+                        preparedStatement.setInt(1, tenantID)
+                       );
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+        }
+        return spTemplateDTOList;
+
+
+        /*Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement getAllAppTemplatePrepStmt = null;
         List<SpTemplateDTO> spTemplateDTOList = new ArrayList<>();
         ResultSet results = null;
@@ -268,7 +333,7 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, results, getAllAppTemplatePrepStmt);
         }
-        return spTemplateDTOList;
+        return spTemplateDTOList;*/
     }
 
     @Override
@@ -281,13 +346,18 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
 
         int tenantID = getTenantID(tenantDomain);
 
-        Connection connection = IdentityDatabaseUtil.getDBConnection();
+       /* Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement getAllAppTemplateNamesPrepStmt = null;
         List<String> spTemplateNames = new ArrayList<>();
-        ResultSet results = null;
+        ResultSet results = null;*/
+        List<String> spTemplateNames;
 
         try {
-            getAllAppTemplateNamesPrepStmt = connection.prepareStatement(
+            JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+            spTemplateNames = jdbcTemplate.executeQuery(ApplicationTemplateMgtDBQueries.GET_ALL_SP_TEMPLATES,
+                    (resultSet, i) -> resultSet.getString(1),
+                    preparedStatement -> preparedStatement.setInt(1, tenantID));
+            /*getAllAppTemplateNamesPrepStmt = connection.prepareStatement(
                     ApplicationTemplateMgtDBQueries.GET_ALL_SP_TEMPLATE_NAMES);
 
             getAllAppTemplateNamesPrepStmt.setInt(1, tenantID);
@@ -301,12 +371,12 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
                 while (getAllAppTemplateNamesResultSet.next()) {
                     spTemplateNames.add(getAllAppTemplateNamesResultSet.getString(1));
                 }
-            }
+            }*/
             if (log.isDebugEnabled()) {
                 log.debug("All Application Template names retrieved successfully for tenant domain " + tenantDomain);
             }
 
-        } catch (SQLException e) {
+        } /*catch (SQLException e) {
             try {
                 if (connection != null) {
                     connection.rollback();
@@ -318,6 +388,9 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
             throw new IdentityApplicationTemplateMgtException("Error while Loading Application Template names", e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, results, getAllAppTemplateNamesPrepStmt);
+        }*/
+        catch (DataAccessException e) {
+            throw new IdentityApplicationTemplateMgtException("Error while Loading Application Template names", e);
         }
         return spTemplateNames;
     }
@@ -330,6 +403,20 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
         }
 
         int tenantID = getTenantID(tenantDomain);
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        try {
+            jdbcTemplate.executeUpdate(ApplicationTemplateMgtDBQueries.DELETE_SP_TEMPLATE_BY_NAME,
+                    preparedStatement -> {
+                        preparedStatement.setString(1, templateName);
+                        preparedStatement.setInt(2, tenantID);
+            });
+        } catch (DataAccessException e) {
+            String errorMessege = "An error occurred while delete the application template : " + templateName;
+            log.error(errorMessege, e);
+            throw new IdentityApplicationTemplateMgtException(errorMessege, e);
+        }
+
+        /*int tenantID = getTenantID(tenantDomain);
 
         Connection connection = IdentityDatabaseUtil.getDBConnection();
 
@@ -358,7 +445,7 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
             throw new IdentityApplicationTemplateMgtException(errorMessege, e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, deleteTemplatePrepStmt);
-        }
+        }*/
     }
 
     @Override
@@ -370,6 +457,21 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
         }
 
         int tenantID = getTenantID(tenantDomain);
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        try {
+            jdbcTemplate.executeUpdate(ApplicationTemplateMgtDBQueries.UPDATE_SP_TEMPLATE_BY_NAME,
+                    preparedStatement -> {
+                        preparedStatement.setCharacterStream(1, new StringReader(spTemplateDTO.getSpContent()));
+                        preparedStatement.setString(2, spTemplateDTO.getName());
+                        preparedStatement.setInt(3, tenantID);
+                    });
+        } catch (DataAccessException e) {
+            String errorMessege = "An error occurred while update the application template : " + spTemplateDTO.getName();
+            log.error(errorMessege, e);
+            throw new IdentityApplicationTemplateMgtException(errorMessege, e);
+        }
+
+        /*int tenantID = getTenantID(tenantDomain);
 
         Connection connection = IdentityDatabaseUtil.getDBConnection();
 
@@ -399,7 +501,7 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
             throw new IdentityApplicationTemplateMgtException(errorMessege, e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, updateTemplatePrepStmt);
-        }
+        }*/
     }
 
     private int getTenantID(String tenantDomain) {

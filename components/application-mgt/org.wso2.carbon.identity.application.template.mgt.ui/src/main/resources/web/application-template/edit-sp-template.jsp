@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="codemirror/addon/lint/lint.css">
 
 <link rel="stylesheet" href="css/idpmgt.css">
-<link rel="stylesheet" href="css/conditional-authentication.css">
+<link rel="stylesheet" href="css/list-sp-templates-flow.css">
 
 <script src="codemirror/lib/codemirror.js"></script>
 <script src="codemirror/keymap/sublime.js"></script>
@@ -73,17 +73,8 @@
 <jsp:include page="../dialog/display_messages.jsp"/>
 
 <%
-    String templatesJson = null;
-    String availableJsFunctionsJson = null;
-
-    StringBuilder localAuthTypes = new StringBuilder();
-    String startOption = "<option value=\"";
-    String middleOption = "\">";
-    String endOption = "</option>";
     String templateText = "";
     String templateName = "";
-
-
     try {
         templateName = request.getParameter("templateName");
 
@@ -97,8 +88,8 @@
         SpTemplateDTO spTemplateDTO = serviceClient.loadSpFromApplicationTemplate(templateName);
         templateText = spTemplateDTO.getSpContent();
     } catch (Exception e) {
-        CarbonUIMessage.sendCarbonUIMessage("Error occurred while loading SP advanced outbound authentication " +
-                "configuration", CarbonUIMessage.ERROR, request, e);
+        CarbonUIMessage.sendCarbonUIMessage("Error occurred while loading SP template", CarbonUIMessage.ERROR,
+                request, e);
     }
 %>
 
@@ -136,7 +127,7 @@
             </br>
             <textarea hidden="hidden" name="sp-template-name" id="sp-template-name"><%=templateName%></textarea>
             <div class="buttonRow">
-                <input type="button" class="button" value="<fmt:message key='button.update.service.provider.template'/>"
+                <input id="updateTemplate" type="button" class="button" value="<fmt:message key='button.update.service.provider.template'/>"
                        onclick="updateTemplateOnclick();"/>
                 <input type="button" class="button" onclick="javascript:location.href='list-sp-templates.jsp'"
                        value="<fmt:message key='button.cancel'/>"/>
@@ -144,4 +135,4 @@
         </form>
     </div>
 </fmt:bundle>
-<script src="js/configure-authentication-flow.js"></script>
+<script src="js/list-sp-templates-flow.js"></script>

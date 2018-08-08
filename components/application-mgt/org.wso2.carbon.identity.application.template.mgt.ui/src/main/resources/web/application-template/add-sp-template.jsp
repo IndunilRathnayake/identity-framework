@@ -107,7 +107,7 @@ window.onload = function() {
         </h2>
         <div id="workArea">
             <form id="upload-sp-template-form" name="upload-sp-template-form" method="post"
-                  action="import-sp-template-finish-ajaxprocessor.jsp">
+                  action="add-sp-template-finish-ajaxprocessor.jsp">
                 <div class="sectionSeperator togglebleTitle"><fmt:message key='upload.service.provider.template.file'/></div>
                 <div class="sectionSub">
                     <table class="carbonFormTable">
