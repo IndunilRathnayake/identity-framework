@@ -31,6 +31,12 @@ public class SpTemplateDTO implements Serializable {
     private String description;
     /*private List<PlaceholderDTO> placeholders;*/
 
+    public SpTemplateDTO(String spContent, String name, String description) {
+        this.spContent = spContent;
+        this.name = name;
+        this.description = description;
+    }
+
     /**
      * Get Service Provider content.
      *

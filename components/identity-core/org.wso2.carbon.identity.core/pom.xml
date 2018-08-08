@@ -111,6 +111,10 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.utils</groupId>
+            <artifactId>org.wso2.carbon.database.utils</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -166,6 +170,8 @@
                             org.wso2.carbon.base.api;version="${carbon.base.imp.pkg.version.range}",
                             org.wso2.carbon.context;version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.core.util;version="${carbon.kernel.package.import.version.range}",
+                            org.wso2.carbon.utils;version="${carbon.kernel.package.import.version.range}",
+                            org.wso2.carbon.utils.multitenancy;version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.stratos.common.*;version="${carbon.commons.imp.pkg.version}",
                             org.wso2.carbon.utils;version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.utils.multitenancy;version="${carbon.kernel.package.import.version.range}",

@@ -252,6 +252,11 @@
                 <artifactId>org.wso2.carbon.core.ui</artifactId>
                 <version>${carbon.kernel.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.utils</groupId>
+                <artifactId>org.wso2.carbon.database.utils</artifactId>
+                <version>${org.wso2.carbon.database.utils.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.wso2.orbit.org.apache.neethi</groupId>
@@ -1527,6 +1532,7 @@
         <equinox.osgi.services.version>3.5.100.v20160504-1419</equinox.osgi.services.version>
         <apache.felix.scr.ds.annotations.version>1.2.8</apache.felix.scr.ds.annotations.version>
 
+        <org.wso2.carbon.database.utils.version>2.0.6</org.wso2.carbon.database.utils.version>
         <!--Carbon commons version-->
         <carbon.commons.version>4.5.2</carbon.commons.version>
         <carbon.commons.imp.pkg.version>[4.4.0, 5.0.0)</carbon.commons.imp.pkg.version>

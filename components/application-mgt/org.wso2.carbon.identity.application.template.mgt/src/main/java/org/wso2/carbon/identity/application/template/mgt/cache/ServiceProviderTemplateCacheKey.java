@@ -21,7 +21,7 @@ package org.wso2.carbon.identity.application.template.mgt.cache;
 import java.io.Serializable;
 
 /**
- * Cache key for ServiceProviderTemplateCache.
+ * Cache Key which will use in {@link ServiceProviderTemplateCache}.
  */
 public class ServiceProviderTemplateCacheKey implements Serializable {
 

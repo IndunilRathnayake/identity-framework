@@ -574,4 +574,4 @@
         }
     }
 </script>
-<script src="./js/configure-authentication-flow.js"></script>
+<script src="./js/list-sp-templates-flow.js"></script>
