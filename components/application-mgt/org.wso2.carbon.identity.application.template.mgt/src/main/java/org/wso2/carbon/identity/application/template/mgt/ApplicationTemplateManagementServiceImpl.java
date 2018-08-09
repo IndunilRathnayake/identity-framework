@@ -21,18 +21,40 @@ package org.wso2.carbon.identity.application.template.mgt;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Document;
+import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
+import org.wso2.carbon.identity.application.common.model.ServiceProvider;
+import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtListener;
 import org.wso2.carbon.identity.application.template.mgt.cache.ServiceProviderTemplateCache;
 import org.wso2.carbon.identity.application.template.mgt.cache.ServiceProviderTemplateCacheKey;
 import org.wso2.carbon.identity.application.template.mgt.dao.ApplicationTemplateDAO;
 import org.wso2.carbon.identity.application.template.mgt.dao.impl.ApplicationTemplateDAOImpl;
 import org.wso2.carbon.identity.application.template.mgt.dto.SpTemplateDTO;
+import org.wso2.carbon.identity.application.template.mgt.internal.ApplicationMgtListenerServiceComponent;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -157,10 +179,24 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
     }
 
     @Override
-    public String exportApplicationTemplate(String templateName, String tenantDomain)
+    public String exportApplicationTemplate(String templateName, boolean exportSecrets, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
-        return loadApplicationTemplate(templateName, tenantDomain).getSpContent();
+        try {
+            String templateXml = loadApplicationTemplate(templateName, tenantDomain).getSpContent();
+            ServiceProvider serviceProvider = unmarshalSP(templateXml, tenantDomain);
+            // invoking the listeners
+            Collection<ApplicationMgtListener> listeners = ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
+            for (ApplicationMgtListener listener : listeners) {
+                if (listener.isEnable()) {
+                    listener.doExportServiceProvider(serviceProvider, exportSecrets);
+                }
+            }
+            return marshalSP(serviceProvider, tenantDomain);
+        }catch (IdentityApplicationManagementException e) {
+            throw new IdentityApplicationTemplateMgtException(String.format("Error when exporting SP template: ",
+                    templateName), e);
+        }
     }
 
     private void validateTemplateXMLSyntax(SpTemplateDTO spTemplateDTO) throws IdentityApplicationTemplateMgtException {
@@ -207,5 +243,50 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
             return spTemplateDTO;
         }
         return null;
+    }
+
+    private ServiceProvider unmarshalSP(String spTemplateXml, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        if (StringUtils.isEmpty(spTemplateXml)) {
+            throw new IdentityApplicationManagementException("Empty SP template configuration is provided to unmarshal");
+        }
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(ServiceProvider.class);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            return (ServiceProvider) unmarshaller.unmarshal(new ByteArrayInputStream(
+                    spTemplateXml.getBytes(StandardCharsets.UTF_8)));
+
+        } catch (JAXBException e) {
+            throw new IdentityApplicationManagementException("Error in reading Service Provider template configuration ",
+                    e);
+        }
+    }
+
+    private String marshalSP(ServiceProvider serviceProvider, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(ServiceProvider.class);
+            Marshaller marshaller = jaxbContext.createMarshaller();
+            DocumentBuilderFactory docBuilderFactory = IdentityUtil.getSecuredDocumentBuilderFactory();
+            Document document = docBuilderFactory.newDocumentBuilder().newDocument();
+            marshaller.marshal(serviceProvider, document);
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS,
+                    "AuthenticationScript inboundConfiguration");
+
+            StringWriter stringBuilder = new StringWriter();
+            StreamResult result = new StreamResult(stringBuilder);
+            transformer.transform(new DOMSource(document), result);
+            return stringBuilder.getBuffer().toString();
+        } catch (JAXBException | ParserConfigurationException | TransformerException e) {
+            throw new IdentityApplicationManagementException(String.format("Error in exporting Service Provider %s@%s",
+                    serviceProvider.getApplicationName(), tenantDomain), e);
+        }
     }
 }

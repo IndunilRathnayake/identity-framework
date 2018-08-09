@@ -31,10 +31,12 @@ public class SpTemplateDTO implements Serializable {
     private String description;
     /*private List<PlaceholderDTO> placeholders;*/
 
-    public SpTemplateDTO(String spContent, String name, String description) {
-        this.spContent = spContent;
+    public SpTemplateDTO() {}
+
+    public SpTemplateDTO(String name, String description, String spContent) {
         this.name = name;
         this.description = description;
+        this.spContent = spContent;
     }
 
     /**

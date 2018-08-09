@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.wso2.carbon.identity.framework</groupId>
         <artifactId>application-mgt</artifactId>
-        <version>5.12.76-SNAPSHOT</version>
+        <version>5.12.95-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>org.wso2.carbon.identity.application.template.mgt</artifactId>
@@ -89,6 +89,10 @@
             <groupId>org.wso2.carbon.utils</groupId>
             <artifactId>org.wso2.carbon.database.utils</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.application.mgt</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -133,12 +137,13 @@
                             org.wso2.carbon.base; version="${carbon.base.imp.pkg.version.range}",
                             org.wso2.carbon.context; version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.core; version="${carbon.kernel.package.import.version.range}",
-                            org.wso2.carbon.utils;version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.security.*; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.identity.base.*; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.identity.core.*; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.identity.application.common.*;version="${carbon.identity.package.import.version.range}",
-                            org.wso2.carbon.directory.server.manager; version="${carbon.identity.package.import.version.range}"
+                            org.wso2.carbon.identity.application.mgt.*;version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.directory.server.manager; version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.database.utils.*;version="${org.wso2.carbon.database.utils.version.range}"
                         </Import-Package>
                         <Export-Package>
                             !org.wso2.carbon.identity.application.template.mgt.internal,

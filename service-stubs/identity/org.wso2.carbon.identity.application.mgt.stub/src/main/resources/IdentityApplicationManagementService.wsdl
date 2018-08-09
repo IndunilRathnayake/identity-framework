@@ -1,3 +1,21 @@
+<!--
+  ~  Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~  http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:ax2169="http://common.application.identity.carbon.wso2.org/xsd" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:ax2171="http://model.common.application.identity.carbon.wso2.org/xsd" xmlns:tns="http://mgt.application.identity.carbon.wso2.org" xmlns:ax2172="http://script.model.common.application.identity.carbon.wso2.org/xsd" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:ns1="http://org.apache.axis2/xsd" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="http://mgt.application.identity.carbon.wso2.org">
     <wsdl:documentation>IdentityApplicationManagementService</wsdl:documentation>
     <wsdl:types>
@@ -18,11 +36,31 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="createApplication">
+            <xs:element name="getApplication">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="serviceProvider" nillable="true" type="ax2171:ServiceProvider"/>
-                        <xs:element minOccurs="0" name="templateName" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="0" name="applicationName" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getApplicationResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="return" nillable="true" type="ax2171:ServiceProvider"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getIdentityProvider">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="federatedIdPName" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getIdentityProviderResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="return" nillable="true" type="ax2171:IdentityProvider"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -35,6 +73,13 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="ax2171:ApplicationBasicInfo"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="createApplication">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="serviceProvider" nillable="true" type="ax2171:ServiceProvider"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -138,34 +183,6 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="return" nillable="true" type="xs:string"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="getIdentityProvider">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="federatedIdPName" nillable="true" type="xs:string"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="getIdentityProviderResponse">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="return" nillable="true" type="ax2171:IdentityProvider"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="getApplication">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="applicationName" nillable="true" type="xs:string"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="getApplicationResponse">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="return" nillable="true" type="ax2171:ServiceProvider"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -297,6 +314,7 @@
                 <xs:sequence>
                     <xs:element minOccurs="0" name="alias" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="certificate" nillable="true" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0" name="certificateInfoArray" nillable="true" type="ax2171:CertificateInfo"/>
                     <xs:element minOccurs="0" name="claimConfig" nillable="true" type="ax2171:ClaimConfig"/>
                     <xs:element minOccurs="0" name="defaultAuthenticatorConfig" nillable="true" type="ax2171:FederatedAuthenticatorConfig"/>
                     <xs:element minOccurs="0" name="defaultProvisioningConnectorConfig" nillable="true" type="ax2171:ProvisioningConnectorConfig"/>
@@ -314,6 +332,12 @@
                     <xs:element minOccurs="0" name="primary" type="xs:boolean"/>
                     <xs:element maxOccurs="unbounded" minOccurs="0" name="provisioningConnectorConfigs" nillable="true" type="ax2171:ProvisioningConnectorConfig"/>
                     <xs:element minOccurs="0" name="provisioningRole" nillable="true" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="CertificateInfo">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="certValue" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="thumbPrint" nillable="true" type="xs:string"/>
                 </xs:sequence>
             </xs:complexType>
             <xs:complexType name="FederatedAuthenticatorConfig">
@@ -429,7 +453,6 @@
             </xs:complexType>
             <xs:complexType name="ImportResponse">
                 <xs:sequence>
-                    <xs:element minOccurs="0" name="application" nillable="true" type="ax2171:ServiceProvider"/>
                     <xs:element minOccurs="0" name="applicationName" nillable="true" type="xs:string"/>
                     <xs:element maxOccurs="unbounded" minOccurs="0" name="errors" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="responseCode" type="xs:int"/>
@@ -489,8 +512,6 @@
     <wsdl:message name="getAllLocalAuthenticatorsResponse">
         <wsdl:part name="parameters" element="ns1:getAllLocalAuthenticatorsResponse"/>
     </wsdl:message>
-    <wsdl:message name="updateApplicationFromTemplateRequest"/>
-    <wsdl:message name="updateApplicationFromTemplateResponse"/>
     <wsdl:message name="createApplicationRequest">
         <wsdl:part name="parameters" element="ns1:createApplication"/>
     </wsdl:message>
@@ -523,8 +544,6 @@
     <wsdl:message name="importApplicationResponse">
         <wsdl:part name="parameters" element="ns1:importApplicationResponse"/>
     </wsdl:message>
-    <wsdl:message name="importServiceProviderRequest"/>
-    <wsdl:message name="importServiceProviderResponse"/>
     <wsdl:portType name="IdentityApplicationManagementServicePortType">
         <wsdl:operation name="getAllLocalClaimUris">
             <wsdl:input message="tns:getAllLocalClaimUrisRequest" wsaw:Action="urn:getAllLocalClaimUris"/>
@@ -561,10 +580,6 @@
             <wsdl:output message="tns:getAllLocalAuthenticatorsResponse" wsaw:Action="urn:getAllLocalAuthenticatorsResponse"/>
             <wsdl:fault message="tns:IdentityApplicationManagementServiceIdentityApplicationManagementException" name="IdentityApplicationManagementServiceIdentityApplicationManagementException" wsaw:Action="urn:getAllLocalAuthenticatorsIdentityApplicationManagementServiceIdentityApplicationManagementException"/>
         </wsdl:operation>
-        <wsdl:operation name="updateApplicationFromTemplate">
-            <wsdl:input message="tns:updateApplicationFromTemplateRequest" wsaw:Action="urn:updateApplicationFromTemplate"/>
-            <wsdl:output message="tns:updateApplicationFromTemplateResponse" wsaw:Action="urn:updateApplicationFromTemplateResponse"/>
-        </wsdl:operation>
         <wsdl:operation name="createApplication">
             <wsdl:input message="tns:createApplicationRequest" wsaw:Action="urn:createApplication"/>
             <wsdl:output message="tns:createApplicationResponse" wsaw:Action="urn:createApplicationResponse"/>
@@ -593,10 +608,6 @@
             <wsdl:input message="tns:importApplicationRequest" wsaw:Action="urn:importApplication"/>
             <wsdl:output message="tns:importApplicationResponse" wsaw:Action="urn:importApplicationResponse"/>
             <wsdl:fault message="tns:IdentityApplicationManagementServiceIdentityApplicationManagementException" name="IdentityApplicationManagementServiceIdentityApplicationManagementException" wsaw:Action="urn:importApplicationIdentityApplicationManagementServiceIdentityApplicationManagementException"/>
-        </wsdl:operation>
-        <wsdl:operation name="importServiceProvider">
-            <wsdl:input message="tns:importServiceProviderRequest" wsaw:Action="urn:importServiceProvider"/>
-            <wsdl:output message="tns:importServiceProviderResponse" wsaw:Action="urn:importServiceProviderResponse"/>
         </wsdl:operation>
     </wsdl:portType>
     <wsdl:binding name="IdentityApplicationManagementServiceSoap11Binding" type="tns:IdentityApplicationManagementServicePortType">
@@ -685,15 +696,6 @@
                 <soap:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
             </wsdl:fault>
         </wsdl:operation>
-        <wsdl:operation name="updateApplicationFromTemplate">
-            <soap:operation soapAction="urn:updateApplicationFromTemplate" style="document"/>
-            <wsdl:input>
-                <soap:body use="literal"/>
-            </wsdl:input>
-            <wsdl:output>
-                <soap:body use="literal"/>
-            </wsdl:output>
-        </wsdl:operation>
         <wsdl:operation name="createApplication">
             <soap:operation soapAction="urn:createApplication" style="document"/>
             <wsdl:input>
@@ -762,15 +764,6 @@
             <wsdl:fault name="IdentityApplicationManagementServiceIdentityApplicationManagementException">
                 <soap:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
             </wsdl:fault>
-        </wsdl:operation>
-        <wsdl:operation name="importServiceProvider">
-            <soap:operation soapAction="urn:importServiceProvider" style="document"/>
-            <wsdl:input>
-                <soap:body use="literal"/>
-            </wsdl:input>
-            <wsdl:output>
-                <soap:body use="literal"/>
-            </wsdl:output>
         </wsdl:operation>
     </wsdl:binding>
     <wsdl:binding name="IdentityApplicationManagementServiceSoap12Binding" type="tns:IdentityApplicationManagementServicePortType">
@@ -859,15 +852,6 @@
                 <soap12:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
             </wsdl:fault>
         </wsdl:operation>
-        <wsdl:operation name="updateApplicationFromTemplate">
-            <soap12:operation soapAction="urn:updateApplicationFromTemplate" style="document"/>
-            <wsdl:input>
-                <soap12:body use="literal"/>
-            </wsdl:input>
-            <wsdl:output>
-                <soap12:body use="literal"/>
-            </wsdl:output>
-        </wsdl:operation>
         <wsdl:operation name="createApplication">
             <soap12:operation soapAction="urn:createApplication" style="document"/>
             <wsdl:input>
@@ -937,15 +921,6 @@
                 <soap12:fault use="literal" name="IdentityApplicationManagementServiceIdentityApplicationManagementException"/>
             </wsdl:fault>
         </wsdl:operation>
-        <wsdl:operation name="importServiceProvider">
-            <soap12:operation soapAction="urn:importServiceProvider" style="document"/>
-            <wsdl:input>
-                <soap12:body use="literal"/>
-            </wsdl:input>
-            <wsdl:output>
-                <soap12:body use="literal"/>
-            </wsdl:output>
-        </wsdl:operation>
     </wsdl:binding>
     <wsdl:binding name="IdentityApplicationManagementServiceHttpBinding" type="tns:IdentityApplicationManagementServicePortType">
         <http:binding verb="POST"/>
@@ -1012,15 +987,6 @@
                 <mime:content type="text/xml" part="parameters"/>
             </wsdl:output>
         </wsdl:operation>
-        <wsdl:operation name="updateApplicationFromTemplate">
-            <http:operation location="updateApplicationFromTemplate"/>
-            <wsdl:input>
-                <mime:content type="text/xml" part="parameters"/>
-            </wsdl:input>
-            <wsdl:output>
-                <mime:content type="text/xml" part="parameters"/>
-            </wsdl:output>
-        </wsdl:operation>
         <wsdl:operation name="createApplication">
             <http:operation location="createApplication"/>
             <wsdl:input>
@@ -1068,15 +1034,6 @@
         </wsdl:operation>
         <wsdl:operation name="importApplication">
             <http:operation location="importApplication"/>
-            <wsdl:input>
-                <mime:content type="text/xml" part="parameters"/>
-            </wsdl:input>
-            <wsdl:output>
-                <mime:content type="text/xml" part="parameters"/>
-            </wsdl:output>
-        </wsdl:operation>
-        <wsdl:operation name="importServiceProvider">
-            <http:operation location="importServiceProvider"/>
             <wsdl:input>
                 <mime:content type="text/xml" part="parameters"/>
             </wsdl:input>

@@ -32,7 +32,7 @@ public class ApplicationTemplateMgtDBQueries {
     public static final String IS_SP_TEMPLATE_EXISTS = "SELECT ID FROM SP_TEMPLATE WHERE NAME = ? " +
             "AND TENANT_ID = ?";
 
-    public static final String GET_ALL_SP_TEMPLATES = "SELECT NAME, DESCRIPTION,CONTENT FROM SP_TEMPLATE WHERE " +
+    public static final String GET_ALL_SP_TEMPLATES_BASIC_INFO = "SELECT NAME, DESCRIPTION FROM SP_TEMPLATE WHERE " +
             "TENANT_ID = ?";
 
     public static final String GET_ALL_SP_TEMPLATE_NAMES = "SELECT NAME FROM SP_TEMPLATE WHERE " +

@@ -146,14 +146,15 @@ public class ApplicationTemplateManagementAdminService extends AbstractAdmin {
      * Export a application template.
      *
      * @param templateName name of the template
+     * @param exportSecrets is export the secrets
      * @return XML string of the
      * @throws IdentityApplicationTemplateMgtException
      */
-    public String exportApplicationTemplate(String templateName) throws IdentityApplicationTemplateMgtException {
+    public String exportApplicationTemplate(String templateName, boolean exportSecrets) throws IdentityApplicationTemplateMgtException {
 
         try {
             applicationTemplateMgtService = ApplicationTemplateManagementServiceImpl.getInstance();
-            return applicationTemplateMgtService.exportApplicationTemplate(templateName, getTenantDomain());
+            return applicationTemplateMgtService.exportApplicationTemplate(templateName, exportSecrets, getTenantDomain());
         } catch (IdentityApplicationTemplateMgtException idpException) {
             log.error("Error while exporting application template: " + templateName + " in tenant: " + getTenantDomain(),
                     idpException);

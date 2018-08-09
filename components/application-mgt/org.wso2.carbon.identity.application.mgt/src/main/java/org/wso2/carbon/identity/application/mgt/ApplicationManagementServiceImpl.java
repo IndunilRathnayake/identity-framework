@@ -25,9 +25,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.wso2.carbon.CarbonConstants;
-import org.wso2.carbon.consent.mgt.core.ConsentManager;
-import org.wso2.carbon.consent.mgt.core.exception.ConsentManagementException;
-import org.wso2.carbon.consent.mgt.core.model.Purpose;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.context.RegistryType;
@@ -36,9 +33,6 @@ import org.wso2.carbon.identity.application.common.IdentityApplicationManagement
 import org.wso2.carbon.identity.application.common.model.ApplicationBasicInfo;
 import org.wso2.carbon.identity.application.common.model.ApplicationPermission;
 import org.wso2.carbon.identity.application.common.model.AuthenticationStep;
-import org.wso2.carbon.identity.application.common.model.ConsentConfig;
-import org.wso2.carbon.identity.application.common.model.ConsentPurpose;
-import org.wso2.carbon.identity.application.common.model.ConsentPurposeConfigs;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.model.ImportResponse;
 import org.wso2.carbon.identity.application.common.model.InboundAuthenticationRequestConfig;
@@ -61,8 +55,6 @@ import org.wso2.carbon.identity.application.mgt.internal.ApplicationManagementSe
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationManagementServiceComponentHolder;
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationMgtListenerServiceComponent;
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtListener;
-import org.wso2.carbon.identity.application.template.mgt.IdentityApplicationTemplateMgtException;
-import org.wso2.carbon.identity.application.template.mgt.dto.SpTemplateDTO;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.registry.api.RegistryException;
 import org.wso2.carbon.registry.core.Registry;
@@ -97,12 +89,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.ErrorMessages.ERROR_CODE_PURPOSE_ID_INVALID;
-import static org.wso2.carbon.identity.application.mgt.ApplicationConstants.PURPOSE_GROUP_SHARED;
-import static org.wso2.carbon.identity.application.mgt.ApplicationConstants.PURPOSE_GROUP_TYPE_SP;
-import static org.wso2.carbon.identity.application.mgt.ApplicationConstants.PURPOSE_GROUP_TYPE_SYSTEM;
 import static org.wso2.carbon.identity.application.mgt.ApplicationMgtUtil.isRegexValidated;
 import static org.wso2.carbon.identity.core.util.IdentityUtil.isValidPEMCertificate;
 
@@ -150,17 +136,17 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
 
     @Override
     public ServiceProvider addApplication(ServiceProvider serviceProvider, String tenantDomain, String username,
-                                          String templateName)
+                                          String spTemplateContent)
             throws IdentityApplicationManagementException {
 
-        SpTemplateDTO spTemplateDTO = getTemplateInfo(tenantDomain, templateName);
-        ServiceProvider updatedSp = getSPFromTemplate(serviceProvider, tenantDomain, spTemplateDTO);
+        //SpTemplateDTO spTemplateDTO = getTemplateInfo(tenantDomain, templateName);
+        ServiceProvider updatedSp = getSPFromTemplate(serviceProvider, tenantDomain, spTemplateContent);
 
         ServiceProvider savedSP = doAddApplication(updatedSp, tenantDomain, username);
         updatedSp.setApplicationID(savedSP.getApplicationID());
         updatedSp.setOwner(getUser(tenantDomain, username));
 
-        if (spTemplateDTO != null) {
+        if (spTemplateContent != null) {
             Collection<ApplicationMgtListener> listeners =
                     ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
             for (ApplicationMgtListener listener : listeners) {
@@ -347,6 +333,8 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         }
     }
 
+    // Will be supported with 'Advance Consent Management Feature'.
+    /*
     private void validateConsentPurposes(ServiceProvider serviceProvider) throws
             IdentityApplicationManagementException {
 
@@ -388,6 +376,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         }
     }
 
+
     private boolean isSharedPurpose(Purpose purpose) {
 
         return PURPOSE_GROUP_SHARED.equals(purpose.getGroup()) && PURPOSE_GROUP_TYPE_SYSTEM.equals(
@@ -399,6 +388,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         return serviceProvider.getApplicationName().equals(purpose.getGroup()) && PURPOSE_GROUP_TYPE_SP.equals(
                 purpose.getGroupType());
     }
+    */
 
     private void startTenantFlow(String tenantDomain) throws IdentityApplicationManagementException {
 
@@ -1155,11 +1145,11 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
     }
 
     private ServiceProvider getSPFromTemplate(ServiceProvider serviceProvider, String tenantDomain,
-                                              SpTemplateDTO spTemplateDTO)
+                                              String spTemplateContent)
             throws IdentityApplicationManagementException {
 
-        if (spTemplateDTO != null) {
-            ServiceProvider spConfigFromTemplate = unmarshalSP(spTemplateDTO.getSpContent(), tenantDomain);
+        if (spTemplateContent != null) {
+            ServiceProvider spConfigFromTemplate = unmarshalSP(spTemplateContent, tenantDomain);
 
             Field[] fieldsSpTemplate = spConfigFromTemplate.getClass().getDeclaredFields();
             for (Field field : fieldsSpTemplate) {
@@ -1179,18 +1169,6 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             }
         }
         return serviceProvider;
-    }
-
-    private SpTemplateDTO getTemplateInfo(String tenantDomain, String templateName)
-            throws IdentityApplicationManagementException {
-
-        try {
-            return ApplicationManagementServiceComponentHolder.getInstance().getApplicationTemplateMgtService()
-                    .loadApplicationTemplate(templateName, tenantDomain);
-        } catch (IdentityApplicationTemplateMgtException e) {
-            throw new IdentityApplicationManagementException(String.format("Error in loading application template " +
-                    "with name", templateName), e);
-        }
     }
 
     private boolean isOwnerUpdateRequest(ServiceProvider serviceProvider) {

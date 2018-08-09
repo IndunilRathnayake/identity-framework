@@ -87,7 +87,7 @@
                         doDelete, null);
                 }
 
-                /*function exportSPTemplate(templateName) {
+                function exportSPTemplate(templateName) {
 
                     function doInclude() {
                         document.getElementById('exportSecrets').value = "true";
@@ -100,7 +100,7 @@
                     document.getElementById('templateName').value = templateName;
                     CARBON.showConfirmationDialog('Do you want include the secret keys of "' + templateName + '"' +
                         ' export in the file ? (hashed or encrypted secret willn\'t be included)', doInclude, doExclude);
-                }*/
+                }
             </script>
 
             <form id="spTemplateExportData" name="sp-template-export-data" method="post"
@@ -218,11 +218,11 @@
                                     <%
                                         }
                                     %>
-                                    <%--<a title="Export Service Provider Template"
+                                    <a title="Export Service Provider Template"
                                        onclick="exportSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
                                        class="icon-link"
                                        style="background-image: url(../application-template/images/publish.gif)">Export
-                                    </a>--%>
+                                    </a>
                                 </td>
                             </tr>
                             <%

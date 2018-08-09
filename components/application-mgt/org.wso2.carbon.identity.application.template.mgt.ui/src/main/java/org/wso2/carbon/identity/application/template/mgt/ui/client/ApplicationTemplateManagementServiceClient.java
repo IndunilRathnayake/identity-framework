@@ -160,16 +160,17 @@ public class ApplicationTemplateManagementServiceClient {
      * Export a application template.
      *
      * @param templateName name of the template
+     * @param exportSecrets is export the secrets
      * @return xml string of the template content
      * @throws AxisFault
      */
-    public String exportApplicationTemplate(String templateName) throws AxisFault {
+    public String exportApplicationTemplate(String templateName, boolean exportSecrets) throws AxisFault {
 
         try {
             if (debugEnabled) {
                 log.debug("Exporting Service Provider Template to file" );
             }
-            return stub.exportApplicationTemplate(templateName);
+            return stub.exportApplicationTemplate(templateName, exportSecrets);
         } catch (RemoteException | IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException e) {
             handleException(e);
         }

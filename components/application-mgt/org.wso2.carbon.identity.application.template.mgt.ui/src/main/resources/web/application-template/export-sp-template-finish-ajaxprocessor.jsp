@@ -56,7 +56,7 @@
             
             ApplicationTemplateManagementServiceClient serviceClient =
                     new ApplicationTemplateManagementServiceClient(cookie, backendServerURL, configContext);
-            String appData = serviceClient.exportApplicationTemplate(templateName);
+            String appData = serviceClient.exportApplicationTemplate(templateName, exportSecrets);
             out.clearBuffer();
             response.setHeader(CONTENT_DISPOSITION, ATTACHMENT_FILENAME + templateName + XML + "\"");
             response.setHeader(CONTENT_TYPE, APPLICATION_OCTET_STREAM);

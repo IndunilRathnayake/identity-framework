@@ -104,9 +104,10 @@ public abstract class ApplicationTemplateManagementService {
      *
      * @param templateName name of the template
      * @param tenantDomain tenant domain
+     * @param exportSecrets is export the secrets
      * @return XML string of the template content
      * @throws IdentityApplicationTemplateMgtException
      */
-    public abstract String exportApplicationTemplate(String templateName, String tenantDomain)
+    public abstract String exportApplicationTemplate(String templateName, boolean exportSecrets, String tenantDomain)
             throws IdentityApplicationTemplateMgtException;
 }

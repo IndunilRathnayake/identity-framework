@@ -197,6 +197,20 @@ public final class LambdaExceptionUtils {
         };
     }
 
+    /**
+     * This method allows a Runnable which throws exceptions to be used in places which expects a Runnable.
+     *
+     * @param <E> Any Exception.
+     */
+    public static <E extends Exception> void rethrowRunnable(RunnableWithExceptions<E> function) {
+
+        try {
+            function.run();
+        } catch (Exception exception) {
+            throwAsUnchecked(exception);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private static <E extends Throwable> void throwAsUnchecked(Exception exception) throws E {
 
