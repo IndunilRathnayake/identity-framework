@@ -16,15 +16,13 @@
 ~ specific language governing permissions and limitations
 ~ under the License.
 -->
-<%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ApplicationTemplateMgtServiceClient"%>
 <%@ page import="org.wso2.carbon.ui.CarbonUIUtil" %>
 <%@ page import="org.wso2.carbon.utils.ServerConstants" %>
 <%@ page import="org.apache.axis2.context.ConfigurationContext" %>
 <%@ page import="org.wso2.carbon.CarbonConstants" %>
 <%@ page import="org.owasp.encoder.Encode" %>
-<%@ page import="org.wso2.carbon.identity.application.template.mgt.dto.xsd.SpTemplateDTO" %>
-<%@ page import="org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtConstants" %>
-
+<%@ page import="org.wso2.carbon.identity.application.mgt.dto.xsd.SpTemplateDTO" %>
+<%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ApplicationManagementServiceClient" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="carbon" uri="http://wso2.org/projects/carbon/taglibs/carbontags.jar"%>
 
@@ -51,7 +49,7 @@
                 (ConfigurationContext) config.getServletContext()
                         .getAttribute(CarbonConstants.CONFIGURATION_CONTEXT);
 
-        ApplicationTemplateMgtServiceClient serviceClient = new ApplicationTemplateMgtServiceClient(cookie,
+        ApplicationManagementServiceClient serviceClient = new ApplicationManagementServiceClient(cookie,
                 backendServerURL, configContext);
         spTemplateDTOS = serviceClient.getAllApplicationTemplates();
     } catch (Exception e) {
@@ -66,7 +64,6 @@
 <script type="text/javascript">
 function createAppOnclick() {
     var spName = document.getElementById("spName").value;
-    var description = document.getElementById("sp-description").value;
     if( spName == '') {
         CARBON.showWarningDialog('Please provide Service Provider ID');
         location.href = '#';
@@ -187,7 +184,7 @@ window.onload = function() {
                     <tr>
                        <td class="leftCol-med labelField">Description:</td>
                      <td>
-                        <textarea style="width:50%" type="text" name="sp-description" id="sp-description" class="text-box-big"></textarea>
+                        <textarea maxlength="1023" style="width:50%" type="text" name="sp-description" id="sp-description" class="text-box-big"></textarea>
                         <div class="sectionHelp">
                                 <fmt:message key='help.desc'/>
                             </div>

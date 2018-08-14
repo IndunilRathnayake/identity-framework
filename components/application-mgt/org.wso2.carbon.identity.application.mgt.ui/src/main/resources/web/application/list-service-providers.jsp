@@ -158,11 +158,17 @@
                 <%--<a href="load-service-provider.jsp?spName=wso2carbon-local-sp" class="icon-link"--%>
                    <%--style="background-image:url(images/local-sp.png);"><fmt:message key='local.sp'/></a>--%>
             <%--</div>--%>
-            <a href="#" id="viewTemplates" name="viewTemplates" onclick="viewTemplates();">View service provider templates</a>
+            <%--<a href="#" id="viewTemplates" name="viewTemplates" onclick="viewTemplates();">View service provider templates</a>
             <br/>
-            <br/>
+            <br/>--%>
             <table style="width: 100%" class="styledLeft">
                 <tbody>
+                <tr>
+                    <div style="height:30px;">
+                        <a href="javascript:document.location.href='list-sp-templates.jsp'" class="icon-link"
+                           style="background-image:url(../admin/images/add.gif);">View service provider templates</a>
+                    </div>
+                </tr>
                 <tr>
                     <td style="border:none !important">
                         <table class="styledLeft" width="100%" id="ServiceProviders">

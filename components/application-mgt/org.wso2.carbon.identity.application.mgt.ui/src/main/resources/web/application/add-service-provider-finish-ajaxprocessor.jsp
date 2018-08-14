@@ -24,9 +24,7 @@
 <%@ page import="org.wso2.carbon.ui.CarbonUIMessage"%>
 <%@ page import="org.wso2.carbon.ui.CarbonUIUtil"%>
 <%@ page import="org.wso2.carbon.utils.ServerConstants" %>
-<%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ApplicationTemplateMgtServiceClient" %>
-<%@ page import="org.wso2.carbon.identity.application.template.mgt.dto.xsd.SpTemplateDTO" %>
-
+<%@ page import="org.wso2.carbon.identity.application.mgt.dto.xsd.SpTemplateDTO" %>
 
 <%
     String httpMethod = request.getMethod();
@@ -52,9 +50,12 @@
             ConfigurationContext configContext =
                 (ConfigurationContext) config.getServletContext()
                     .getAttribute(CarbonConstants.CONFIGURATION_CONTEXT);
-            ApplicationTemplateMgtServiceClient templateMgtServiceClient = new ApplicationTemplateMgtServiceClient(
+            ApplicationManagementServiceClient templateMgtServiceClient = new ApplicationManagementServiceClient(
                     cookie, backendServerURL, configContext);
-            SpTemplateDTO spTemplateDTO = templateMgtServiceClient.loadSpFromApplicationTemplate(templateName);
+            SpTemplateDTO spTemplateDTO = new SpTemplateDTO();
+            if (templateName != null && !"".equals(templateName)) {
+                spTemplateDTO = templateMgtServiceClient.loadSpFromApplicationTemplate(templateName);
+            }
             ApplicationManagementServiceClient serviceClient = new ApplicationManagementServiceClient(cookie, backendServerURL, configContext);
             serviceClient.createApplication(serviceProvider, spTemplateDTO.getSpContent());
 %>

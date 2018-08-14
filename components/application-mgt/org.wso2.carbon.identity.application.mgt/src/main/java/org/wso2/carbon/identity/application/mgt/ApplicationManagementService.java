@@ -25,6 +25,8 @@ import org.wso2.carbon.identity.application.common.model.ImportResponse;
 import org.wso2.carbon.identity.application.common.model.LocalAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.RequestPathAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
+import org.wso2.carbon.identity.application.common.model.SpFileStream;
+import org.wso2.carbon.identity.application.mgt.dto.SpTemplateDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -52,14 +54,14 @@ public abstract class ApplicationManagementService {
      * @param serviceProvider Service Provider Name
      * @param tenantDomain Tenant Domain
      * @param username User Name
-     * @param templateName SP template name
+     * @param spTemplateContent SP template XML content
      * @return
      * @throws IdentityApplicationManagementException
      * @deprecated  This method is replaced by {@link #addApplication}
      */
     @Deprecated
     public abstract void createApplication(ServiceProvider serviceProvider, String tenantDomain, String username,
-                                           String templateName)
+                                           String spTemplateContent)
             throws IdentityApplicationManagementException;
 
     /**
@@ -69,12 +71,13 @@ public abstract class ApplicationManagementService {
      * @param serviceProvider Service Provider Name
      * @param tenantDomain Tenant Domain
      * @param username User Name
-     * @param templateName Template Name
+     * @param spTemplateContent SP template XML content
      * @return created service provider
      * @throws IdentityApplicationManagementException
      */
-    public abstract ServiceProvider addApplication(ServiceProvider serviceProvider, String tenantDomain, String
-            username, String templateName) throws IdentityApplicationManagementException;
+    public abstract ServiceProvider addApplication(ServiceProvider serviceProvider, String tenantDomain,
+                                                   String username, String spTemplateContent)
+            throws IdentityApplicationManagementException;
 
     /**
      * Get Application for given application name
@@ -220,7 +223,7 @@ public abstract class ApplicationManagementService {
             throws IdentityApplicationManagementException;
 
     /**
-     * Import Service Provider application.
+     * Import Service Provider application from file.
      *
      * @param spFileContent xml string of the SP and file name
      * @param tenantDomain  tenant Domain
@@ -229,7 +232,114 @@ public abstract class ApplicationManagementService {
      * @return ImportResponse
      * @throws IdentityApplicationManagementException Identity Application Management Exception
      */
-    public abstract ImportResponse importSPApplication(SpFileContent spFileContent, String tenantDomain, String username,
-                                                       boolean isUpdate) throws IdentityApplicationManagementException;
+    public abstract ImportResponse importSPApplication(SpFileContent spFileContent, String tenantDomain, String
+            username, boolean isUpdate) throws IdentityApplicationManagementException;
 
+    /**
+     * Import Service Provider application from object.
+     *
+     * @param serviceProvider
+     * @param tenantDomain
+     * @param username
+     * @param isUpdate
+     * @return ImportResponse
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract ImportResponse importSPApplication(ServiceProvider serviceProvider, String tenantDomain, String
+            username, boolean isUpdate) throws IdentityApplicationManagementException;
+
+    /**
+     * Add configured service provider as a template.
+     *
+     * @param serviceProvider Service provider to be configured as a template
+     * @param spTemplateDTO   service provider template basic info
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract void createServiceProviderAsTemplate(ServiceProvider serviceProvider, SpTemplateDTO spTemplateDTO,
+                                                         String tenantDomain)
+            throws IdentityApplicationManagementException;
+
+    /**
+     * Import Service provider template.
+     *
+     * @param spTemplateDTO service provider template info
+     * @param tenantDomain  tenant domain
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract void importApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
+            throws IdentityApplicationManagementException;
+
+    /**
+     * Load Service provider template.
+     *
+     * @param templateName template name
+     * @param tenantDomain tenant domain
+     * @return service provider template info
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract SpTemplateDTO loadApplicationTemplate(String templateName, String tenantDomain)
+            throws IdentityApplicationManagementException;
+
+    /**
+     * Check existence of a application template.
+     *
+     * @param templateName template name
+     * @param tenantDomain tenant domain
+     * @return true if a template with the specified name exists
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract boolean isExistingTemplate(String templateName, String tenantDomain)
+            throws IdentityApplicationManagementException;
+
+    /**
+     * Get all service provider templates.
+     *
+     * @param tenantDomain tenant domain
+     * @return list of all application template info
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract List<SpTemplateDTO> getAllApplicationTemplates(String tenantDomain)
+            throws IdentityApplicationManagementException;
+
+    /**
+     * Get all Service provider template names.
+     *
+     * @param tenantDomain tenant domain
+     * @return list of application template names
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract List<String> getAllApplicationTemplateNames(String tenantDomain)
+            throws IdentityApplicationManagementException;
+
+    /**
+     * Delete a application template.
+     *
+     * @param templateName name of the template
+     * @param tenantDomain tenant domain
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract void deleteApplicationTemplate(String templateName, String tenantDomain)
+            throws IdentityApplicationManagementException;
+
+    /**
+     * Update an application template.
+     *
+     * @param spTemplateDTO SP template info to be updated
+     * @param tenantDomain  tenant domain
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO,
+                                                   String tenantDomain) throws IdentityApplicationManagementException;
+
+    /**
+     * Export a application template.
+     *
+     * @param templateName  name of the template
+     * @param tenantDomain  tenant domain
+     * @param exportSecrets is export the secrets
+     * @return XML string of the template content
+     * @throws IdentityApplicationManagementException
+     */
+    public abstract String exportApplicationTemplate(String templateName, boolean exportSecrets, String tenantDomain)
+            throws IdentityApplicationManagementException;
 }

@@ -2,11 +2,11 @@
 <%@ page import="org.wso2.carbon.CarbonConstants" %>
 <%@ page import="org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider" %>
 <%@ page import="org.wso2.carbon.identity.application.mgt.ui.ApplicationBean" %>
-<%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ApplicationTemplateMgtServiceClient" %>
 <%@ page import="org.wso2.carbon.identity.application.mgt.ui.util.ApplicationMgtUIUtil" %>
-<%@ page import="org.wso2.carbon.identity.application.template.mgt.dto.xsd.SpTemplateDTO" %>
 <%@ page import="org.wso2.carbon.ui.CarbonUIUtil" %>
 <%@ page import="org.wso2.carbon.utils.ServerConstants" %>
+<%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ApplicationManagementServiceClient" %>
+<%@ page import="org.wso2.carbon.identity.application.mgt.dto.xsd.SpTemplateDTO" %>
 
 <%
     String templateName = request.getParameter("templateName");
@@ -21,7 +21,7 @@
     String backendServerURL = CarbonUIUtil.getServerURL(config.getServletContext(), session);
     ConfigurationContext configContext = (ConfigurationContext) config.getServletContext()
             .getAttribute(CarbonConstants.CONFIGURATION_CONTEXT);
-    ApplicationTemplateMgtServiceClient serviceClient = new ApplicationTemplateMgtServiceClient(cookie,
+    ApplicationManagementServiceClient serviceClient = new ApplicationManagementServiceClient(cookie,
             backendServerURL, configContext);
     SpTemplateDTO spTemplateDTO = new SpTemplateDTO();
     spTemplateDTO.setName(templateName);

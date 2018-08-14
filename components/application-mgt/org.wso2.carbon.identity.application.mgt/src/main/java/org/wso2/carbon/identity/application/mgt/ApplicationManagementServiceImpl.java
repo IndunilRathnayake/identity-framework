@@ -46,11 +46,15 @@ import org.wso2.carbon.identity.application.common.util.IdentityApplicationConst
 import org.wso2.carbon.identity.application.mgt.cache.IdentityServiceProviderCache;
 import org.wso2.carbon.identity.application.mgt.cache.IdentityServiceProviderCacheEntry;
 import org.wso2.carbon.identity.application.mgt.cache.IdentityServiceProviderCacheKey;
+import org.wso2.carbon.identity.application.mgt.cache.ServiceProviderTemplateCache;
+import org.wso2.carbon.identity.application.mgt.cache.ServiceProviderTemplateCacheKey;
 import org.wso2.carbon.identity.application.mgt.dao.ApplicationDAO;
+import org.wso2.carbon.identity.application.mgt.dao.ApplicationTemplateDAO;
 import org.wso2.carbon.identity.application.mgt.dao.IdentityProviderDAO;
 import org.wso2.carbon.identity.application.mgt.dao.OAuthApplicationDAO;
 import org.wso2.carbon.identity.application.mgt.dao.SAMLApplicationDAO;
 import org.wso2.carbon.identity.application.mgt.dao.impl.FileBasedApplicationDAO;
+import org.wso2.carbon.identity.application.mgt.dto.SpTemplateDTO;
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationManagementServiceComponent;
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationManagementServiceComponentHolder;
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationMgtListenerServiceComponent;
@@ -65,7 +69,22 @@ import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -79,15 +98,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 import static org.wso2.carbon.identity.application.mgt.ApplicationMgtUtil.isRegexValidated;
 import static org.wso2.carbon.identity.core.util.IdentityUtil.isValidPEMCertificate;
@@ -139,31 +149,16 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                                           String spTemplateContent)
             throws IdentityApplicationManagementException {
 
-        //SpTemplateDTO spTemplateDTO = getTemplateInfo(tenantDomain, templateName);
-        ServiceProvider updatedSp = getSPFromTemplate(serviceProvider, tenantDomain, spTemplateContent);
+        ServiceProvider updatedSpFromTemplate = getSPFromTemplate(serviceProvider, tenantDomain, spTemplateContent);
 
-        ServiceProvider savedSP = doAddApplication(updatedSp, tenantDomain, username);
-        updatedSp.setApplicationID(savedSP.getApplicationID());
-        updatedSp.setOwner(getUser(tenantDomain, username));
+        ServiceProvider addedSP = doAddApplication(updatedSpFromTemplate, tenantDomain, username);
+        updatedSpFromTemplate.setApplicationID(addedSP.getApplicationID());
+        updatedSpFromTemplate.setOwner(getUser(tenantDomain, username));
 
         if (spTemplateContent != null) {
-            Collection<ApplicationMgtListener> listeners =
-                    ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
-            for (ApplicationMgtListener listener : listeners) {
-                if (listener.isEnable()) {
-                    listener.onPreCreateInbound(updatedSp, false);
-                }
-            }
-
-            updateApplication(updatedSp, tenantDomain, username);
-
-            for (ApplicationMgtListener listener : listeners) {
-                if (listener.isEnable()) {
-                    listener.doImportServiceProvider(updatedSp);
-                }
-            }
+            updateApplication(updatedSpFromTemplate, tenantDomain, username);
         }
-        return updatedSp;
+        return updatedSpFromTemplate;
     }
 
     @Override
@@ -948,9 +943,39 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             log.debug("Importing service provider from file " + spFileContent.getFileName());
         }
 
-        ImportResponse importResponse = new ImportResponse();
         ServiceProvider serviceProvider = unmarshalSP(spFileContent, tenantDomain);
+        ImportResponse importResponse = this.importSPApplication(serviceProvider, tenantDomain, username, isUpdate);
 
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Service provider %s@%s created successfully from file %s",
+                    serviceProvider.getApplicationName(), tenantDomain, spFileContent.getFileName()));
+        }
+
+        return importResponse;
+    }
+
+    public ImportResponse importSPApplication(ServiceProvider serviceProvider, String tenantDomain, String username,
+                                              boolean isUpdate) throws IdentityApplicationManagementException {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Importing service provider from object " + serviceProvider.getApplicationName());
+        }
+
+        ImportResponse importResponse = this.importSPApplicationFromObject(serviceProvider, tenantDomain,
+                username, isUpdate);
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Service provider %s@%s created successfully from object",
+                    serviceProvider.getApplicationName(), tenantDomain));
+        }
+
+        return importResponse;
+    }
+
+    private ImportResponse importSPApplicationFromObject(ServiceProvider serviceProvider, String tenantDomain, String username,
+                                                         boolean isUpdate) throws IdentityApplicationManagementException {
+
+        ImportResponse importResponse = new ImportResponse();
 
         Collection<ApplicationMgtListener> listeners =
                 ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
@@ -990,10 +1015,6 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                 }
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug(String.format("Service provider %s@%s created successfully from file %s",
-                        serviceProvider.getApplicationName(), tenantDomain, spFileContent.getFileName()));
-            }
             importResponse.setResponseCode(ImportResponse.CREATED);
             importResponse.setApplicationName(serviceProvider.getApplicationName());
             importResponse.setErrors(new String[0]);
@@ -1008,8 +1029,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             deleteCreatedSP(savedSP, tenantDomain, username, isUpdate);
             String errorMsg = String.format("Error in importing provided service provider %s@%s from file ",
                     serviceProvider.getApplicationName(), tenantDomain);
-            log.error(errorMsg, e);
-            throw new IdentityApplicationManagementException(errorMsg);
+            throw new IdentityApplicationManagementException(errorMsg, e);
         }
     }
 
@@ -1025,6 +1045,297 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             }
         }
         return marshalSP(serviceProvider, tenantDomain);
+    }
+
+    @Override
+    public void createServiceProviderAsTemplate(ServiceProvider serviceProvider, SpTemplateDTO spTemplateDTO,
+                                                String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        if (serviceProvider != null) {
+            ServiceProvider updatedSP = removeUnsupportedTemplateConfigs(serviceProvider);
+            String serviceProviderTemplateXml = marshalSPTemplate(updatedSP, tenantDomain);
+            spTemplateDTO.setSpContent(serviceProviderTemplateXml);
+        }
+        importApplicationTemplate(spTemplateDTO, tenantDomain);
+    }
+
+    @Override
+    public void importApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        try {
+            validateTemplateXMLSyntax(spTemplateDTO);
+
+            ServiceProvider serviceProvider = unmarshalSPTemplate(spTemplateDTO.getSpContent(), tenantDomain);
+            validateUnsupportedTemplateConfigs(serviceProvider);
+
+            /**
+             * Invoking the application mgt listeners to validate the existence of the configured property values
+             * in template
+             */
+            Collection<ApplicationMgtListener> listeners =
+                    ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
+            for (ApplicationMgtListener listener : listeners) {
+                if (listener.isEnable()) {
+                    listener.doImportServiceProvider(serviceProvider);
+                }
+            }
+
+            ApplicationTemplateDAO applicationTemplateDAO = ApplicationMgtSystemConfig.getInstance().getApplicationTemplateDAO();
+            applicationTemplateDAO.createApplicationTemplate(spTemplateDTO, tenantDomain);
+
+            ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(spTemplateDTO.getName(),
+                    tenantDomain);
+            ServiceProviderTemplateCache.getInstance().addToCache(templateCacheKey, spTemplateDTO);
+        } catch (IdentityApplicationManagementException e) {
+            throw new IdentityApplicationManagementException(String.format("Error when importing SP template: ",
+                    spTemplateDTO.getName()), e);
+        }
+    }
+
+    @Override
+    public SpTemplateDTO loadApplicationTemplate(String templateName, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        String loadingSpTemplateName = templateName;
+        if (StringUtils.isNotBlank(loadingSpTemplateName) && !isExistingTemplate(loadingSpTemplateName, tenantDomain)) {
+            throw new IdentityApplicationManagementException(String.format("Template with name: %s, is not configured "
+                    + "for tenant: %s.", loadingSpTemplateName, tenantDomain));
+        }
+        if (StringUtils.isEmpty(loadingSpTemplateName)) {
+            if (isExistingTemplate(ApplicationConstants.TENANT_DEFAULT_SP_TEMPLATE_NAME, tenantDomain)) {
+                loadingSpTemplateName = ApplicationConstants.TENANT_DEFAULT_SP_TEMPLATE_NAME;
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Template name is not specified. Checking for the default template of " +
+                            "tenant: %s", tenantDomain));
+                }
+            }
+        }
+
+        ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(loadingSpTemplateName,
+                tenantDomain);
+        SpTemplateDTO spTemplateDTO = getSpTemplateFromCache(loadingSpTemplateName, tenantDomain, templateCacheKey);
+        if (spTemplateDTO != null) {
+            return spTemplateDTO;
+        }
+
+        spTemplateDTO = getSpTemplateFromDB(loadingSpTemplateName, tenantDomain, templateCacheKey);
+        if (spTemplateDTO != null) {
+            return spTemplateDTO;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Template with name: %s is not registered.", loadingSpTemplateName));
+        }
+        return new SpTemplateDTO();
+    }
+
+    @Override
+    public boolean isExistingTemplate(String templateName, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        ApplicationTemplateDAO applicationTemplateDAO = ApplicationMgtSystemConfig.getInstance().getApplicationTemplateDAO();
+        return applicationTemplateDAO.isExistingTemplate(templateName, tenantDomain);
+    }
+
+    @Override
+    public List<SpTemplateDTO> getAllApplicationTemplates(String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        ApplicationTemplateDAO applicationTemplateDAO = ApplicationMgtSystemConfig.getInstance().getApplicationTemplateDAO();
+        return applicationTemplateDAO.getAllApplicationTemplates(tenantDomain);
+    }
+
+    @Override
+    public List<String> getAllApplicationTemplateNames(String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        ApplicationTemplateDAO applicationTemplateDAO = ApplicationMgtSystemConfig.getInstance().getApplicationTemplateDAO();
+        return applicationTemplateDAO.getAllApplicationTemplateNames(tenantDomain);
+    }
+
+    @Override
+    public void deleteApplicationTemplate(String templateName, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        ApplicationTemplateDAO applicationTemplateDAO = ApplicationMgtSystemConfig.getInstance().getApplicationTemplateDAO();
+        applicationTemplateDAO.deleteApplicationTemplate(templateName, tenantDomain);
+
+        ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(templateName,
+                tenantDomain);
+        ServiceProviderTemplateCache.getInstance().clearCacheEntry(templateCacheKey);
+    }
+
+    @Override
+    public void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        if (StringUtils.isNotBlank(spTemplateDTO.getName()) && !templateName.equals(spTemplateDTO.getName())
+                && isExistingTemplate(spTemplateDTO.getName(), tenantDomain)) {
+            throw new IdentityApplicationManagementException(String.format("Template with name: %s, is already " +
+                    "configured for tenant: %s.", spTemplateDTO.getName(), tenantDomain));
+        }
+        validateTemplateXMLSyntax(spTemplateDTO);
+
+        ApplicationTemplateDAO applicationTemplateDAO = ApplicationMgtSystemConfig.getInstance().getApplicationTemplateDAO();
+        applicationTemplateDAO.updateApplicationTemplate(templateName, spTemplateDTO, tenantDomain);
+
+        ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(templateName,
+                tenantDomain);
+        ServiceProviderTemplateCache.getInstance().clearCacheEntry(templateCacheKey);
+    }
+
+    @Override
+    public String exportApplicationTemplate(String templateName, boolean exportSecrets, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        try {
+            String templateXml = loadApplicationTemplate(templateName, tenantDomain).getSpContent();
+            ServiceProvider serviceProvider = unmarshalSPTemplate(templateXml, tenantDomain);
+            // invoking the application mgt listeners
+            Collection<ApplicationMgtListener> listeners =
+                    ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
+            for (ApplicationMgtListener listener : listeners) {
+                if (listener.isEnable()) {
+                    listener.doExportServiceProvider(serviceProvider, exportSecrets);
+                }
+            }
+            return marshalSP(serviceProvider, tenantDomain);
+        } catch (IdentityApplicationManagementException e) {
+            throw new IdentityApplicationManagementException(String.format("Error when exporting SP template: ",
+                    templateName), e);
+        }
+    }
+
+    private void validateTemplateXMLSyntax(SpTemplateDTO spTemplateDTO) throws IdentityApplicationManagementException {
+        try {
+            XMLReader reader = XMLReaderFactory.createXMLReader();
+            reader.parse(new InputSource(new StringReader(spTemplateDTO.getSpContent())));
+        } catch (SAXException e) {
+            throw new IdentityApplicationManagementException(String.format("Template: %s is not well-formed.",
+                    spTemplateDTO.getName()), e);
+        } catch (IOException e) {
+            throw new IdentityApplicationManagementException(String.format("Error in validating the xml syntax of " +
+                    "template :", spTemplateDTO.getName()), e);
+        }
+    }
+
+    private SpTemplateDTO getSpTemplateFromDB(String templateName, String tenantDomain,
+                                              ServiceProviderTemplateCacheKey templateCacheKey)
+            throws IdentityApplicationManagementException {
+
+        SpTemplateDTO spTemplateDTO;
+        ApplicationTemplateDAO applicationTemplateDAO = ApplicationMgtSystemConfig.getInstance().getApplicationTemplateDAO();
+        spTemplateDTO = applicationTemplateDAO.loadApplicationTemplate(templateName, tenantDomain);
+
+        if (spTemplateDTO != null) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Template with name: %s, is taken from database for tenant: %s ",
+                        templateName, tenantDomain));
+            }
+            ServiceProviderTemplateCache.getInstance().addToCache(templateCacheKey, spTemplateDTO);
+            return spTemplateDTO;
+        }
+        return null;
+    }
+
+    private SpTemplateDTO getSpTemplateFromCache(String templateName, String tenantDomain,
+                                                 ServiceProviderTemplateCacheKey templateCacheKey) {
+
+        SpTemplateDTO spTemplateDTO = ServiceProviderTemplateCache.getInstance().getValueFromCache(templateCacheKey);
+        if (spTemplateDTO != null) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Template with name: %s, is taken from cache of tenant: %s ",
+                        templateName, tenantDomain));
+            }
+            return spTemplateDTO;
+        }
+        return null;
+    }
+
+    private ServiceProvider unmarshalSPTemplate(String spTemplateXml, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        if (StringUtils.isEmpty(spTemplateXml)) {
+            throw new IdentityApplicationManagementException("Empty SP template configuration is provided to " +
+                    "unmarshal");
+        }
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(ServiceProvider.class);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            return (ServiceProvider) unmarshaller.unmarshal(new ByteArrayInputStream(
+                    spTemplateXml.getBytes(StandardCharsets.UTF_8)));
+
+        } catch (JAXBException e) {
+            throw new IdentityApplicationManagementException("Error in reading Service Provider template " +
+                    "configuration ", e);
+        }
+    }
+
+    private String marshalSPTemplate(ServiceProvider serviceProvider, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        try {
+
+            JAXBContext jaxbContext = JAXBContext.newInstance(ServiceProvider.class);
+            Marshaller marshaller = jaxbContext.createMarshaller();
+            DocumentBuilderFactory docBuilderFactory = IdentityUtil.getSecuredDocumentBuilderFactory();
+            Document document = docBuilderFactory.newDocumentBuilder().newDocument();
+            marshaller.marshal(serviceProvider, document);
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS,
+                    "AuthenticationScript inboundConfiguration");
+
+            StringWriter stringBuilder = new StringWriter();
+            StreamResult result = new StreamResult(stringBuilder);
+            transformer.transform(new DOMSource(document), result);
+            return stringBuilder.getBuffer().toString();
+        } catch (JAXBException | ParserConfigurationException | TransformerException e) {
+            throw new IdentityApplicationManagementException(String.format("Error in exporting Service Provider " +
+                    "template from SP %s@%s", serviceProvider.getApplicationName(), tenantDomain), e);
+        }
+    }
+
+    private ServiceProvider removeUnsupportedTemplateConfigs(ServiceProvider serviceProvider) {
+
+        ServiceProvider updatedSp = serviceProvider;
+        if (updatedSp != null) {
+            updatedSp.setApplicationName(null);
+            updatedSp.setDescription(null);
+            updatedSp.setApplicationID(0);
+            updatedSp.setCertificateContent(null);
+            updatedSp.setInboundAuthenticationConfig(null);
+        }
+        return updatedSp;
+    }
+
+    private void validateUnsupportedTemplateConfigs(ServiceProvider serviceProvider)
+            throws IdentityApplicationManagementException {
+
+        if (serviceProvider.getInboundAuthenticationConfig() != null) {
+            throw new IdentityApplicationManagementException("Inbound configurations are not supported in application "
+                    + "template");
+        }
+        if (serviceProvider.getApplicationID() != 0) {
+            throw new IdentityApplicationManagementException("Application ID is not supported in application " +
+                    "template");
+        }
+        if (serviceProvider.getApplicationName() != null) {
+            throw new IdentityApplicationManagementException("Application name is not supported in application " +
+                    "template");
+        }
+        if (serviceProvider.getDescription() != null) {
+            throw new IdentityApplicationManagementException("Application description is not supported in application "
+                    + "template");
+        }
+        if (serviceProvider.getCertificateContent() != null) {
+            throw new IdentityApplicationManagementException("Application certificate not supported in application " +
+                    "template");
+        }
     }
 
     private void loadApplicationPermissions(String serviceProviderName, ServiceProvider serviceProvider)
