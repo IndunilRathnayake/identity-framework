@@ -27,6 +27,11 @@
         <parameter name="ServiceClass">
             org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateManagementAdminService
         </parameter>
+        <operation name="createServiceProviderAsTemplate">
+            <parameter name="AuthorizationAction" locked="true">
+                /permission/admin/manage/identity/apptemplatemgt/create
+            </parameter>
+        </operation>
         <operation name="importApplicationTemplate">
             <parameter name="AuthorizationAction" locked="true">
                 /permission/admin/manage/identity/apptemplatemgt/create

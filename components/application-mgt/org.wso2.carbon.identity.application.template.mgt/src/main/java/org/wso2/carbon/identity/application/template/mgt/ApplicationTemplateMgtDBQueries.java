@@ -40,6 +40,6 @@ public class ApplicationTemplateMgtDBQueries {
 
     public static final String DELETE_SP_TEMPLATE_BY_NAME = "DELETE FROM SP_TEMPLATE WHERE NAME = ? AND TENANT_ID= ?";
 
-    public static final String UPDATE_SP_TEMPLATE_BY_NAME = "UPDATE SP_TEMPLATE SET CONTENT= ? WHERE NAME = ? " +
-            "AND TENANT_ID = ?";
+    public static final String UPDATE_SP_TEMPLATE_BY_NAME = "UPDATE SP_TEMPLATE SET NAME= ?,DESCRIPTION = ?," +
+            "CONTENT = ? WHERE NAME = ? AND TENANT_ID = ?";
 }

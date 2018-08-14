@@ -128,9 +128,9 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
 
     @Override
     public void createApplication(ServiceProvider serviceProvider, String tenantDomain, String username,
-                                  String templateName) throws IdentityApplicationManagementException {
+                                  String spTemplateContent) throws IdentityApplicationManagementException {
 
-        addApplication(serviceProvider, tenantDomain, username, templateName);
+        addApplication(serviceProvider, tenantDomain, username, spTemplateContent);
     }
 
 

@@ -24,6 +24,8 @@
 <%@ page import="org.wso2.carbon.ui.CarbonUIMessage"%>
 <%@ page import="org.wso2.carbon.ui.CarbonUIUtil"%>
 <%@ page import="org.wso2.carbon.utils.ServerConstants" %>
+<%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ApplicationTemplateMgtServiceClient" %>
+<%@ page import="org.wso2.carbon.identity.application.template.mgt.dto.xsd.SpTemplateDTO" %>
 
 
 <%
@@ -50,8 +52,11 @@
             ConfigurationContext configContext =
                 (ConfigurationContext) config.getServletContext()
                     .getAttribute(CarbonConstants.CONFIGURATION_CONTEXT);
+            ApplicationTemplateMgtServiceClient templateMgtServiceClient = new ApplicationTemplateMgtServiceClient(
+                    cookie, backendServerURL, configContext);
+            SpTemplateDTO spTemplateDTO = templateMgtServiceClient.loadSpFromApplicationTemplate(templateName);
             ApplicationManagementServiceClient serviceClient = new ApplicationManagementServiceClient(cookie, backendServerURL, configContext);
-            serviceClient.createApplication(serviceProvider, templateName);
+            serviceClient.createApplication(serviceProvider, spTemplateDTO.getSpContent());
 %>
 <script>
     location.href = 'load-service-provider.jsp?spName=<%=Encode.forUriComponent(appid)%>';

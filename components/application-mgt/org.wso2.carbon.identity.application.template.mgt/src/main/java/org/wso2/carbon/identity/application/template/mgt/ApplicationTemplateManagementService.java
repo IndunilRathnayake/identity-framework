@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.application.template.mgt;
 
+import org.wso2.carbon.identity.application.common.model.ServiceProvider;
 import org.wso2.carbon.identity.application.template.mgt.dto.SpTemplateDTO;
 
 import java.util.List;
@@ -26,6 +27,17 @@ import java.util.List;
  * Application template management service abstract class.
  */
 public abstract class ApplicationTemplateManagementService {
+
+    /**
+     * Add configured service provider as a template.
+     *
+     * @param serviceProvider Service provider to be configured as a template
+     * @param spTemplateDTO service provider template basic info
+     * @throws IdentityApplicationTemplateMgtException
+     */
+    public abstract void createServiceProviderAsTemplate(ServiceProvider serviceProvider, SpTemplateDTO spTemplateDTO,
+                                                         String tenantDomain)
+            throws IdentityApplicationTemplateMgtException;
 
     /**
      * Import Service provider template.
@@ -96,7 +108,7 @@ public abstract class ApplicationTemplateManagementService {
      * @param tenantDomain tenant domain
      * @throws IdentityApplicationTemplateMgtException
      */
-    public abstract void updateApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
+    public abstract void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO, String tenantDomain)
             throws IdentityApplicationTemplateMgtException;
 
     /**

@@ -222,7 +222,7 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
     }
 
     @Override
-    public void updateApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
+    public void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
         if (log.isDebugEnabled()) {
@@ -235,9 +235,11 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
         try {
             jdbcTemplate.executeUpdate(UPDATE_SP_TEMPLATE_BY_NAME,
                     preparedStatement -> {
-                        preparedStatement.setCharacterStream(1, new StringReader(spTemplateDTO.getSpContent()));
-                        preparedStatement.setString(2, spTemplateDTO.getName());
-                        preparedStatement.setInt(3, tenantID);
+                        preparedStatement.setString(1, spTemplateDTO.getName());
+                        preparedStatement.setString(2, spTemplateDTO.getDescription());
+                        preparedStatement.setCharacterStream(3, new StringReader(spTemplateDTO.getSpContent()));
+                        preparedStatement.setString(4, templateName);
+                        preparedStatement.setInt(5, tenantID);
                     });
         } catch (DataAccessException e) {
             throw new IdentityApplicationTemplateMgtException(String.format("An error occurred while updating the" +

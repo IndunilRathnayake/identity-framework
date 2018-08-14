@@ -21,6 +21,7 @@ package org.wso2.carbon.identity.application.template.mgt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.core.AbstractAdmin;
+import org.wso2.carbon.identity.application.common.model.ServiceProvider;
 import org.wso2.carbon.identity.application.template.mgt.dto.SpTemplateDTO;
 
 import java.util.List;
@@ -32,6 +33,20 @@ public class ApplicationTemplateManagementAdminService extends AbstractAdmin {
 
     private static final Log log = LogFactory.getLog(ApplicationTemplateManagementAdminService.class);
     private ApplicationTemplateManagementService applicationTemplateMgtService;
+
+    public void createServiceProviderAsTemplate(ServiceProvider serviceProvider, SpTemplateDTO spTemplateDTO)
+            throws IdentityApplicationTemplateMgtException {
+
+        try {
+            applicationTemplateMgtService = ApplicationTemplateManagementServiceImpl.getInstance();
+            applicationTemplateMgtService.createServiceProviderAsTemplate(serviceProvider, spTemplateDTO,
+                    getTenantDomain());
+        } catch (IdentityApplicationTemplateMgtException idpException) {
+            log.error("Error while importing service provider as a template for tenant: " + getTenantDomain(),
+                    idpException);
+            throw idpException;
+        }
+    }
 
     /**
      * Import application template as a XML file from UI.
@@ -130,11 +145,11 @@ public class ApplicationTemplateManagementAdminService extends AbstractAdmin {
      * @param spTemplateDTO SP template info to be updated
      * @throws IdentityApplicationTemplateMgtException
      */
-    public void updateApplicationTemplate(SpTemplateDTO spTemplateDTO) throws IdentityApplicationTemplateMgtException {
+    public void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO) throws IdentityApplicationTemplateMgtException {
 
         try {
             applicationTemplateMgtService = ApplicationTemplateManagementServiceImpl.getInstance();
-            applicationTemplateMgtService.updateApplicationTemplate(spTemplateDTO, getTenantDomain());
+            applicationTemplateMgtService.updateApplicationTemplate(templateName, spTemplateDTO, getTenantDomain());
         } catch (IdentityApplicationTemplateMgtException idpException) {
             log.error("Error while updating application template:" + spTemplateDTO.getName() + " in tenant: " +
                             getTenantDomain(), idpException);

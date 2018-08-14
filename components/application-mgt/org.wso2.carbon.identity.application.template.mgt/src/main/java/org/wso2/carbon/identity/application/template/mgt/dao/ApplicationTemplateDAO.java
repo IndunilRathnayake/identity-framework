@@ -86,6 +86,6 @@ public interface ApplicationTemplateDAO {
      * @param tenantDomain tenant domain
      * @throws IdentityApplicationTemplateMgtException
      */
-    void updateApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
+    void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO, String tenantDomain)
             throws IdentityApplicationTemplateMgtException;
 }

@@ -82,6 +82,18 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
     }
 
     @Override
+    public void createServiceProviderAsTemplate(ServiceProvider serviceProvider, SpTemplateDTO spTemplateDTO,
+                                                String tenantDomain)
+            throws IdentityApplicationTemplateMgtException {
+
+        if (serviceProvider != null) {
+            String serviceProviderTemplateXml = marshalSP(serviceProvider, tenantDomain);
+            spTemplateDTO.setSpContent(serviceProviderTemplateXml);
+        }
+        importApplicationTemplate(spTemplateDTO, tenantDomain);
+    }
+
+    @Override
     public void importApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
@@ -128,7 +140,7 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
         if (log.isDebugEnabled()) {
             log.debug(String.format("Template with name: %s is not registered.", loadingSpTemplateName));
         }
-        return null;
+        return new SpTemplateDTO();
     }
 
     @Override
@@ -165,15 +177,19 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
         ServiceProviderTemplateCache.getInstance().clearCacheEntry(templateCacheKey);
     }
 
-    public void updateApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
+    public void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
+        if (StringUtils.isNotBlank(spTemplateDTO.getName()) && isExistingTemplate(spTemplateDTO.getName(), tenantDomain)) {
+            throw new IdentityApplicationTemplateMgtException(String.format("Template with name: %s, is already configured " +
+                    "for tenant: %s.", spTemplateDTO.getName(), tenantDomain));
+        }
         validateTemplateXMLSyntax(spTemplateDTO);
 
         ApplicationTemplateDAO applicationTemplateDAO = new ApplicationTemplateDAOImpl();
-        applicationTemplateDAO.updateApplicationTemplate(spTemplateDTO, tenantDomain);
+        applicationTemplateDAO.updateApplicationTemplate(templateName, spTemplateDTO, tenantDomain);
 
-        ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(spTemplateDTO.getName(),
+        ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(templateName,
                 tenantDomain);
         ServiceProviderTemplateCache.getInstance().clearCacheEntry(templateCacheKey);
     }
@@ -264,14 +280,17 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
     }
 
     private String marshalSP(ServiceProvider serviceProvider, String tenantDomain)
-            throws IdentityApplicationManagementException {
+            throws IdentityApplicationTemplateMgtException {
 
         try {
+
+            ServiceProvider updatedSP = removeUnsupportedTemplateConfigs(serviceProvider);
+
             JAXBContext jaxbContext = JAXBContext.newInstance(ServiceProvider.class);
             Marshaller marshaller = jaxbContext.createMarshaller();
             DocumentBuilderFactory docBuilderFactory = IdentityUtil.getSecuredDocumentBuilderFactory();
             Document document = docBuilderFactory.newDocumentBuilder().newDocument();
-            marshaller.marshal(serviceProvider, document);
+            marshaller.marshal(updatedSP, document);
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
@@ -285,8 +304,26 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
             transformer.transform(new DOMSource(document), result);
             return stringBuilder.getBuffer().toString();
         } catch (JAXBException | ParserConfigurationException | TransformerException e) {
-            throw new IdentityApplicationManagementException(String.format("Error in exporting Service Provider %s@%s",
-                    serviceProvider.getApplicationName(), tenantDomain), e);
+            throw new IdentityApplicationTemplateMgtException(String.format("Error in exporting Service Provider template " +
+                            "from SP %s@%s", serviceProvider.getApplicationName(), tenantDomain), e);
         }
+    }
+
+    private ServiceProvider removeUnsupportedTemplateConfigs(ServiceProvider serviceProvider) {
+
+        ServiceProvider updatedSp = serviceProvider;
+        if (updatedSp != null) {
+            updatedSp.setApplicationName(null);
+            updatedSp.setDescription(null);
+            updatedSp.setApplicationID(0);
+            updatedSp.setCertificateContent(null);
+            updatedSp.setInboundAuthenticationConfig(null);
+        }
+        return updatedSp;
+    }
+
+    private String removeUnsupportedTemplateConfigs(String serviceProviderTemplateXml) {
+
+        return serviceProviderTemplateXml;
     }
 }

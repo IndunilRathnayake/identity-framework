@@ -6,10 +6,13 @@ import org.apache.axis2.client.ServiceClient;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
 import org.wso2.carbon.identity.application.template.mgt.dto.xsd.SpTemplateDTO;
 import org.wso2.carbon.identity.application.template.mgt.stub.IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException;
 import org.wso2.carbon.identity.application.template.mgt.stub.IdentityApplicationTemplateManagementServiceStub;
 
+import javax.xml.bind.annotation.XmlElement;
+import java.lang.reflect.Field;
 import java.rmi.RemoteException;
 
 /**
@@ -36,6 +39,46 @@ public class ApplicationTemplateMgtServiceClient {
             log.debug("Invoking service " + serviceURL);
         }
 
+    }
+
+    /**
+     * Add service provider as an application template.
+     *
+     * @param serviceProvider Service provider to be configured as a template
+     * @param spTemplateDTO service provider template basic info
+     * @throws AxisFault
+     */
+    public void createServiceProviderAsTemplate(ServiceProvider serviceProvider, SpTemplateDTO spTemplateDTO)
+            throws AxisFault {
+
+        try {
+            if (debugEnabled) {
+                log.debug("Adding Service Provider as a template with name: " + spTemplateDTO.getName());
+            }
+            Field[] spFields = serviceProvider.getClass().getDeclaredFields();
+            org.wso2.carbon.identity.application.common.model.template.xsd.ServiceProvider castedSp =
+                    new org.wso2.carbon.identity.application.common.model.template.xsd.ServiceProvider();
+            for (Field field : spFields) {
+                try {
+                    Field spField = serviceProvider.getClass().getDeclaredField(field.getName());
+                    spField.setAccessible(true);
+                    Object value = spField.get(serviceProvider);
+                    if (value != null && spField.getAnnotation(XmlElement.class) != null) {
+                        Field fieldActualSp = castedSp.getClass().getDeclaredField(field.getName());
+                        fieldActualSp.setAccessible(true);
+                        fieldActualSp.set(castedSp, value);
+                    }
+                } catch (IllegalAccessException | NoSuchFieldException e) {
+                    throw new IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException
+                            ("Error when updating SP template configurations" +
+                            "into the actual service provider");
+                }
+            }
+            stub.createServiceProviderAsTemplate(castedSp, spTemplateDTO);
+        } catch (RemoteException |
+                IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException e) {
+            handleException(e);
+        }
     }
 
     /**

@@ -574,3 +574,4 @@
         }
     }
 </script>
+<script src="./js/configure-authentication-flow.js"></script>

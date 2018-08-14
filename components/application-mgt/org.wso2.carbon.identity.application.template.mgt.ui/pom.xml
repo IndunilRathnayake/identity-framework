@@ -88,7 +88,10 @@
                             org.wso2.carbon.utils; version="${carbon.kernel.package.import.version.range}",
 
                             org.wso2.carbon.identity.core.*;version="${carbon.identity.package.import.version.range}",
-                            org.wso2.carbon.identity.application.template.mgt.*;version="${carbon.identity.package.import.version.range}"
+                            org.wso2.carbon.identity.application.template.mgt.stub.*; version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.identity.application.template.mgt.dto.*; version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.identity.application.template.mgt.xsd.*; version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.identity.application.common.model.template.xsd.*; version="${carbon.identity.package.import.version.range}"
                         </Import-Package>
                         <Export-Package>org.wso2.carbon.identity.application.template.mgt.ui.*</Export-Package>
                         <Carbon-Component>UIBundle</Carbon-Component>

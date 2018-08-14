@@ -24,7 +24,6 @@ import org.apache.axis2.client.ServiceClient;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.identity.application.authentication.framework.config.builder.FileBasedConfigurationBuilder;
 import org.wso2.carbon.identity.application.template.mgt.dto.xsd.SpTemplateDTO;
 import org.wso2.carbon.identity.application.template.mgt.stub.IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException;
 import org.wso2.carbon.identity.application.template.mgt.stub.IdentityApplicationTemplateManagementServiceStub;
@@ -143,13 +142,13 @@ public class ApplicationTemplateManagementServiceClient {
      * @param spTemplateDTO SP template info to be updated
      * @throws AxisFault
      */
-    public void updateApplicationTemplate(SpTemplateDTO spTemplateDTO) throws AxisFault {
+    public void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO) throws AxisFault {
 
         try {
             if (debugEnabled) {
                 log.debug(String.format("Updating Service Provider template: ", spTemplateDTO.getName()));
             }
-            stub.updateApplicationTemplate(spTemplateDTO);
+            stub.updateApplicationTemplate(templateName, spTemplateDTO);
         } catch (RemoteException |
                 IdentityApplicationTemplateManagementServiceIdentityApplicationTemplateMgtException e) {
             handleException(e);

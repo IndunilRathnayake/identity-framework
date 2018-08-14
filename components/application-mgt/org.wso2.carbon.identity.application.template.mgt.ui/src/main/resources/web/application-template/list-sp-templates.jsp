@@ -46,6 +46,30 @@
     <script type="text/javascript" src="../carbon/admin/js/cookies.js"></script>
     <script type="text/javascript" src="../carbon/admin/js/main.js"></script>
 
+    <script>
+        function exportSPTemplateClick() {
+            jQuery('#templateExportData').submit();
+            jQuery(this).dialog("close");
+        }
+        function closeSP() {
+            jQuery(this).dialog("close");
+        }
+        $(function() {
+            $( "#exportSPTemplateMsgDialog" ).dialog({
+                autoOpen: false,
+                buttons: {
+                    OK: exportSPTemplateClick,
+                    Cancel: closeSP
+                },
+                height:160,
+                width:450,
+                minHeight:160,
+                minWidth:330,
+                modal:true
+            });
+        });
+    </script>
+
     <div id="middle">
 
         <h2>
@@ -61,8 +85,18 @@
 
                 }
 
-                function editSPTemplate(templateName) {
-                    location.href = "edit-sp-template.jsp?templateName=" + templateName;
+                function editSPTemplate(templateName, templateDesc) {
+                    location.href = "edit-sp-template.jsp?templateName=" + templateName +
+                    "&templateDesc=" + templateDesc;
+                    /*$.ajax({
+                            type: 'POST',
+                            url: 'edit-sp-template.jsp',
+                            headers: {
+                                Accept: "text/html"
+                            },
+                            data: 'templateName=' + templateName + '&templateDesc=' + templateDesc,
+                            async: false
+                        });*/
                 }
 
                 function removeSPTemplate(templateName) {
@@ -89,25 +123,12 @@
 
                 function exportSPTemplate(templateName) {
 
-                    function doInclude() {
-                        document.getElementById('exportSecrets').value = "true";
-                        location.href = "export-sp-template-finish-ajaxprocessor.jsp?templateName=" + templateName;
-                    }
-                    function doExclude() {
-                        document.getElementById('exportSecrets').value = "false";
-                        location.href = "export-sp-template-finish-ajaxprocessor.jsp?templateName=" + templateName;
-                    }
                     document.getElementById('templateName').value = templateName;
-                    CARBON.showConfirmationDialog('Do you want include the secret keys of "' + templateName + '"' +
-                        ' export in the file ? (hashed or encrypted secret willn\'t be included)', doInclude, doExclude);
+                    document.getElementById('exportSecrets').checked = true;
+                    $('#exportSPTemplateMsgDialog').dialog("open");
                 }
             </script>
 
-            <form id="spTemplateExportData" name="sp-template-export-data" method="post"
-                  action="export-sp-template-finish-ajaxprocessor.jsp">
-                <input hidden id="templateName" name="templateName"/>
-                <input hidden id="exportSecrets" name="exportSecrets"/>
-            </form>
             <%
                 SpTemplateDTO[] spTemplateDTOS = null;
 
@@ -173,9 +194,12 @@
                             </tr>
                             </thead>
                             <%
-                                boolean canView = CarbonUIUtil.isUserAuthorized(request, "/permission/admin/manage/identity/apptemplatemgt/view");
-                                boolean canEdit = CarbonUIUtil.isUserAuthorized(request, "/permission/admin/manage/identity/apptemplatemgt/update");
-                                boolean canDelete = CarbonUIUtil.isUserAuthorized(request, "/permission/admin/manage/identity/apptemplatemgt/delete");
+                                boolean canView = CarbonUIUtil.isUserAuthorized(request,
+                                        "/permission/admin/manage/identity/apptemplatemgt/view");
+                                boolean canEdit = CarbonUIUtil.isUserAuthorized(request,
+                                        "/permission/admin/manage/identity/apptemplatemgt/update");
+                                boolean canDelete = CarbonUIUtil.isUserAuthorized(request,
+                                        "/permission/admin/manage/identity/apptemplatemgt/delete");
                                 if (spTemplateDTOS != null && spTemplateDTOS.length > 0) {
                             %>
                             <tbody>
@@ -195,16 +219,17 @@
                                     <a title="View Service Provider Template"
                                        onclick="viewSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
                                        class="icon-link"
-                                       style="background-image: url(../application-template/images/edit.gif)">View
+                                       style="background-image: url(../application-template/images/edit.gif)"><fmt:message key="sp.template.view"/>
                                     </a>
                                     <%
                                         }
                                         if (canEdit) {
                                     %>
                                     <a title="Edit Service Provider Template"
-                                       onclick="editSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
+                                       onclick="editSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>',
+                                               '<%=Encode.forJavaScriptAttribute(template.getDescription())%>');return false;" href="#"
                                        class="icon-link"
-                                       style="background-image: url(../application-template/images/edit.gif)">Edit
+                                       style="background-image: url(../application-template/images/edit.gif)"><fmt:message key="sp.template.edit"/>
                                     </a>
                                     <%
                                         }
@@ -213,7 +238,7 @@
                                     <a title="Remove Service Provider Template"
                                        onclick="removeSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
                                        class="icon-link"
-                                       style="background-image: url(../application-template/images/delete.gif)">Delete
+                                       style="background-image: url(../application-template/images/delete.gif)"><fmt:message key="sp.template.delete"/>
                                     </a>
                                     <%
                                         }
@@ -221,7 +246,8 @@
                                     <a title="Export Service Provider Template"
                                        onclick="exportSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
                                        class="icon-link"
-                                       style="background-image: url(../application-template/images/publish.gif)">Export
+                                       style="background-image: url(../application-template/images/publish.gif)">
+                                        <fmt:message key="sp.template.export"/>
                                     </a>
                                 </td>
                             </tr>
@@ -233,7 +259,7 @@
                             <% } else { %>
                             <tbody>
                             <tr>
-                                <td colspan="3"><i>No Service Provider Templates registered</i></td>
+                                <td colspan="3"><i><fmt:message key="sp.template.not.registered"/></i></td>
                             </tr>
                             </tbody>
                             <% } %>
@@ -251,6 +277,19 @@
                               parameters="<%=paginationValue%>"
                               prevKey="prev" nextKey="next"/>
             <br/>
+            <br/>
+            <a href="#" id="addTemplates" name="addTemplates" onclick="viewTemplates();">Add new service provider template</a>
+        </div>
+    </div>
+    <div id='exportSPTemplateMsgDialog' title='WSO2 Carbon'>
+        <div id='messagebox-confirm'>
+            <p><fmt:message key="sp.template.export.para"/></p><br>
+            <form id="templateExportData" name="template-export-data" method="post"
+                  action="export-sp-template-finish-ajaxprocessor.jsp">
+                <input hidden id="templateName" name="templateName"/>
+                <input type="checkbox" id="exportSecrets" name="exportSecrets" checked>
+                <fmt:message key="sp.template.export.secret"/><br>
+            </form>
         </div>
     </div>
 </fmt:bundle>

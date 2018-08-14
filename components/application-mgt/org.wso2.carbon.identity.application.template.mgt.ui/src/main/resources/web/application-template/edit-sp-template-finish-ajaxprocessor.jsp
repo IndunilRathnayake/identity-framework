@@ -36,6 +36,8 @@
     }
     String content = request.getParameter("templateContent");
     String templateName = request.getParameter("sp-template-name");
+    String modifiedTemplateName = request.getParameter("template-name");
+    String modifiedTemplateDesc = request.getParameter("template-description");
 
     if (StringUtils.isNotEmpty(content)) {
         try {
@@ -46,9 +48,10 @@
             ApplicationTemplateManagementServiceClient serviceClient = new ApplicationTemplateManagementServiceClient(
                     cookie, backendServerURL, configContext);
             SpTemplateDTO spTemplateDTO = new SpTemplateDTO();
-            spTemplateDTO.setName(templateName);
+            spTemplateDTO.setName(modifiedTemplateName);
+            spTemplateDTO.setDescription(modifiedTemplateDesc);
             spTemplateDTO.setSpContent(content);
-            serviceClient.updateApplicationTemplate(spTemplateDTO);
+            serviceClient.updateApplicationTemplate(templateName, spTemplateDTO);
 %>
 <script>
     location.href = 'list-sp-templates.jsp';
@@ -58,7 +61,7 @@
     CarbonUIMessage.sendCarbonUIMessage(e.getMessage(), CarbonUIMessage.ERROR, request, e);
 %>
 <script>
-    location.href = 'list-sp-templates.jspp';
+    location.href = 'list-sp-templates.jsp';
 </script>
 <%
     }

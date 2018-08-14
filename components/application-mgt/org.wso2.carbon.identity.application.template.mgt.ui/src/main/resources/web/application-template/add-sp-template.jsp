@@ -60,7 +60,11 @@ var openFile = function (event) {
 };
 
 function importAppOnclick() {
-    if (document.getElementById('sp-template-file-content').value === null || document.getElementById('sp-template-file-content').value === "") {
+    if (document.getElementById('template-name').value === null || document.getElementById('template-name').value === "") {
+        CARBON.showWarningDialog('Please specify service provider template name.');
+        location.href = '#';
+        return false;
+    } else if (document.getElementById('sp-template-file-content').value === null || document.getElementById('sp-template-file-content').value === "") {
         CARBON.showWarningDialog('Please specify service provider template configuration file.');
         location.href = '#';
         return false;

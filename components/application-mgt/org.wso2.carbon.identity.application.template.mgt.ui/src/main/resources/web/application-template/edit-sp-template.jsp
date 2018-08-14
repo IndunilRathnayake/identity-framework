@@ -28,7 +28,8 @@
 
 <script src="codemirror/lib/codemirror.js"></script>
 <script src="codemirror/keymap/sublime.js"></script>
-<script src="codemirror/mode/javascript/javascript.js"></script>
+<script src="codemirror/mode/xml/xml.js"></script>
+<script src="codemirror/mode/xml/test.js"></script>
 
 <script src="codemirror/addon/lint/jshint.min.js"></script>
 <script src="codemirror/addon/lint/lint.js"></script>
@@ -53,7 +54,8 @@
 <script src="js/handlebars.min-v4.0.11.js"></script>
 
 <script src="../admin/js/main.js" type="text/javascript"></script>
-
+<script type="text/javascript" src="extensions/js/vui.js"></script>
+<script type="text/javascript" src="../extensions/core/js/vui.js"></script>
 
 <%@ page import="org.apache.axis2.context.ConfigurationContext" %>
 
@@ -61,22 +63,32 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="carbon" uri="http://wso2.org/projects/carbon/taglibs/carbontags.jar" %>
 <%@ page import="org.wso2.carbon.identity.application.template.mgt.dto.xsd.SpTemplateDTO" %>
+<%@ page import="org.w3c.dom.*" %>
+<%@ page import="javax.xml.parsers.*" %>
 <%@ page
         import="org.wso2.carbon.identity.application.template.mgt.ui.client.ApplicationTemplateManagementServiceClient" %>
 <%@ page import="org.wso2.carbon.ui.CarbonUIMessage" %>
 <%@ page import="org.wso2.carbon.ui.CarbonUIUtil" %>
 <%@ page import="org.wso2.carbon.utils.ServerConstants" %>
 
-<carbon:breadcrumb label="breadcrumb.advanced.auth.step.config"
-                   resourceBundle="org.wso2.carbon.identity.application.template.mgt.ui.i18n.Resources"
-                   topPage="true" request="<%=request%>"/>
 <jsp:include page="../dialog/display_messages.jsp"/>
 
+<fmt:bundle
+        basename="org.wso2.carbon.identity.application.template.mgt.ui.i18n.Resources">
+    <carbon:breadcrumb label="application.mgt"
+                       resourceBundle="org.wso2.carbon.identity.application.template.mgt.ui.i18n.Resources"
+                       topPage="true" request="<%=request%>"/>
+
+    <script type="text/javascript" src="../carbon/admin/js/breadcrumbs.js"></script>
+    <script type="text/javascript" src="../carbon/admin/js/cookies.js"></script>
+    <script type="text/javascript" src="../carbon/admin/js/main.js"></script>
 <%
     String templateText = "";
     String templateName = "";
+    String templateDesc = "";
     try {
         templateName = request.getParameter("templateName");
+        templateDesc = request.getParameter("templateDesc");
 
         String cookie = (String) session.getAttribute(ServerConstants.ADMIN_SERVICE_COOKIE);
         String backendServerURL = CarbonUIUtil.getServerURL(config.getServletContext(), session);
@@ -95,19 +107,73 @@
 
 <script type="text/javascript">
     function updateTemplateOnclick() {
-        if (document.getElementById('templateContent').value === null || document.getElementById('templateContent').value === "") {
+        var msg;
+        if (document.getElementById('template-name').value === null || document.getElementById('template-name').value === "") {
+            CARBON.showWarningDialog('Please specify service provider template name.');
+            location.href = '#';
+            return false;
+        } else if (document.getElementById('templateContent').value === null || document.getElementById('templateContent').value === "") {
             CARBON.showWarningDialog('Please specify service provider template content.');
             location.href = '#';
             return false;
-        } else {
+        } /*else if (!validateXML(document.getElementById('templateContent').value)) {
+            CARBON.showPopupDialog('SP Template is not well-formed. Please check for xml syntax errors');
+        } */else {
             $("#update-sp-template-form").submit();
             return true;
         }
     }
+    function validateXML2(txt)
+    {
+        var oParser = new DOMParser();
+        var oDOM = oParser.parseFromString(txt, "text/xml");
+        return oDOM.documentElement.nodeName == "parsererror" ? false : true;
+    }
+    function validateXML(txt)
+    {
+// code for IE
+        if (window.ActiveXObject)
+        {
+            var xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+            xmlDoc.async=false;
+            xmlDoc.loadXML(document.all(txt).value);
+
+            if(xmlDoc.parseError.errorCode!=0)
+            {
+                txt="Error Code: " + xmlDoc.parseError.errorCode + "\n";
+                txt=txt+"Error Reason: " + xmlDoc.parseError.reason;
+                txt=txt+"Error Line: " + xmlDoc.parseError.line;
+                alert(txt);
+            }
+            else
+            {
+                alert("No errors found");
+            }
+        }
+// code for Mozilla, Firefox, Opera, etc.
+        else if (document.implementation.createDocument)
+        {
+            var parser=new DOMParser();
+            var text=document.getElementById(txt).value;
+            var xmlDoc=parser.parseFromString(text,"text/xml");
+
+            if (xmlDoc.getElementsByTagName("parsererror").length>0)
+            {
+                checkErrorXML(xmlDoc.getElementsByTagName("parsererror")[0]);
+                alert(xt)
+            }
+            else
+            {
+                alert("No errors found");
+            }
+        }
+        else
+        {
+            alert('Your browser cannot handle XML validation');
+        }
+    }
 </script>
 
-
-<fmt:bundle basename="org.wso2.carbon.identity.application.template.mgt.ui.i18n.Resources">
     <div id="middle">
     <h2>
         <fmt:message key='title.service.provider.template.update'/>
@@ -115,6 +181,27 @@
     <div id="workArea">
         <form id="update-sp-template-form" name="update-sp-template-form" method="post"
               action="edit-sp-template-finish-ajaxprocessor.jsp">
+            <table class="carbonFormTable">
+                <tr>
+                    <td style="width:15%" class="leftCol-med labelField"><fmt:message key='config.application.template.name'/>:<span class="required">*</span></td>
+                    <td>
+                        <input id="template-name" name="template-name" type="text" value=<%=templateName%> white-list-patterns="^[a-zA-Z0-9\s._-]*$" autofocus/>
+                        <div class="sectionHelp">
+                            <fmt:message key='help.name'/>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width:15%" class="leftCol-med labelField"><fmt:message key='config.application.template.description'/>:</td>
+                    <td>
+                        <textarea style="width:50%" type="text" name="template-description" id="template-description" class="text-box-big">
+                            <%=templateDesc%></textarea>
+                        <div class="sectionHelp">
+                            <fmt:message key='help.desc'/>
+                        </div>
+                    </td>
+                </tr>
+            </table>
             <div class="toggle_container sectionSub" id="editorRow">
                 <div style="position: relative;">
                     <div class="sectionSub step_contents" id="codeMirror">
