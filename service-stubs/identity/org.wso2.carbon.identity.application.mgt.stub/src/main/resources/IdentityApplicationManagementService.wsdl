@@ -26,6 +26,13 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="createApplication">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="serviceProvider" nillable="true" type="ax2171:ServiceProvider"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="getAllApplicationBasicInfo">
                 <xs:complexType>
                     <xs:sequence/>
@@ -264,6 +271,7 @@
                     <xs:element minOccurs="0" name="subjectClaimUri" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="useTenantDomainInLocalSubjectIdentifier" type="xs:boolean"/>
                     <xs:element minOccurs="0" name="useUserstoreDomainInLocalSubjectIdentifier" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="useUserstoreDomainInRoles" type="xs:boolean"/>
                 </xs:sequence>
             </xs:complexType>
             <xs:complexType name="AuthenticationStep">
