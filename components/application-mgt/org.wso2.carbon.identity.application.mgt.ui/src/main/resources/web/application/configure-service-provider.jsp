@@ -2900,4 +2900,4 @@
         </div>
     </div>
 </fmt:bundle>
-<script src="js/configure-sp-template-flow.js"></script>
+<!--script src="js/configure-sp-template-flow.js"></script-->

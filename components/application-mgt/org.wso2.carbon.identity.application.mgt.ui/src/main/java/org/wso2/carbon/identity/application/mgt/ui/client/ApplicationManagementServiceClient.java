@@ -82,12 +82,12 @@ public class ApplicationManagementServiceClient {
      * @param serviceProvider
      * @throws AxisFault
      */
-    public void createApplication(ServiceProvider serviceProvider, String spTemplateName) throws AxisFault {
+    public void createApplication(ServiceProvider serviceProvider, String spTemplateContent) throws AxisFault {
         try {
             if (debugEnabled) {
                 log.debug("Registering Service Provider " + serviceProvider.getApplicationName());
             }
-            stub.createApplication(serviceProvider, spTemplateName);
+            stub.createApplication(serviceProvider, spTemplateContent);
         } catch (RemoteException | IdentityApplicationManagementServiceIdentityApplicationManagementException e) {
             handleException(e);
         }

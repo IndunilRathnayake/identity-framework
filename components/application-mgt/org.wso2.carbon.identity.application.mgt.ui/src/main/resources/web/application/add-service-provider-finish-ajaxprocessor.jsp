@@ -54,7 +54,10 @@
                     .getAttribute(CarbonConstants.CONFIGURATION_CONTEXT);
             ApplicationTemplateMgtServiceClient templateMgtServiceClient = new ApplicationTemplateMgtServiceClient(
                     cookie, backendServerURL, configContext);
-            SpTemplateDTO spTemplateDTO = templateMgtServiceClient.loadSpFromApplicationTemplate(templateName);
+            SpTemplateDTO spTemplateDTO = new SpTemplateDTO();
+            if (templateName != null && !"".equals(templateName)) {
+                spTemplateDTO = templateMgtServiceClient.loadSpFromApplicationTemplate(templateName);
+            }
             ApplicationManagementServiceClient serviceClient = new ApplicationManagementServiceClient(cookie, backendServerURL, configContext);
             serviceClient.createApplication(serviceProvider, spTemplateDTO.getSpContent());
 %>
