@@ -18,13 +18,12 @@
 
 package org.wso2.carbon.identity.application.template.mgt;
 
+/**
+ * Constants for Application Management Service.
+ */
 public class ApplicationTemplateMgtConstants {
 
-    private ApplicationTemplateMgtConstants(){
-    }
-
     public static final String TENANT_DEFAULT_SP_TEMPLATE_NAME = "default";
-
     public static final String MY_SQL = "MySQL";
     public static final String POSTGRE_SQL = "PostgreSQL";
     public static final String DB2 = "DB2";
@@ -32,4 +31,7 @@ public class ApplicationTemplateMgtConstants {
     public static final String S_MICROSOFT = "microsoft";
     public static final String INFORMIX = "Informix";
     public static final String H2 = "H2";
+
+    private ApplicationTemplateMgtConstants() {
+    }
 }

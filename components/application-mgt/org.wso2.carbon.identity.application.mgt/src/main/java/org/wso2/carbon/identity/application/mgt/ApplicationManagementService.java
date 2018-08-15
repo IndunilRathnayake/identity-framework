@@ -53,14 +53,14 @@ public abstract class ApplicationManagementService {
      * @param serviceProvider Service Provider Name
      * @param tenantDomain Tenant Domain
      * @param username User Name
-     * @param templateName SP template name
+     * @param spTemplateContent SP template XML content
      * @return
      * @throws IdentityApplicationManagementException
      * @deprecated  This method is replaced by {@link #addApplication}
      */
     @Deprecated
     public abstract void createApplication(ServiceProvider serviceProvider, String tenantDomain, String username,
-                                           String templateName)
+                                           String spTemplateContent)
             throws IdentityApplicationManagementException;
 
     /**
@@ -70,12 +70,13 @@ public abstract class ApplicationManagementService {
      * @param serviceProvider Service Provider Name
      * @param tenantDomain Tenant Domain
      * @param username User Name
-     * @param templateName Template Name
+     * @param spTemplateContent SP template XML content
      * @return created service provider
      * @throws IdentityApplicationManagementException
      */
-    public abstract ServiceProvider addApplication(ServiceProvider serviceProvider, String tenantDomain, String
-            username, String templateName) throws IdentityApplicationManagementException;
+    public abstract ServiceProvider addApplication(ServiceProvider serviceProvider, String tenantDomain,
+                                                   String username, String spTemplateContent)
+            throws IdentityApplicationManagementException;
 
     /**
      * Get Application for given application name

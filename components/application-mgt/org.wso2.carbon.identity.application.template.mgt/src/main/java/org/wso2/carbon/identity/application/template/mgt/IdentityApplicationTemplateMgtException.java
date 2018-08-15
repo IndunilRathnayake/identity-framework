@@ -27,17 +27,20 @@ public class IdentityApplicationTemplateMgtException extends Exception {
     private String message;
 
     public IdentityApplicationTemplateMgtException(String message) {
+
         super(message);
         this.message = message;
     }
 
     public IdentityApplicationTemplateMgtException(String message, Throwable e) {
+
         super(message, e);
         this.message = message;
     }
 
     @Override
     public String getMessage() {
+
         return message;
     }
 }

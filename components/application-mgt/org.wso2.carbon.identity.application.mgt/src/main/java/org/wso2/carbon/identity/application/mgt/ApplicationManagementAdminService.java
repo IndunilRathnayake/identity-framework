@@ -49,15 +49,17 @@ public class ApplicationManagementAdminService extends AbstractAdmin {
      * user will assigned to the created role.Internal roles used.
      *
      * @param serviceProvider Service provider
+     * @param spTemplateContent SP template XML content
      * @return application id
      * @throws org.wso2.carbon.identity.application.common.IdentityApplicationManagementException
      */
-    public void createApplication(ServiceProvider serviceProvider, String templateName)
+    public void createApplication(ServiceProvider serviceProvider, String spTemplateContent)
             throws IdentityApplicationManagementException {
 
         try {
             applicationMgtService = ApplicationManagementService.getInstance();
-            applicationMgtService.createApplication(serviceProvider, getTenantDomain(), getUsername(), templateName);
+            applicationMgtService.createApplication(serviceProvider, getTenantDomain(), getUsername(),
+                    spTemplateContent);
         } catch (IdentityApplicationManagementException idpException) {
             log.error("Error while creating application: " + serviceProvider.getApplicationName() + " for tenant: " +
                     getTenantDomain(), idpException);

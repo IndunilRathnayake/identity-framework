@@ -38,10 +38,16 @@ import java.io.StringReader;
 import java.sql.SQLException;
 import java.util.List;
 
-import static org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtDBQueries.*;
+import static org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtDBQueries.ADD_SP_TEMPLATE;
+import static org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtDBQueries.DELETE_SP_TEMPLATE_BY_NAME;
+import static org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtDBQueries.GET_ALL_SP_TEMPLATES_BASIC_INFO;
+import static org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtDBQueries.IS_SP_TEMPLATE_EXISTS;
+import static org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtDBQueries.LOAD_SP_TEMPLATE_CONTENT;
+import static org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtDBQueries.UPDATE_SP_TEMPLATE_BY_NAME;
 
 /**
- * Default implementation of {@link ApplicationTemplateDAO}. This handles {@link SpTemplateDTO} related db layer operations.
+ * Default implementation of {@link ApplicationTemplateDAO}. This handles {@link SpTemplateDTO} related db layer
+ * operations.
  */
 public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
 
@@ -74,7 +80,7 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
                     preparedStatement.setBinaryStream(4, setBlobObject(spTemplateDTO.getSpContent()));
                 } catch (IOException e) {
                     throw new SQLException(String.format("Could not set application template: %s content as a Blob" +
-                                    "in tenant: %s.", templateName, tenantDomain), e);
+                            "in tenant: %s.", templateName, tenantDomain), e);
                 }
             }), null, true);
         } catch (DataAccessException e) {
@@ -120,7 +126,8 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
     }
 
     @Override
-    public boolean isExistingTemplate(String templateName, String tenantDomain) throws IdentityApplicationTemplateMgtException {
+    public boolean isExistingTemplate(String templateName, String tenantDomain)
+            throws IdentityApplicationTemplateMgtException {
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Checking application template exists for name: %s in tenant: %s", templateName,
@@ -139,7 +146,7 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
                     });
         } catch (DataAccessException e) {
             throw new IdentityApplicationTemplateMgtException(String.format("Error while checking existence of " +
-                            "application template: %s", templateName), e);
+                    "application template: %s", templateName), e);
         }
 
         if (id != 0) {
@@ -193,8 +200,8 @@ public class ApplicationTemplateDAOImpl implements ApplicationTemplateDAO {
                     (resultSet, i) -> resultSet.getString(1),
                     preparedStatement -> preparedStatement.setInt(1, tenantID));
         } catch (DataAccessException e) {
-            throw new IdentityApplicationTemplateMgtException(String.format("Error while loading application template " +
-                    "names of tenant: %s", tenantDomain), e);
+            throw new IdentityApplicationTemplateMgtException(String.format("Error while loading application template "
+                    + "names of tenant: %s", tenantDomain), e);
         }
         return spTemplateNames;
     }

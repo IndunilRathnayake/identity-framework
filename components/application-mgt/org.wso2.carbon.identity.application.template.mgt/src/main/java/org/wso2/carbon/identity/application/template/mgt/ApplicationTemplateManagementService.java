@@ -32,7 +32,7 @@ public abstract class ApplicationTemplateManagementService {
      * Add configured service provider as a template.
      *
      * @param serviceProvider Service provider to be configured as a template
-     * @param spTemplateDTO service provider template basic info
+     * @param spTemplateDTO   service provider template basic info
      * @throws IdentityApplicationTemplateMgtException
      */
     public abstract void createServiceProviderAsTemplate(ServiceProvider serviceProvider, SpTemplateDTO spTemplateDTO,
@@ -43,7 +43,7 @@ public abstract class ApplicationTemplateManagementService {
      * Import Service provider template.
      *
      * @param spTemplateDTO service provider template info
-     * @param tenantDomain tenant domain
+     * @param tenantDomain  tenant domain
      * @throws IdentityApplicationTemplateMgtException
      */
     public abstract void importApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
@@ -105,17 +105,17 @@ public abstract class ApplicationTemplateManagementService {
      * Update an application template.
      *
      * @param spTemplateDTO SP template info to be updated
-     * @param tenantDomain tenant domain
+     * @param tenantDomain  tenant domain
      * @throws IdentityApplicationTemplateMgtException
      */
-    public abstract void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO, String tenantDomain)
-            throws IdentityApplicationTemplateMgtException;
+    public abstract void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO,
+                                                   String tenantDomain) throws IdentityApplicationTemplateMgtException;
 
     /**
      * Export a application template.
      *
-     * @param templateName name of the template
-     * @param tenantDomain tenant domain
+     * @param templateName  name of the template
+     * @param tenantDomain  tenant domain
      * @param exportSecrets is export the secrets
      * @return XML string of the template content
      * @throws IdentityApplicationTemplateMgtException

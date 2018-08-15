@@ -71,10 +71,12 @@ public class ServiceProviderTemplateCacheKey implements Serializable {
         }
 
         ServiceProviderTemplateCacheKey that = (ServiceProviderTemplateCacheKey) o;
-
-        if (!templateName.equals(that.templateName)) return false;
-        if (!tenantDomain.equals(that.tenantDomain)) return false;
-
+        if (!templateName.equals(that.templateName))  {
+            return false;
+        }
+        if (!tenantDomain.equals(that.tenantDomain)) {
+            return false;
+        }
         return true;
     }
 

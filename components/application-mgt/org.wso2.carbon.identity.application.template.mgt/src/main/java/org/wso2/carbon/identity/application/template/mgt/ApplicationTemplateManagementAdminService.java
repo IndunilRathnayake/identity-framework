@@ -34,6 +34,13 @@ public class ApplicationTemplateManagementAdminService extends AbstractAdmin {
     private static final Log log = LogFactory.getLog(ApplicationTemplateManagementAdminService.class);
     private ApplicationTemplateManagementService applicationTemplateMgtService;
 
+    /**
+     * Add configured service provider as a template.
+     *
+     * @param serviceProvider Service provider to be configured as a template
+     * @param spTemplateDTO   service provider template basic info
+     * @throws IdentityApplicationTemplateMgtException
+     */
     public void createServiceProviderAsTemplate(ServiceProvider serviceProvider, SpTemplateDTO spTemplateDTO)
             throws IdentityApplicationTemplateMgtException {
 
@@ -42,7 +49,8 @@ public class ApplicationTemplateManagementAdminService extends AbstractAdmin {
             applicationTemplateMgtService.createServiceProviderAsTemplate(serviceProvider, spTemplateDTO,
                     getTenantDomain());
         } catch (IdentityApplicationTemplateMgtException idpException) {
-            log.error("Error while importing service provider as a template for tenant: " + getTenantDomain(),
+            log.error(String.format("Error while creating service provider template for the configured SP: %s for tenant: %s",
+                    serviceProvider.getApplicationName(), getTenantDomain()),
                     idpException);
             throw idpException;
         }
@@ -145,14 +153,15 @@ public class ApplicationTemplateManagementAdminService extends AbstractAdmin {
      * @param spTemplateDTO SP template info to be updated
      * @throws IdentityApplicationTemplateMgtException
      */
-    public void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO) throws IdentityApplicationTemplateMgtException {
+    public void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO)
+            throws IdentityApplicationTemplateMgtException {
 
         try {
             applicationTemplateMgtService = ApplicationTemplateManagementServiceImpl.getInstance();
             applicationTemplateMgtService.updateApplicationTemplate(templateName, spTemplateDTO, getTenantDomain());
         } catch (IdentityApplicationTemplateMgtException idpException) {
             log.error("Error while updating application template:" + spTemplateDTO.getName() + " in tenant: " +
-                            getTenantDomain(), idpException);
+                    getTenantDomain(), idpException);
             throw idpException;
         }
     }
@@ -160,19 +169,21 @@ public class ApplicationTemplateManagementAdminService extends AbstractAdmin {
     /**
      * Export a application template.
      *
-     * @param templateName name of the template
+     * @param templateName  name of the template
      * @param exportSecrets is export the secrets
      * @return XML string of the
      * @throws IdentityApplicationTemplateMgtException
      */
-    public String exportApplicationTemplate(String templateName, boolean exportSecrets) throws IdentityApplicationTemplateMgtException {
+    public String exportApplicationTemplate(String templateName, boolean exportSecrets)
+            throws IdentityApplicationTemplateMgtException {
 
         try {
             applicationTemplateMgtService = ApplicationTemplateManagementServiceImpl.getInstance();
-            return applicationTemplateMgtService.exportApplicationTemplate(templateName, exportSecrets, getTenantDomain());
+            return applicationTemplateMgtService.exportApplicationTemplate(templateName, exportSecrets,
+                    getTenantDomain());
         } catch (IdentityApplicationTemplateMgtException idpException) {
-            log.error("Error while exporting application template: " + templateName + " in tenant: " + getTenantDomain(),
-                    idpException);
+            log.error("Error while exporting application template: " + templateName + " in tenant: " +
+                    getTenantDomain(), idpException);
             throw idpException;
         }
     }

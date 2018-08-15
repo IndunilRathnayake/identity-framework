@@ -35,9 +35,6 @@ public class ApplicationTemplateMgtDBQueries {
     public static final String GET_ALL_SP_TEMPLATES_BASIC_INFO = "SELECT NAME, DESCRIPTION FROM SP_TEMPLATE WHERE " +
             "TENANT_ID = ?";
 
-    public static final String GET_ALL_SP_TEMPLATE_NAMES = "SELECT NAME FROM SP_TEMPLATE WHERE " +
-            "TENANT_ID = ?";
-
     public static final String DELETE_SP_TEMPLATE_BY_NAME = "DELETE FROM SP_TEMPLATE WHERE NAME = ? AND TENANT_ID= ?";
 
     public static final String UPDATE_SP_TEMPLATE_BY_NAME = "UPDATE SP_TEMPLATE SET NAME= ?,DESCRIPTION = ?," +

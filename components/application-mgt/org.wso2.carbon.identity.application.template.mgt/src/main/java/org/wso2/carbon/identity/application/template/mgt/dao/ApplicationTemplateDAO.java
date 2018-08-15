@@ -32,7 +32,7 @@ public interface ApplicationTemplateDAO {
      * Create an application template.
      *
      * @param spTemplateDTO SP template info
-     * @param tenantDomain tenant domain
+     * @param tenantDomain  tenant domain
      * @throws IdentityApplicationTemplateMgtException
      */
     void createApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
@@ -49,6 +49,14 @@ public interface ApplicationTemplateDAO {
     SpTemplateDTO loadApplicationTemplate(String templateName, String tenantDomain)
             throws IdentityApplicationTemplateMgtException;
 
+    /**
+     * Check Existence of a application template.
+     *
+     * @param templateName name of the template
+     * @param tenantDomain tenant domain
+     * @return true if a template with the specified template name exists
+     * @throws IdentityApplicationTemplateMgtException
+     */
     boolean isExistingTemplate(String templateName, String tenantDomain) throws IdentityApplicationTemplateMgtException;
 
     /**
@@ -83,7 +91,7 @@ public interface ApplicationTemplateDAO {
      * Update an application template.
      *
      * @param spTemplateDTO SP template info to be updated
-     * @param tenantDomain tenant domain
+     * @param tenantDomain  tenant domain
      * @throws IdentityApplicationTemplateMgtException
      */
     void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO, String tenantDomain)

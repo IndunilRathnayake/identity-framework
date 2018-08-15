@@ -19,7 +19,6 @@
 package org.wso2.carbon.identity.application.template.mgt.dto;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * Data transfer representation for service provider template.
@@ -29,11 +28,13 @@ public class SpTemplateDTO implements Serializable {
     private String spContent;
     private String name;
     private String description;
-    /*private List<PlaceholderDTO> placeholders;*/
 
-    public SpTemplateDTO() {}
+    public SpTemplateDTO() {
+
+    }
 
     public SpTemplateDTO(String name, String description, String spContent) {
+
         this.name = name;
         this.description = description;
         this.spContent = spContent;
@@ -45,6 +46,7 @@ public class SpTemplateDTO implements Serializable {
      * @return SP content
      */
     public String getSpContent() {
+
         return spContent;
     }
 
@@ -54,6 +56,7 @@ public class SpTemplateDTO implements Serializable {
      * @param spContent SP content
      */
     public void setSpContent(String spContent) {
+
         this.spContent = spContent;
     }
 
@@ -63,6 +66,7 @@ public class SpTemplateDTO implements Serializable {
      * @return SP template name
      */
     public String getName() {
+
         return name;
     }
 
@@ -72,6 +76,7 @@ public class SpTemplateDTO implements Serializable {
      * @param name SP template name
      */
     public void setName(String name) {
+
         this.name = name;
     }
 
@@ -81,6 +86,7 @@ public class SpTemplateDTO implements Serializable {
      * @return SP template description
      */
     public String getDescription() {
+
         return description;
     }
 
@@ -90,6 +96,7 @@ public class SpTemplateDTO implements Serializable {
      * @param description SP template description
      */
     public void setDescription(String description) {
+
         this.description = description;
     }
 

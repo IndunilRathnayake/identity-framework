@@ -20,7 +20,6 @@ import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.core.persistence.JDBCPersistenceManager;
 
-
 import static org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtConstants.DB2;
 import static org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtConstants.H2;
 import static org.wso2.carbon.identity.application.template.mgt.ApplicationTemplateMgtConstants.INFORMIX;

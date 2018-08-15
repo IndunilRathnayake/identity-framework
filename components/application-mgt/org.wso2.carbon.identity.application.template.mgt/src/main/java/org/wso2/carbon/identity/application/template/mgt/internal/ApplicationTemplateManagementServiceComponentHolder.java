@@ -44,31 +44,55 @@ public class ApplicationTemplateManagementServiceComponentHolder {
         return instance;
     }
 
+    /**
+     * Get RegistryService instance.
+     * @return registryService
+     */
     public RegistryService getRegistryService() {
 
         return registryService;
     }
 
+    /**
+     * Set RegistryService instance.
+     * @param registryService registryService
+     */
     public void setRegistryService(RegistryService registryService) {
 
         this.registryService = registryService;
     }
 
+    /**
+     * Get RealmService instance.
+     * @return realmService
+     */
     public RealmService getRealmService() {
 
         return realmService;
     }
 
+    /**
+     * Set RealmService instance.
+     * @param realmService realmService
+     */
     public void setRealmService(RealmService realmService) {
 
         this.realmService = realmService;
     }
 
+    /**
+     * Get ConfigurationContextService instance.
+     * @return configContextService
+     */
     public ConfigurationContextService getConfigContextService() {
 
         return configContextService;
     }
 
+    /**
+     * Set ConfigurationContextService instance.
+     * @param configContextService configContextService
+     */
     public void setConfigContextService(ConfigurationContextService configContextService) {
 
         this.configContextService = configContextService;

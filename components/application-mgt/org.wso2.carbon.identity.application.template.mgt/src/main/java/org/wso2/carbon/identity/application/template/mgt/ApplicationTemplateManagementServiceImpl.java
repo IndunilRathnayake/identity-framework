@@ -37,6 +37,13 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -49,16 +56,10 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.List;
 
 /**
- * Application template management service implementation.
+ * Default service implementation of {@link ApplicationTemplateManagementService}. This handles all the application
+ * template related functionality.
  */
 public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplateManagementService {
 
@@ -113,8 +114,8 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
 
         String loadingSpTemplateName = templateName;
         if (StringUtils.isNotBlank(loadingSpTemplateName) && !isExistingTemplate(loadingSpTemplateName, tenantDomain)) {
-            throw new IdentityApplicationTemplateMgtException(String.format("Template with name: %s, is not configured " +
-                    "for tenant: %s.", loadingSpTemplateName, tenantDomain));
+            throw new IdentityApplicationTemplateMgtException(String.format("Template with name: %s, is not configured "
+                    + "for tenant: %s.", loadingSpTemplateName, tenantDomain));
         }
         if (StringUtils.isEmpty(loadingSpTemplateName)) {
             if (isExistingTemplate(ApplicationTemplateMgtConstants.TENANT_DEFAULT_SP_TEMPLATE_NAME, tenantDomain)) {
@@ -144,7 +145,8 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
     }
 
     @Override
-    public boolean isExistingTemplate(String templateName, String tenantDomain) throws IdentityApplicationTemplateMgtException {
+    public boolean isExistingTemplate(String templateName, String tenantDomain)
+            throws IdentityApplicationTemplateMgtException {
 
         ApplicationTemplateDAO applicationTemplateDAO = new ApplicationTemplateDAOImpl();
         return applicationTemplateDAO.isExistingTemplate(templateName, tenantDomain);
@@ -167,7 +169,8 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
     }
 
     @Override
-    public void deleteApplicationTemplate(String templateName, String tenantDomain) throws IdentityApplicationTemplateMgtException {
+    public void deleteApplicationTemplate(String templateName, String tenantDomain)
+            throws IdentityApplicationTemplateMgtException {
 
         ApplicationTemplateDAO applicationTemplateDAO = new ApplicationTemplateDAOImpl();
         applicationTemplateDAO.deleteApplicationTemplate(templateName, tenantDomain);
@@ -180,9 +183,10 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
     public void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
-        if (StringUtils.isNotBlank(spTemplateDTO.getName()) && isExistingTemplate(spTemplateDTO.getName(), tenantDomain)) {
-            throw new IdentityApplicationTemplateMgtException(String.format("Template with name: %s, is already configured " +
-                    "for tenant: %s.", spTemplateDTO.getName(), tenantDomain));
+        if (StringUtils.isNotBlank(spTemplateDTO.getName()) && isExistingTemplate(spTemplateDTO.getName(),
+                tenantDomain)) {
+            throw new IdentityApplicationTemplateMgtException(String.format("Template with name: %s, is already " +
+                    "configured for tenant: %s.", spTemplateDTO.getName(), tenantDomain));
         }
         validateTemplateXMLSyntax(spTemplateDTO);
 
@@ -202,14 +206,15 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
             String templateXml = loadApplicationTemplate(templateName, tenantDomain).getSpContent();
             ServiceProvider serviceProvider = unmarshalSP(templateXml, tenantDomain);
             // invoking the listeners
-            Collection<ApplicationMgtListener> listeners = ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
+            Collection<ApplicationMgtListener> listeners =
+                    ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
             for (ApplicationMgtListener listener : listeners) {
                 if (listener.isEnable()) {
                     listener.doExportServiceProvider(serviceProvider, exportSecrets);
                 }
             }
             return marshalSP(serviceProvider, tenantDomain);
-        }catch (IdentityApplicationManagementException e) {
+        } catch (IdentityApplicationManagementException e) {
             throw new IdentityApplicationTemplateMgtException(String.format("Error when exporting SP template: ",
                     templateName), e);
         }
@@ -265,7 +270,8 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
             throws IdentityApplicationManagementException {
 
         if (StringUtils.isEmpty(spTemplateXml)) {
-            throw new IdentityApplicationManagementException("Empty SP template configuration is provided to unmarshal");
+            throw new IdentityApplicationManagementException("Empty SP template configuration is provided to " +
+                    "unmarshal");
         }
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(ServiceProvider.class);
@@ -274,8 +280,8 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
                     spTemplateXml.getBytes(StandardCharsets.UTF_8)));
 
         } catch (JAXBException e) {
-            throw new IdentityApplicationManagementException("Error in reading Service Provider template configuration ",
-                    e);
+            throw new IdentityApplicationManagementException("Error in reading Service Provider template " +
+                    "configuration ", e);
         }
     }
 
@@ -304,8 +310,8 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
             transformer.transform(new DOMSource(document), result);
             return stringBuilder.getBuffer().toString();
         } catch (JAXBException | ParserConfigurationException | TransformerException e) {
-            throw new IdentityApplicationTemplateMgtException(String.format("Error in exporting Service Provider template " +
-                            "from SP %s@%s", serviceProvider.getApplicationName(), tenantDomain), e);
+            throw new IdentityApplicationTemplateMgtException(String.format("Error in exporting Service Provider " +
+                    "template from SP %s@%s", serviceProvider.getApplicationName(), tenantDomain), e);
         }
     }
 
@@ -320,10 +326,5 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
             updatedSp.setInboundAuthenticationConfig(null);
         }
         return updatedSp;
-    }
-
-    private String removeUnsupportedTemplateConfigs(String serviceProviderTemplateXml) {
-
-        return serviceProviderTemplateXml;
     }
 }

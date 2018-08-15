@@ -139,31 +139,30 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                                           String spTemplateContent)
             throws IdentityApplicationManagementException {
 
-        //SpTemplateDTO spTemplateDTO = getTemplateInfo(tenantDomain, templateName);
-        ServiceProvider updatedSp = getSPFromTemplate(serviceProvider, tenantDomain, spTemplateContent);
+        ServiceProvider updatedSpFromTemplate = getSPFromTemplate(serviceProvider, tenantDomain, spTemplateContent);
 
-        ServiceProvider savedSP = doAddApplication(updatedSp, tenantDomain, username);
-        updatedSp.setApplicationID(savedSP.getApplicationID());
-        updatedSp.setOwner(getUser(tenantDomain, username));
+        ServiceProvider addedSP = doAddApplication(updatedSpFromTemplate, tenantDomain, username);
+        updatedSpFromTemplate.setApplicationID(addedSP.getApplicationID());
+        updatedSpFromTemplate.setOwner(getUser(tenantDomain, username));
 
         if (spTemplateContent != null) {
             Collection<ApplicationMgtListener> listeners =
                     ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
             for (ApplicationMgtListener listener : listeners) {
                 if (listener.isEnable()) {
-                    listener.onPreCreateInbound(updatedSp, false);
+                    listener.onPreCreateInbound(updatedSpFromTemplate, false);
                 }
             }
 
-            updateApplication(updatedSp, tenantDomain, username);
+            updateApplication(updatedSpFromTemplate, tenantDomain, username);
 
             for (ApplicationMgtListener listener : listeners) {
                 if (listener.isEnable()) {
-                    listener.doImportServiceProvider(updatedSp);
+                    listener.doImportServiceProvider(updatedSpFromTemplate);
                 }
             }
         }
-        return updatedSp;
+        return updatedSpFromTemplate;
     }
 
     @Override

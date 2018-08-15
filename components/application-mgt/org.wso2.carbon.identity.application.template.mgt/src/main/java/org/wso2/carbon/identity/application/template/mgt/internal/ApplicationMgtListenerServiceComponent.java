@@ -37,6 +37,21 @@ import java.util.List;
 public class ApplicationMgtListenerServiceComponent {
 
     private static List<ApplicationMgtListener> applicationMgtListeners = new ArrayList<>();
+    private static Comparator<ApplicationMgtListener> appMgtListenerComparator =
+            (applicationMgtListener1, applicationMgtListener2) -> {
+                if (applicationMgtListener1.getExecutionOrderId() > applicationMgtListener2.getExecutionOrderId()) {
+                    return 1;
+                } else if (applicationMgtListener1.getExecutionOrderId() < applicationMgtListener2
+                        .getExecutionOrderId()) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            };
+
+    public static synchronized Collection getApplicationMgtListeners() {
+        return applicationMgtListeners;
+    }
 
     @Reference(
             name = "application.mgt.event.listener.service",
@@ -57,23 +72,4 @@ public class ApplicationMgtListenerServiceComponent {
 
         applicationMgtListeners.remove(applicationMgtListenerService);
     }
-
-    public static synchronized Collection getApplicationMgtListeners() {
-        return applicationMgtListeners;
-    }
-
-    private static Comparator<ApplicationMgtListener> appMgtListenerComparator = new Comparator<ApplicationMgtListener>(){
-
-        @Override
-        public int compare(ApplicationMgtListener applicationMgtListener1,
-                           ApplicationMgtListener applicationMgtListener2) {
-            if (applicationMgtListener1.getExecutionOrderId() > applicationMgtListener2.getExecutionOrderId()) {
-                return 1;
-            } else if (applicationMgtListener1.getExecutionOrderId() < applicationMgtListener2.getExecutionOrderId()) {
-                return -1;
-            } else {
-                return 0;
-            }
-        }
-    };
 }
