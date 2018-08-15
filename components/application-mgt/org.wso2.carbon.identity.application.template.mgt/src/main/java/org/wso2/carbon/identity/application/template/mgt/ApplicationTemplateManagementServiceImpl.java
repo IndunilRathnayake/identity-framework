@@ -98,14 +98,35 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
     public void importApplicationTemplate(SpTemplateDTO spTemplateDTO, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
-        validateTemplateXMLSyntax(spTemplateDTO);
+        try {
+            validateTemplateXMLSyntax(spTemplateDTO);
 
-        ApplicationTemplateDAO applicationTemplateDAO = new ApplicationTemplateDAOImpl();
-        applicationTemplateDAO.createApplicationTemplate(spTemplateDTO, tenantDomain);
+            ServiceProvider serviceProvider = unmarshalSP(spTemplateDTO.getSpContent(), tenantDomain);
+            // invoking the application mgt listeners
+            Collection<ApplicationMgtListener> listeners =
+                    ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
+            for (ApplicationMgtListener listener : listeners) {
+                if (listener.isEnable()) {
+                    listener.onPreCreateInbound(serviceProvider, false);
+                }
+            }
 
-        ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(spTemplateDTO.getName(),
-                tenantDomain);
-        ServiceProviderTemplateCache.getInstance().addToCache(templateCacheKey, spTemplateDTO);
+            for (ApplicationMgtListener listener : listeners) {
+                if (listener.isEnable()) {
+                    listener.doImportServiceProvider(serviceProvider);
+                }
+            }
+
+            ApplicationTemplateDAO applicationTemplateDAO = new ApplicationTemplateDAOImpl();
+            applicationTemplateDAO.createApplicationTemplate(spTemplateDTO, tenantDomain);
+
+            ServiceProviderTemplateCacheKey templateCacheKey = new ServiceProviderTemplateCacheKey(spTemplateDTO.getName(),
+                    tenantDomain);
+            ServiceProviderTemplateCache.getInstance().addToCache(templateCacheKey, spTemplateDTO);
+        } catch (IdentityApplicationManagementException e) {
+            throw new IdentityApplicationTemplateMgtException(String.format("Error when importing SP template: ",
+                    spTemplateDTO.getName()), e);
+        }
     }
 
     @Override
@@ -180,6 +201,7 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
         ServiceProviderTemplateCache.getInstance().clearCacheEntry(templateCacheKey);
     }
 
+    @Override
     public void updateApplicationTemplate(String templateName, SpTemplateDTO spTemplateDTO, String tenantDomain)
             throws IdentityApplicationTemplateMgtException {
 
@@ -205,7 +227,7 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
         try {
             String templateXml = loadApplicationTemplate(templateName, tenantDomain).getSpContent();
             ServiceProvider serviceProvider = unmarshalSP(templateXml, tenantDomain);
-            // invoking the listeners
+            // invoking the application mgt listeners
             Collection<ApplicationMgtListener> listeners =
                     ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
             for (ApplicationMgtListener listener : listeners) {
