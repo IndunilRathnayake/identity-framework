@@ -146,21 +146,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         updatedSpFromTemplate.setOwner(getUser(tenantDomain, username));
 
         if (spTemplateContent != null) {
-            Collection<ApplicationMgtListener> listeners =
-                    ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
-            for (ApplicationMgtListener listener : listeners) {
-                if (listener.isEnable()) {
-                    listener.onPreCreateInbound(updatedSpFromTemplate, false);
-                }
-            }
-
             updateApplication(updatedSpFromTemplate, tenantDomain, username);
-
-            for (ApplicationMgtListener listener : listeners) {
-                if (listener.isEnable()) {
-                    listener.doImportServiceProvider(updatedSpFromTemplate);
-                }
-            }
         }
         return updatedSpFromTemplate;
     }

@@ -37,13 +37,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -56,6 +49,13 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Default service implementation of {@link ApplicationTemplateManagementService}. This handles all the application
@@ -88,7 +88,8 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
             throws IdentityApplicationTemplateMgtException {
 
         if (serviceProvider != null) {
-            String serviceProviderTemplateXml = marshalSP(serviceProvider, tenantDomain);
+            ServiceProvider updatedSP = removeUnsupportedTemplateConfigs(serviceProvider);
+            String serviceProviderTemplateXml = marshalSP(updatedSP, tenantDomain);
             spTemplateDTO.setSpContent(serviceProviderTemplateXml);
         }
         importApplicationTemplate(spTemplateDTO, tenantDomain);
@@ -102,15 +103,14 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
             validateTemplateXMLSyntax(spTemplateDTO);
 
             ServiceProvider serviceProvider = unmarshalSP(spTemplateDTO.getSpContent(), tenantDomain);
-            // invoking the application mgt listeners
+            validateUnsupportedTemplateConfigs(serviceProvider);
+
+            /**
+             * Invoking the application mgt listeners to validate the existence of the configured property values
+             * in template
+             */
             Collection<ApplicationMgtListener> listeners =
                     ApplicationMgtListenerServiceComponent.getApplicationMgtListeners();
-            for (ApplicationMgtListener listener : listeners) {
-                if (listener.isEnable()) {
-                    listener.onPreCreateInbound(serviceProvider, false);
-                }
-            }
-
             for (ApplicationMgtListener listener : listeners) {
                 if (listener.isEnable()) {
                     listener.doImportServiceProvider(serviceProvider);
@@ -312,13 +312,11 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
 
         try {
 
-            ServiceProvider updatedSP = removeUnsupportedTemplateConfigs(serviceProvider);
-
             JAXBContext jaxbContext = JAXBContext.newInstance(ServiceProvider.class);
             Marshaller marshaller = jaxbContext.createMarshaller();
             DocumentBuilderFactory docBuilderFactory = IdentityUtil.getSecuredDocumentBuilderFactory();
             Document document = docBuilderFactory.newDocumentBuilder().newDocument();
-            marshaller.marshal(updatedSP, document);
+            marshaller.marshal(serviceProvider, document);
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
@@ -348,5 +346,30 @@ public class ApplicationTemplateManagementServiceImpl extends ApplicationTemplat
             updatedSp.setInboundAuthenticationConfig(null);
         }
         return updatedSp;
+    }
+
+    private void validateUnsupportedTemplateConfigs(ServiceProvider serviceProvider)
+            throws IdentityApplicationTemplateMgtException {
+
+        if (serviceProvider.getInboundAuthenticationConfig() != null) {
+            throw new IdentityApplicationTemplateMgtException("Inbound configurations are not supported in application "
+                    + "template");
+        }
+        if (serviceProvider.getApplicationID() != 0) {
+            throw new IdentityApplicationTemplateMgtException("Application ID is not supported in application " +
+                    "template");
+        }
+        if (serviceProvider.getApplicationName() != null) {
+            throw new IdentityApplicationTemplateMgtException("Application name is not supported in application " +
+                    "template");
+        }
+        if (serviceProvider.getDescription() != null) {
+            throw new IdentityApplicationTemplateMgtException("Application description is not supported in application "
+                    + "template");
+        }
+        if (serviceProvider.getCertificateContent() != null) {
+            throw new IdentityApplicationTemplateMgtException("Application certificate not supported in application " +
+                    "template");
+        }
     }
 }
