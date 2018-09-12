@@ -95,6 +95,7 @@
 
 <script type="text/javascript" src="../admin/js/main.js"></script>
 <script type="text/javascript" src="../identity/validation/js/identity-validate.js"></script>
+<%!public static final String IS_HANDLER = "IS_HANDLER";%>
 
 
 <%
@@ -381,10 +382,10 @@
     var roleMappinRowID = -1;
     <% } %>
 
-    function saveAsTemplate() {
-        showPopupConfirm($(".editor-error-warn-container").html(), "Save Service Provider Template", 250, 550, "Save", "Cancel",
-            saveTemplate, null);
-    }
+    // function saveAsTemplate() {
+    //     showPopupConfirm($(".editor-error-warn-container").html(), "Save Service Provider Template", 250, 550, "Save", "Cancel",
+    //         saveTemplate, null);
+    // }
 
     function validateTextForIllegal(fld) {
         var isValid = doValidateInput(fld, "Provided Service Provider Template name is invalid.");
@@ -2484,7 +2485,21 @@
                                                                 if (appBean.getLocalAuthenticatorConfigs() != null) {
                                                                     LocalAuthenticatorConfig[] localAuthenticatorConfigs = appBean.getLocalAuthenticatorConfigs();
                                                                     for (LocalAuthenticatorConfig authenticator : localAuthenticatorConfigs) {
+                                                                        Property[] props = authenticator.getProperties();
+                                                                        if (props != null && props.length > 0) {
+                                                                            boolean isHander = false;
+                                                                            for (Property pro : props) {
+                                                                                if ((IS_HANDLER.equals(pro.getName()) && Boolean.valueOf(pro.getValue()))) {
+                                                                                    isHander = true;
+                                                                                    break;
+                                                                                }
+                                                                            }
+                                                                            if (isHander) {
+                                                                                continue;
+                                                                            }
+                                                                        }
                                                             %>
+                                                            
                                                             <% if (authenticator.getName().equals(appBean.getStepZeroAuthenticatorName(ApplicationBean.AUTH_TYPE_LOCAL))) { %>
                                                             <option
                                                                 value="<%=Encode.forHtmlAttribute(authenticator.getName())%>"
@@ -2878,11 +2893,11 @@
                                             <input type="button"
                                                    value="<fmt:message key='button.update.service.provider'/>"
                                                    onclick="createAppOnclick();"/>
-                                            <input type="button"
-                                                   value="<fmt:message key='button.save.service.provider.template'/>"
-                                                   onclick="saveAsTemplate();"/>
-                                            <input type="hidden" name="templateName" id="templateName"/>
-                                            <input type="hidden" name="templateDesc" id="templateDesc"/>
+                                            <%--<input type="button"--%>
+                                                   <%--value="<fmt:message key='button.save.service.provider.template'/>"--%>
+                                                   <%--onclick="saveAsTemplate();"/>--%>
+                                            <%--<input type="hidden" name="templateName" id="templateName"/>--%>
+                                            <%--<input type="hidden" name="templateDesc" id="templateDesc"/>--%>
                                             <input type="button" value="<fmt:message key='button.cancel'/>"
                                                    onclick="javascript:location.href='list-service-providers.jsp'"/>
                                         </div>
