@@ -73,13 +73,13 @@
     <script type="text/javascript" src="../carbon/admin/js/breadcrumbs.js"></script>
     <script type="text/javascript" src="../carbon/admin/js/cookies.js"></script>
     <script type="text/javascript" src="../carbon/admin/js/main.js"></script>
+    <script type="text/javascript" src="../identity/validation/js/identity-validate.js"></script>
     <%
         String templateContent = "";
         String templateName = "";
         String templateDesc = "";
         try {
             templateName = request.getParameter("templateName").trim();
-            templateDesc = request.getParameter("templateDesc").trim();
             String cookie = (String) session.getAttribute(ServerConstants.ADMIN_SERVICE_COOKIE);
             String backendServerURL = CarbonUIUtil.getServerURL(config.getServletContext(), session);
             ConfigurationContext configContext = (ConfigurationContext) config.getServletContext()
@@ -91,6 +91,7 @@
                 CarbonUIMessage.sendCarbonUIMessage("Error occurred while loading SP template", CarbonUIMessage.ERROR,
                         request);
             }
+            templateDesc = spTemplate.getDescription();
             templateContent = spTemplate.getContent();
         } catch (Exception e) {
             CarbonUIMessage.sendCarbonUIMessage("Error occurred while loading SP template", CarbonUIMessage.ERROR,
@@ -98,6 +99,15 @@
         }
     %>
     <script type="text/javascript">
+        function validateTextForIllegal(fld) {
+            var isValid = doValidateInput(fld, "Provided Service Provider Template name is invalid.");
+            if (isValid) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         function updateTemplateOnclick() {
             var templateName = $.trim(document.getElementById('template-name').value);
             var templateContent = $.trim(document.getElementById('templateContent').value);
@@ -108,6 +118,8 @@
             } else if (templateContent === null || 0 === templateContent.length) {
                 CARBON.showWarningDialog('Please specify service provider template content.');
                 location.href = '#';
+                return false;
+            } else if (!validateTextForIllegal(document.getElementById("template-name"))) {
                 return false;
             } else {
                 $("#update-sp-template-form").submit();
@@ -126,8 +138,9 @@
                 <tr>
                     <td style="width:15%" class="leftCol-med labelField"><fmt:message key='config.application.template.name'/>:<span class="required">*</span></td>
                     <td>
-                        <input id="template-name" name="template-name" type="text" value=<%=Encode.forHtmlAttribute(templateName)%>
-                                white-list-patterns="^[a-zA-Z0-9\s._-]*$" autofocus/>
+                        <input style="width:50%" id="template-name" name="template-name" type="text"
+                               value="<%=Encode.forHtmlAttribute(templateName)%>"
+                               white-list-patterns="^[a-zA-Z0-9\s._-]*$" autofocus/>
                         <div class="sectionHelp"><fmt:message key='help.template.name'/></div>
                     </td>
                 </tr>
@@ -145,7 +158,7 @@
                     <div class="sectionSub step_contents" id="codeMirror">
                         <textarea id="templateContent" name="templateContent"
                                   placeholder="Write custom JavaScript or select from templates that match a scenario..."
-                                  style="height: 500px;width: 100%; display: none;"><%out.print(templateContent);%></textarea>
+                                  style="height: 500px;width: 100%; display: none;"><%out.print(Encode.forHtmlContent(templateContent));%></textarea>
                     </div>
                 </div>
             </div>

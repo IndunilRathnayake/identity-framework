@@ -42,7 +42,7 @@
         response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         return;
     }
-    String templateName = request.getParameter("templateName");
+    String templateName = request.getParameter("export-templateName");
     ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE, request.getLocale());
     if (StringUtils.isNotEmpty(templateName)) {
         try {

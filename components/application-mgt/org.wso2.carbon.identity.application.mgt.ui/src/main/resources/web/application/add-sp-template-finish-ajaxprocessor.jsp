@@ -31,9 +31,9 @@
         response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         return;
     }
-    String content = request.getParameter("sp-template-file-content");
-    String templateName = request.getParameter("template-name");
-    String templateDescription = request.getParameter("template-description");
+    String content = request.getParameter("sp-template-file-content").trim();
+    String templateName = request.getParameter("template-name").trim();
+    String templateDescription = request.getParameter("template-description").trim();
     if (StringUtils.isNotEmpty(content)) {
         try {
             String cookie = (String) session.getAttribute(ServerConstants.ADMIN_SERVICE_COOKIE);

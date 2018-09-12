@@ -31,10 +31,10 @@
         response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         return;
     }
-    String content = request.getParameter("templateContent");
-    String templateName = request.getParameter("sp-template-name");
-    String modifiedTemplateName = request.getParameter("template-name");
-    String modifiedTemplateDesc = request.getParameter("template-description");
+    String content = request.getParameter("templateContent").trim();
+    String templateName = request.getParameter("sp-template-name").trim();
+    String modifiedTemplateName = request.getParameter("template-name").trim();
+    String modifiedTemplateDesc = request.getParameter("template-description").trim();
     if (StringUtils.isNotEmpty(content)) {
         try {
             String cookie = (String) session.getAttribute(ServerConstants.ADMIN_SERVICE_COOKIE);

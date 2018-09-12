@@ -70,11 +70,6 @@
         </h2>
         <div id="workArea">
             <script type="text/javascript">
-                function editSPTemplate(templateName, templateDesc) {
-                    location.href = "edit-sp-template.jsp?templateName=" + templateName +
-                        "&templateDesc=" + templateDesc;
-                }
-
                 function removeSPTemplate(templateName) {
                     function doDelete() {
                         $.ajax({
@@ -97,7 +92,7 @@
                 }
 
                 function exportSPTemplate(templateName) {
-                    document.getElementById('templateName').value = templateName;
+                    document.getElementById('export-templateName').value = templateName;
                     $('#exportSPTemplateMsgDialog').dialog("open");
                 }
             </script>
@@ -185,8 +180,8 @@
                                         if (canEdit) {
                                     %>
                                     <a title="Edit Service Provider Template"
-                                       onclick="editSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>',
-                                               '<%=template.getDescription() != null ? Encode.forJavaScriptAttribute(template.getDescription()) : ""%>');return false;" href="#"
+                                       onclick="javascript:location.href=
+                                               'edit-sp-template.jsp?templateName=<%=Encode.forUriComponent(template.getName())%>'"
                                        class="icon-link"
                                        style="background-image: url(../application/images/edit.gif)"><fmt:message key="sp.template.edit"/>
                                     </a>
@@ -195,7 +190,7 @@
                                         if (canView) {
                                     %>
                                     <a title="Export Service Provider Template"
-                                       onclick="exportSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
+                                       onclick="exportSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');"
                                        class="icon-link"
                                        style="background-image: url(../application/images/publish.gif)">
                                         <fmt:message key="sp.template.export"/>
@@ -205,7 +200,7 @@
                                         if (canDelete) {
                                     %>
                                     <a title="Remove Service Provider Template"
-                                       onclick="removeSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');return false;" href="#"
+                                       onclick="removeSPTemplate('<%=Encode.forJavaScriptAttribute(template.getName())%>');"
                                        class="icon-link"
                                        style="background-image: url(../application/images/delete.gif)"><fmt:message key="sp.template.delete"/>
                                     </a>
@@ -244,7 +239,7 @@
             <p><fmt:message key="sp.template.export.para"/></p><br>
             <form id="templateExportData" name="template-export-data" method="post"
                   action="export-sp-template-finish-ajaxprocessor.jsp">
-                <input hidden id="templateName" name="templateName"/>
+                <input hidden id="export-templateName" name="export-templateName"/>
             </form>
         </div>
     </div>

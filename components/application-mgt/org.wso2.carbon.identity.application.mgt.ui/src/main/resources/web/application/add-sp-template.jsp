@@ -53,7 +53,7 @@
         document.getElementById('sp-template-file-name').value = input.files[0].name;
         reader.readAsText(input.files[0]);
     };
-    function importAppOnclick() {
+    function addSPTemplate() {
         var templateName = $.trim(document.getElementById('template-name').value);
         var templateContent = $.trim(document.getElementById('sp-template-file-content').value);
         if (templateName === null || 0 === templateName.length) {
@@ -63,6 +63,8 @@
         } else if (templateContent === null || 0 === templateContent.length) {
             CARBON.showWarningDialog('Please specify service provider template configuration file.');
             location.href = '#';
+            return false;
+        } else if (!validateTextForIllegal(document.getElementById("template-name"))) {
             return false;
         } else {
             $("#upload-sp-template-form").submit();
@@ -138,7 +140,7 @@
                     </table>
                 </div>
                 <div class="buttonRow">
-                    <input type="button" class="button"  value="<fmt:message key='button.import.service.provider.template'/>" onclick="importAppOnclick();"/>
+                    <input type="button" class="button"  value="<fmt:message key='button.import.service.provider.template'/>" onclick="addSPTemplate();"/>
                     <input type="button" class="button" onclick="javascript:location.href='list-sp-templates.jsp'" value="<fmt:message key='button.cancel'/>"/>
                 </div>
             </form>
