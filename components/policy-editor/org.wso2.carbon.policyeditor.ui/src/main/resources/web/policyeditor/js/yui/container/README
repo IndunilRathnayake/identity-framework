@@ -328,7 +328,7 @@ Added the following features:
 + Prototype of all classes (Module, Overlay, Panel, Dialog, SimpleDialog,  
   Tooltip, Config, and ContainerEffect) are augmented with 
   YAHOO.util.EventProvider, facilitating subscribing to an instance's 
-  Custom Events by name via a "subscribe" method that is a direct member of 
+  Custom Events by name via a "subscribe" method that is a direct member of
   the class.  For example:
   
     var oOverlay = new YAHOO.widget.Overlay("myoverlay");
@@ -372,7 +372,7 @@ Added the following features:
   size and position of the <iframe> shim to that of the Overlay.
 
 + Added a "ICON_CSS_CLASSNAME" constant to YAHOO.widget.SimpleDialog that 
-  represents the name of the CSS class applied to the element created by the 
+  represents the name of the CSS class applied to the element created by the
   "icon" configuration property.
 
   
@@ -527,7 +527,7 @@ Known Issues
     </object>
 
     <object>
-        <param name="wmode" value="transparent"> 
+        <param name="wmode" value="transparent">
     </object>
 
   Via the <embed> tag:
@@ -628,7 +628,7 @@ Known Issues
   button in IE and Firefox.  Previously, this behavior only worked in Safari 
   and Opera.
 
-+ Added a "yui" prefix to the default CSS class name for Module to be 
++ Added a "yui" prefix to the default CSS class name for Module to be
   consistent with the other Container family widgets.
 
 + Container/Panel's underlay shadow is now defined as partially-transparent

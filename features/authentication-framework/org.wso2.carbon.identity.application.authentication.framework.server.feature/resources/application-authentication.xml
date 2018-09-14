@@ -78,7 +78,7 @@
 	<AuthenticatorConfigs>
 		<AuthenticatorConfig name="BasicAuthenticator" enabled="true">
 			<!--Parameter name="UserNameAttributeClaimUri">http://wso2.org/claims/emailaddress</Parameter-->
-			<!--Parameter name="showAuthFailureReason">true</Parameter-->	
+			<!--Parameter name="showAuthFailureReason">true</Parameter-->
 		</AuthenticatorConfig>
         <AuthenticatorConfig name="IdentifierExecutor" enabled="true">
             <Parameter name="ValidateUsername">false</Parameter>

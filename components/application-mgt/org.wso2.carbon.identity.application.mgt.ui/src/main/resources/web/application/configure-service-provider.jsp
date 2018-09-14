@@ -2462,6 +2462,27 @@
                                                         key="config.authentication.type.default"/></label>
                                                         <% } %>
                                                     </td>
+                                                    <td>
+                                                        <select name="" id="fed_idp">
+                                                            <% List<IdentityProvider> idps = appBean.getEnabledFederatedIdentityProviders();
+                                                                String selectedIdP = appBean.getStepZeroAuthenticatorName(ApplicationBean.AUTH_TYPE_FEDERATED);
+                                                                boolean isSelectedIdPUsed = false;
+                                                                for (IdentityProvider idp : idps) {
+                                                                    if (selectedIdP != null && idp.getIdentityProviderName().equals(selectedIdP)) {
+                                                                        isSelectedIdPUsed = true;
+                                                            %>
+                                                            <option
+                                                                    value="<%=Encode.forHtmlAttribute(idp.getIdentityProviderName())%>"
+                                                                    selected><%=Encode.forHtmlContent(idp.getIdentityProviderName()) %>
+                                                            </option>
+                                                            <% } else { %>
+                                                            <option
+                                                                    value="<%=Encode.forHtmlAttribute(idp.getIdentityProviderName())%>"><%=Encode.forHtmlContent(idp.getIdentityProviderName())%>
+                                                            </option>
+                                                            <% } %>
+                                                            <% } %>
+                                                        </select>
+                                                    </td>
                                                     <td/>
                                                 </tr>
                                                 <tr>

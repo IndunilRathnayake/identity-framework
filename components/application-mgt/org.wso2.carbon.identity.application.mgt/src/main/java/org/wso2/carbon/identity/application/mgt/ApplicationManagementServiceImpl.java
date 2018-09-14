@@ -37,6 +37,7 @@ import org.wso2.carbon.identity.application.common.model.AuthenticationStep;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.model.ImportResponse;
 import org.wso2.carbon.identity.application.common.model.InboundAuthenticationRequestConfig;
+import org.wso2.carbon.identity.application.common.model.LocalAndOutboundAuthenticationConfig;
 import org.wso2.carbon.identity.application.common.model.LocalAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.PermissionsAndRoleConfig;
 import org.wso2.carbon.identity.application.common.model.RequestPathAuthenticatorConfig;
@@ -61,7 +62,13 @@ import org.wso2.carbon.identity.application.mgt.internal.ApplicationManagementSe
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationMgtListenerServiceComponent;
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtListener;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
+import org.wso2.carbon.identity.tenant.artifact.mgt.ArtifactManagementService;
+import org.wso2.carbon.identity.tenant.artifact.mgt.ArtifactManagementServiceImpl;
+import org.wso2.carbon.identity.tenant.artifact.mgt.IdentityArtifactManagementException;
+import org.wso2.carbon.identity.tenant.artifact.mgt.dto.ResourceArtifact;
+import org.wso2.carbon.identity.tenant.artifact.mgt.dto.ResourceArtifactCategory;
 import org.wso2.carbon.registry.api.RegistryException;
+import org.wso2.carbon.registry.api.Resource;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.user.api.ClaimMapping;
@@ -76,6 +83,7 @@ import org.xml.sax.XMLReader;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -91,6 +99,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -916,19 +925,36 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                 serviceProvider = appDAO.getApplication(serviceProviderName, tenantDomain);
 
                 if (serviceProvider != null) {
-                    // if "Authentication Type" is "Default" we must get the steps from the default SP
+                    // if "Authentication Type" is "Default", get the tenant wise default authentication sequence if
+                    // available, otherwise the default local and outbound authentication configuration in default SP
                     AuthenticationStep[] authenticationSteps = serviceProvider
                             .getLocalAndOutBoundAuthenticationConfig().getAuthenticationSteps();
 
                     loadApplicationPermissions(serviceProviderName, serviceProvider);
 
                     if (authenticationSteps == null || authenticationSteps.length == 0) {
-                        ServiceProvider defaultSP = ApplicationManagementServiceComponent
-                                .getFileBasedSPs().get(IdentityApplicationConstants.DEFAULT_SP_CONFIG);
-                        authenticationSteps = defaultSP.getLocalAndOutBoundAuthenticationConfig()
-                                .getAuthenticationSteps();
-                        serviceProvider.getLocalAndOutBoundAuthenticationConfig()
-                                .setAuthenticationSteps(authenticationSteps);
+                        ArtifactManagementService artifactMgtService = ApplicationManagementServiceComponentHolder
+                                .getInstance().getArtifactManagementService();
+                        ResourceArtifactCategory resourceArtifactCategory;
+                        try {
+                            resourceArtifactCategory = artifactMgtService.getArtifactCategory(
+                                    ApplicationConstants.DEFAULT_AUTH_SEQ_COLLECTION_NAME, tenantDomain);
+                        } catch (IdentityArtifactManagementException e) {
+                            throw new IdentityApplicationManagementException("Error when retrieving default " +
+                                    "authentication sequence in tenant: " + tenantDomain, e);
+                        }
+
+                        if (resourceArtifactCategory != null &&
+                                ArrayUtils.isNotEmpty(resourceArtifactCategory.getResourceArtifacts())) {
+                            LocalAndOutboundAuthenticationConfig authConfig = unmarshalDefaultAuthSeq
+                                    (resourceArtifactCategory.getResourceArtifacts()[0].getValue(), tenantDomain);
+                            serviceProvider.setLocalAndOutBoundAuthenticationConfig(authConfig);
+                        } else {
+                            ServiceProvider defaultSP = ApplicationManagementServiceComponent
+                                    .getFileBasedSPs().get(IdentityApplicationConstants.DEFAULT_SP_CONFIG);
+                            serviceProvider.setLocalAndOutBoundAuthenticationConfig(
+                                    defaultSP.getLocalAndOutBoundAuthenticationConfig());
+                        }
                     }
                 }
             }
@@ -1812,6 +1838,40 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                 log.error(errorMsg, e);
                 throw new IdentityApplicationManagementException(errorMsg, e);
             }
+        }
+    }
+
+    /**
+     * Convert xml file of default authentication sequence to object.
+     *
+     * @param defaultAuthSeq xml string of the defualt authentication sequence
+     * @param tenantDomain tenant domain name
+     * @return LocalAndOutboundAuthenticationConfig instance
+     * @throws IdentityApplicationManagementException Identity Application Management Exception
+     */
+    private LocalAndOutboundAuthenticationConfig unmarshalDefaultAuthSeq(String defaultAuthSeq, String tenantDomain)
+            throws IdentityApplicationManagementException {
+
+        if (StringUtils.isEmpty(defaultAuthSeq)) {
+            throw new IdentityApplicationManagementException(String.format("Empty defualt authentication sequence " +
+                    "configuration is provided"));
+        }
+        try {
+            /*JAXBContext jaxbContext = JAXBContext.newInstance(LocalAndOutboundAuthenticationConfig.class);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            return (LocalAndOutboundAuthenticationConfig) unmarshaller.unmarshal(new ByteArrayInputStream(
+                    defaultAuthSeq.getBytes(StandardCharsets.UTF_8)));
+
+            */
+            JAXBContext jaxbContext = JAXBContext.newInstance(LocalAndOutboundAuthenticationConfig.class);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            JAXBElement<LocalAndOutboundAuthenticationConfig> root = unmarshaller.unmarshal(
+                    new StreamSource(new ByteArrayInputStream(defaultAuthSeq.getBytes(StandardCharsets.UTF_8))),
+                    LocalAndOutboundAuthenticationConfig.class);
+            return root.getValue();
+        } catch (JAXBException e) {
+            throw new IdentityApplicationManagementException(String.format("Error in reading default authentication " +
+                    "sequence configuration in tenant: %s", tenantDomain), e);
         }
     }
 }

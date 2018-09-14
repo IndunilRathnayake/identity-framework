@@ -628,7 +628,7 @@
         name="pgPort"  - The port (default: 5435)
         name="pgAllowOthers"  - Allow other computers to connect
         name="trace" - Print additional trace information; for all servers
-        name="baseDir" - The base directory for H2 databases; for all servers  
+        name="baseDir" - The base directory for H2 databases; for all servers
     -->
     <!--H2DatabaseConfiguration>
         <property name="web" />

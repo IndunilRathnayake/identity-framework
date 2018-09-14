@@ -34,6 +34,8 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ResourceBundle" %>
+<%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ArtifactManagementServiceClient" %>
+<%@ page import="org.wso2.carbon.identity.application.common.model.DefaultAuthenticationSequence" %>
 
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri="http://wso2.org/projects/carbon/taglibs/carbontags.jar"
@@ -83,6 +85,11 @@
                     String claimDialectURI = claimDialect.getClaimDialectURI();
                     claimDialectUris.add(claimDialectURI);
                 }
+
+                ArtifactManagementServiceClient artifactManagementServiceClient = ArtifactManagementServiceClient(
+                        cookie, backendServerURL, configContext);
+                DefaultAuthenticationSequence[] authenticationSequences =
+                        artifactManagementServiceClient.getAllDefaultAuthenticationSeqInfo();
                 
                 // Will be supported with 'Advance Consent Management Feature'.
                 // appBean.setApplicationPurposes(ApplicationMgtUIUtil.getApplicationSpecificPurposes(serviceProvider));
@@ -96,6 +103,7 @@
                 appBean.setRequestPathAuthenticators(requestPathAuthenticators);
                 appBean.setClaimUris(claimUris);
                 appBean.setClaimDialectUris(claimDialectUris);
+                appBean.setAllDefaultAuthenticationSequences();
                 
             } catch (Exception e) {
                 String message = resourceBundle.getString("alert.error.while.reading.service.provider") + " : " + e.getMessage();

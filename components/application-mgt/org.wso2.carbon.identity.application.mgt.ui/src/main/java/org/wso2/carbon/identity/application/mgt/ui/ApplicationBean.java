@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.consent.mgt.core.model.Purpose;
+import org.wso2.carbon.identity.application.common.model.DefaultAuthenticationSequence;
 import org.wso2.carbon.identity.application.common.model.script.xsd.AuthenticationScriptConfig;
 import org.wso2.carbon.identity.application.common.model.xsd.ApplicationPermission;
 import org.wso2.carbon.identity.application.common.model.xsd.AuthenticationStep;
@@ -72,6 +73,7 @@ public class ApplicationBean {
     private List<IdentityProvider> enabledFederatedIdentityProviders;
     private LocalAuthenticatorConfig[] localAuthenticatorConfigs;
     private RequestPathAuthenticatorConfig[] requestPathAuthenticators;
+    private List<DefaultAuthenticationSequence> defaultAuthenticationSequences;
     private Map<String, String> roleMap;
     private Map<String, String> claimMap;
     private Map<String, String> requestedClaims = new HashMap<String, String>();
@@ -109,6 +111,7 @@ public class ApplicationBean {
         federatedIdentityProvidersMap.clear();
         localAuthenticatorConfigs = null;
         requestPathAuthenticators = null;
+        defaultAuthenticationSequences = null;
         roleMap = null;
         claimMap = null;
         requestedClaims = new HashMap<String, String>();
@@ -154,6 +157,24 @@ public class ApplicationBean {
      */
     public void setAuthenticationType(String type) {
         serviceProvider.getLocalAndOutBoundAuthenticationConfig().setAuthenticationType(type);
+    }
+
+   /* public String getDefaultAuthenticationSequence() {
+        return serviceProvider.getLocalAndOutBoundAuthenticationConfig().getDefaultAuthenticationSequence();
+    }
+
+    public void setDefaultAuthenticationSequence(DefaultAuthenticationSequence sequence) {
+        serviceProvider.getLocalAndOutBoundAuthenticationConfig().setDefaultAuthenticationSequence(sequence);
+    }*/
+
+    public List<DefaultAuthenticationSequence> getAllDefaultAuthenticationSequences() {
+
+        return defaultAuthenticationSequences;
+    }
+
+    public void setAllDefaultAuthenticationSequences(List<DefaultAuthenticationSequence> defaultAuthenticationSequences) {
+
+        this.defaultAuthenticationSequences = defaultAuthenticationSequences;
     }
 
     /**

@@ -315,7 +315,7 @@ function setFieldsOnSubmit(){
         var n = checkedNodes[i];
         var element = document.createElement("input");
         element.setAttribute("type", "hidden");  
-        element.setAttribute("name", "selectedPermissions");  
+        element.setAttribute("name", "selectedPermissions");
         element.setAttribute("value", n);
         var span = document.getElementById("permissions");
       	span.appendChild(element);

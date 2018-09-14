@@ -47,6 +47,7 @@ import org.wso2.carbon.identity.application.mgt.listener.ApplicationIdentityProv
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtAuditLogger;
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtListener;
 import org.wso2.carbon.identity.application.mgt.listener.STSApplicationMgtListener;
+import org.wso2.carbon.identity.tenant.artifact.mgt.ArtifactManagementService;
 import org.wso2.carbon.idp.mgt.listener.IdentityProviderMgtListener;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -204,6 +205,24 @@ public class ApplicationManagementServiceComponent {
     protected void unsetConsentMgtService(ConsentManager consentManager) {
 
         ApplicationManagementServiceComponentHolder.getInstance().setConsentManager(null);
+    }
+
+    @Reference(
+            name = "artifact.mgt.service",
+            service = ArtifactManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetArtifactManagementService"
+    )
+    protected void setArtifactManagementService(ArtifactManagementService setArtifactManagementService) {
+
+        ApplicationManagementServiceComponentHolder.getInstance().setArtifactManagementService(
+                setArtifactManagementService);
+    }
+
+    protected void unsetArtifactManagementService(ArtifactManagementService artifactManagementService) {
+
+        ApplicationManagementServiceComponentHolder.getInstance().setArtifactManagementService(null);
     }
 
     private void buildFileBasedSPList() {

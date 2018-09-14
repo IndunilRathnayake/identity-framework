@@ -48,6 +48,7 @@ public class LocalAndOutboundAuthenticationConfig implements Serializable {
     private static final String AUTHENTICATION_STEPS = "AuthenticationSteps";
     private static final String AUTHENTICATION_GRAPH = "AuthenticationGraph";
     private static final String AUTHENTICATION_SCRIPT = "AuthenticationScript";
+    private static final String DEFAULT_AUTHENTICATION_SEQUENCE = "DefaultAuthenticationSequence";
 
     @XmlElementWrapper(name = "AuthenticationSteps")
     @XmlElement(name = "AuthenticationStep")
@@ -82,6 +83,9 @@ public class LocalAndOutboundAuthenticationConfig implements Serializable {
 
     @XmlElement(name = AUTHENTICATION_SCRIPT)
     private AuthenticationScriptConfig authenticationScriptConfig;
+
+    @XmlElement(name = DEFAULT_AUTHENTICATION_SEQUENCE)
+    private DefaultAuthenticationSequence defaultAuthenticationSequence;
 
     /*
      * <LocalAndOutboundAuthenticationConfig> <AuthenticationSteps></AuthenticationSteps>
@@ -135,6 +139,10 @@ public class LocalAndOutboundAuthenticationConfig implements Serializable {
 
             } else if ("AuthenticationType".equals(member.getLocalName())) {
                 localAndOutboundAuthenticationConfig.setAuthenticationType(member.getText());
+            } else if (DEFAULT_AUTHENTICATION_SEQUENCE.equals(member.getLocalName())) {
+                localAndOutboundAuthenticationConfig.setDefaultAuthenticationSequence(
+                        DefaultAuthenticationSequence.build(member)
+                );
             } else if (AUTHENTICATION_STEP_FOR_SUBJECT.equals(member.getLocalName())) {
                 AuthenticationStep authStep = AuthenticationStep.build(member);
                 if (authStep != null) {
@@ -200,6 +208,16 @@ public class LocalAndOutboundAuthenticationConfig implements Serializable {
      */
     public void setAuthenticationType(String authenticationType) {
         this.authenticationType = authenticationType;
+    }
+
+    public static String getDefaultAuthenticationSequence() {
+
+        return DEFAULT_AUTHENTICATION_SEQUENCE;
+    }
+
+    public void setDefaultAuthenticationSequence(DefaultAuthenticationSequence defaultAuthenticationSequence) {
+
+        this.defaultAuthenticationSequence = defaultAuthenticationSequence;
     }
 
     /**

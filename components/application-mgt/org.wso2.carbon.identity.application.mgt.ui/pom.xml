@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.wso2.carbon.identity.framework</groupId>
         <artifactId>application-mgt</artifactId>
-        <version>5.12.154-SNAPSHOT</version>
+        <version>5.12.153</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -74,6 +74,18 @@
             <groupId>org.wso2.carbon.consent.mgt</groupId>
             <artifactId>org.wso2.carbon.consent.mgt.core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.application.common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.tenant.artifact.mgt.stub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.tenant.artifact.mgt</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -110,6 +122,10 @@
                             org.wso2.carbon.identity.application.mgt.stub; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.identity.application.mgt.dto.xsd.*; version="${carbon.identity.package.export.version}",
                             org.wso2.carbon.identity.claim.metadata.mgt.stub; version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.identity.tenant.artifact.mgt.stub.*; version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.identity.tenant.artifact.mgt.dto.*; version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.identity.tenant.artifact.mgt.xsd.*;version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.identity.tenant.artifact.mgt.stub.types.axis2.*;version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.identity.application.common.model.xsd; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.identity.core.*;version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.identity.application.common.model.script.xsd; version="${carbon.identity.package.import.version.range}",

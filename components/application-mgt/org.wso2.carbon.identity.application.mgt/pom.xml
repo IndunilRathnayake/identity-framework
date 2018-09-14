@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.wso2.carbon.identity.framework</groupId>
         <artifactId>application-mgt</artifactId>
-        <version>5.12.154-SNAPSHOT</version>
+        <version>5.12.153</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>org.wso2.carbon.identity.application.mgt</artifactId>
@@ -120,6 +120,10 @@
             <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.application.common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.tenant.artifact.mgt</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -179,7 +183,8 @@
                             org.wso2.carbon.identity.claim.metadata.mgt.exception; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon; version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.consent.mgt.core.*; version="${carbon.consent.mgt.imp.pkg.version.range}",
-                            org.wso2.carbon.database.utils.*;version="${org.wso2.carbon.database.utils.version.range}"
+                            org.wso2.carbon.database.utils.*;version="${org.wso2.carbon.database.utils.version.range}",
+                            org.wso2.carbon.identity.tenant.artifact.mgt.*;version="${carbon.identity.package.import.version.range}"
                         </Import-Package>
                         <Export-Package>
                             !org.wso2.carbon.identity.application.mgt.internal,

@@ -53,7 +53,7 @@ Fixed the following bugs:
 
 + If a Button instance is preceeded by another enabled HTML submit button 
   (<input type="submit" ...> or <button type="submit" ...>), it will no longer 
-  create a hidden field representing its name and value when its parent form 
+  create a hidden field representing its name and value when its parent form
   is submitted.
 
 + If an HTML form contains a mix of YUI Buttons of type "submit" and standard 
@@ -65,7 +65,7 @@ Fixed the following bugs:
   submitted when the user presses the enter key while focused inside another 
   HTML form control.
 
-+ The first enabled Button instance in a form now correctly adds its name and 
++ The first enabled Button instance in a form now correctly adds its name and
   value to the form's data set when the form is submitted by the user pressing 
   the enter key while focused inside another form control.  
 
@@ -120,9 +120,9 @@ Changes:
 
 + The root element of each button's menu now will have two CSS classes 
   appended to it:
-    - The CSS class name specified by the "menuclassname" configuration 
+    - The CSS class name specified by the "menuclassname" configuration
       attribute (by default is "yui-button-menu")
-    - A type-specific class name (either "yui-split-button-menu" 
+    - A type-specific class name (either "yui-split-button-menu"
       or "yui-menu-button-menu")
 
 + "menu" configuration attribute now supports creation or use of 
@@ -139,7 +139,7 @@ Changes:
 	- To create a menu from existing markup using YAHOO.widget.Menu, pass the 
 	  id or node reference of the HTML element to be used to create the menu 
 	  as the value of the "menu" configuration attribute and give the 
-	  HTML element the same class name as specified by 
+	  HTML element the same class name as specified by
 	  YAHOO.widget.Menu.prototype.CSS_CLASS_NAME.
 	
 	- YAHOO.widget.Overlay instances used as a menu are by default not rendered 
@@ -178,7 +178,7 @@ Changes:
     .yuibutton  | .yui-button
     
     
-    2) Each Button type has its own class name with a "yui-" prefix and 
+    2) Each Button type has its own class name with a "yui-" prefix and
     "-button" suffix IN ADDITION TO the default "yui-button" class name:
     
     2.2.2			| 2.3
@@ -211,7 +211,7 @@ Changes:
     
     
     4) Buttons of type "radio" and "checkbox" have two classes applied to 
-    represent their "checked" state: a generic class name 
+    represent their "checked" state: a generic class name
     (i.e. yui-button-checked) and a type-specific class 
     name (yui-[type]-button-checked):
     
