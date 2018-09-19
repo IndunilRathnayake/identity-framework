@@ -19,7 +19,7 @@
             <xs:element name="updateArtifact">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="artifactCategoryName" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="0" name="resourceName" nillable="true" type="xs:string"/>
                         <xs:element minOccurs="0" name="artifactName" nillable="true" type="xs:string"/>
                         <xs:element minOccurs="0" name="artifact" nillable="true" type="ax2450:ResourceArtifact"/>
                     </xs:sequence>
@@ -28,7 +28,7 @@
             <xs:element name="createArtifact">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="artifactCategoryName" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="0" name="resourceName" nillable="true" type="xs:string"/>
                         <xs:element minOccurs="0" name="artifact" nillable="true" type="ax2450:ResourceArtifact"/>
                     </xs:sequence>
                 </xs:complexType>
@@ -43,7 +43,7 @@
             <xs:element name="getArtifactCategory">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="artifactCategoryName" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="0" name="resourceName" nillable="true" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -57,7 +57,7 @@
             <xs:element name="isExistingArtifactCategory">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="artifactCategoryName" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="0" name="resourceName" nillable="true" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -71,7 +71,7 @@
             <xs:element name="updateArtifactCategory">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="artifactCategoryName" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="0" name="resourceName" nillable="true" type="xs:string"/>
                         <xs:element minOccurs="0" name="artifactCategory" nillable="true" type="ax2450:ResourceArtifactCategory"/>
                     </xs:sequence>
                 </xs:complexType>
@@ -91,7 +91,7 @@
             <xs:element name="deleteArtifact">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="artifactCategoryName" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="0" name="resourceName" nillable="true" type="xs:string"/>
                         <xs:element minOccurs="0" name="artifactName" nillable="true" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
@@ -99,7 +99,7 @@
             <xs:element name="getArtifact">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="artifactCategoryName" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="0" name="resourceName" nillable="true" type="xs:string"/>
                         <xs:element minOccurs="0" name="artifactName" nillable="true" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
@@ -130,7 +130,7 @@
                     <xs:element minOccurs="0" name="description" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="id" type="xs:int"/>
                     <xs:element minOccurs="0" name="name" nillable="true" type="xs:string"/>
-                    <xs:element maxOccurs="unbounded" minOccurs="0" name="resourceArtifacts" nillable="true" type="ax2450:ResourceArtifact"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0" name="resourceContents" nillable="true" type="ax2450:ResourceArtifact"/>
                 </xs:sequence>
             </xs:complexType>
         </xs:schema>

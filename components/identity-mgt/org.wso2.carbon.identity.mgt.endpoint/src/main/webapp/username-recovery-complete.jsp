@@ -17,9 +17,9 @@
   --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<%@ page import="java.net.URLDecoder" %>
 <%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementEndpointUtil" %>
+<%@ page import="java.net.URLDecoder" %>
 <jsp:directive.include file="localize.jsp"/>
 
 <%

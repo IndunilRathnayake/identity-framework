@@ -74,8 +74,8 @@ public class ArtifactManagementServiceClient {
             ResourceArtifact[] resourceArtifacts = artifactCategory.getResourceArtifacts();
             for (ResourceArtifact resourceArtifact : resourceArtifacts) {
                 DefaultAuthenticationSequence defaultAuthenticationSequence = new DefaultAuthenticationSequence();
-                defaultAuthenticationSequence.setSequenceName(resourceArtifact.getName());
-                defaultAuthenticationSequence.setSequenceDescription(resourceArtifact.getDescription());
+                defaultAuthenticationSequence.setName(resourceArtifact.getName());
+                defaultAuthenticationSequence.setDescription(resourceArtifact.getDescription());
                 defaultAuthenticationSequences.add(defaultAuthenticationSequence);
             }
         } catch (RemoteException | IdentityArtifactManagementServiceIdentityArtifactManagementException e) {

@@ -16,9 +16,9 @@
   ~ under the License.
   --%>
 
-<%@ page import="java.util.ResourceBundle" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.EncodedControl" %>
 <%@ page import="java.nio.charset.StandardCharsets" %>
+<%@ page import="java.util.ResourceBundle" %>
 
 <%
     String BUNDLE = "org.wso2.carbon.identity.mgt.recovery.endpoint.i18n.Resources";

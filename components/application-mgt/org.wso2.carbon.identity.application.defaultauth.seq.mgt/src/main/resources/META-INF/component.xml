@@ -24,23 +24,23 @@
         </ManagementPermission>
         <ManagementPermission>
             <DisplayName>Tenant Resource Artifact Management</DisplayName>
-            <ResourceId>/permission/admin/manage/identity/artifactmgt</ResourceId>
+            <ResourceId>/permission/admin/manage/identity/resourcemgt</ResourceId>
         </ManagementPermission>
         <ManagementPermission>
             <DisplayName>View</DisplayName>
-            <ResourceId>/permission/admin/manage/identity/artifactmgt/view</ResourceId>
+            <ResourceId>/permission/admin/manage/identity/resourcemgt/view</ResourceId>
         </ManagementPermission>
         <ManagementPermission>
             <DisplayName>Delete</DisplayName>
-            <ResourceId>/permission/admin/manage/identity/artifactmgt/delete</ResourceId>
+            <ResourceId>/permission/admin/manage/identity/resourcemgt/delete</ResourceId>
         </ManagementPermission>
         <ManagementPermission>
             <DisplayName>Update</DisplayName>
-            <ResourceId>/permission/admin/manage/identity/artifactmgt/update</ResourceId>
+            <ResourceId>/permission/admin/manage/identity/resourcemgt/update</ResourceId>
         </ManagementPermission>
         <ManagementPermission>
             <DisplayName>Create</DisplayName>
-            <ResourceId>/permission/admin/manage/identity/artifactmgt/create</ResourceId>
+            <ResourceId>/permission/admin/manage/identity/resourcemgt/create</ResourceId>
         </ManagementPermission>
     </ManagementPermissions>
 </component>

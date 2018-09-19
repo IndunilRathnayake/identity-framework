@@ -17,29 +17,26 @@
 package org.wso2.carbon.identity.application.common.model;
 
 import org.apache.axiom.om.OMElement;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "DefaultAuthenticationSequence")
 public class DefaultAuthenticationSequence {
 
-    @XmlElement(name = "sequenceName", required = true)
-    private String sequenceName;
+    @XmlElement(name = "name", required = true)
+    private String name;
 
-    @XmlElement(name = "sequenceDescription")
-    private String sequenceDescription;
+    @XmlElement(name = "description")
+    private String description;
 
-    @XmlElement(name = "sequenceContent")
-    private String sequenceContent;
+    @XmlElement(name = "content")
+    private String content;
 
     public static DefaultAuthenticationSequence build(OMElement defaultAuthSeqOM) {
         DefaultAuthenticationSequence authenticationSequence = new DefaultAuthenticationSequence();
@@ -50,43 +47,43 @@ public class DefaultAuthenticationSequence {
         while (iter.hasNext()) {
             OMElement member = (OMElement) iter.next();
             if ("name".equals(member.getLocalName())) {
-                authenticationSequence.setSequenceName(member.getText());
+                authenticationSequence.setName(member.getText());
             } else if ("description".equals(member.getLocalName())) {
                 if (StringUtils.isNotBlank(member.getText())) {
-                    authenticationSequence.setSequenceDescription(member.getText());
+                    authenticationSequence.setDescription(member.getText());
                 }
             }
         }
         return authenticationSequence;
     }
 
-    public String getSequenceName() {
+    public String getName() {
 
-        return sequenceName;
+        return name;
     }
 
-    public void setSequenceName(String sequenceName) {
+    public void setName(String name) {
 
-        this.sequenceName = sequenceName;
+        this.name = name;
     }
 
-    public String getSequenceDescription() {
+    public String getDescription() {
 
-        return sequenceDescription;
+        return description;
     }
 
-    public void setSequenceDescription(String sequenceDescription) {
+    public void setDescription(String description) {
 
-        this.sequenceDescription = sequenceDescription;
+        this.description = description;
     }
 
-    public String getSequenceContent() {
+    public String getContent() {
 
-        return sequenceContent;
+        return content;
     }
 
-    public void setSequenceContent(String sequenceContent) {
+    public void setContent(String content) {
 
-        this.sequenceContent = sequenceContent;
+        this.content = content;
     }
 }

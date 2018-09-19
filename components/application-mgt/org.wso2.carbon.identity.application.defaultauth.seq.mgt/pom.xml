@@ -87,7 +87,7 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity.framework</groupId>
-            <artifactId>org.wso2.carbon.identity.tenant.artifact.mgt</artifactId>
+            <artifactId>org.wso2.carbon.identity.tenant.resource.mgt</artifactId>
         </dependency>
     </dependencies>
 
@@ -134,7 +134,7 @@
                             org.wso2.carbon.context; version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.core; version="${carbon.kernel.package.import.version.range}",
 
-                            org.wso2.carbon.identity.tenant.artifact.mgt.*;version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.identity.tenant.resource.mgt.*; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.security; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.security.config; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.identity.base.*; version="${carbon.identity.package.import.version.range}",

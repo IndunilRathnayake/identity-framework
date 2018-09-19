@@ -17,23 +17,25 @@
   --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
+<%@ page import="com.google.gson.Gson" %>
+<%@ page import="org.apache.commons.collections.map.HashedMap" %>
 <%@ page import="org.apache.commons.lang.StringUtils" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementEndpointConstants" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementEndpointUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementServiceUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.ApiException" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.api.SelfRegisterApi" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.api.UsernameRecoveryApi" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.Claim" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.Error" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.Property" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.SelfRegistrationUser" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.SelfUserRegistrationRequest" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.User" %>
+<%@ page import="java.net.URLEncoder" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="java.util.HashMap" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.*" %>
-<%@ page import="java.net.URLEncoder" %>
-<%@ page import="com.google.gson.Gson" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.Error" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementEndpointUtil" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementEndpointConstants" %>
-<%@ page import="org.apache.commons.collections.map.HashedMap" %>
-<%@ page import="org.wso2.carbon.base.MultitenantConstants" %>
 <jsp:directive.include file="localize.jsp"/>
 
 

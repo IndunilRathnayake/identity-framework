@@ -15,19 +15,20 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   --%>
+<%@ page import="com.google.gson.Gson" %>
 <%@ page import="org.apache.commons.lang.StringUtils" %>
 <%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementEndpointConstants" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementEndpointUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.ApiException" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.api.NotificationApi" %>
-<%@ page import="java.net.URLDecoder" %>
-<%@ page import="java.util.List" %>
-<%@ page import="java.util.ArrayList" %>
-<%@ page import="java.net.URLEncoder" %>
-<%@ page import="com.google.gson.Gson" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.*" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.Error" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.Property" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.ResetPasswordRequest" %>
+<%@ page import="java.net.URLDecoder" %>
+<%@ page import="java.net.URLEncoder" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.List" %>
 <jsp:directive.include file="localize.jsp"/>
 
 <%

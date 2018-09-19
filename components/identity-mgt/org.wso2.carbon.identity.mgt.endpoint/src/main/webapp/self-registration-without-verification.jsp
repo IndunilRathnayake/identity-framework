@@ -15,15 +15,15 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   --%>
+<%@ page import="com.google.gson.Gson" %>
 <%@ page import="org.apache.commons.lang.StringUtils" %>
+<%@ page import="org.apache.cxf.jaxrs.impl.ResponseImpl" %>
 <%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementEndpointConstants" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementEndpointUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.serviceclient.UserRegistrationClient" %>
-<%@ page import="javax.ws.rs.core.Response" %>
-<%@ page import="com.google.gson.Gson" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.serviceclient.beans.Claim" %>
-<%@ page import="org.apache.cxf.jaxrs.impl.ResponseImpl" %>
+<%@ page import="javax.ws.rs.core.Response" %>
 <jsp:directive.include file="localize.jsp"/>
 
 <%
