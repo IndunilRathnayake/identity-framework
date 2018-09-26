@@ -19,7 +19,6 @@ package org.wso2.carbon.identity.application.mgt.internal;
 
 import org.wso2.carbon.consent.mgt.core.ConsentManager;
 import org.wso2.carbon.identity.application.mgt.AbstractInboundAuthenticatorConfig;
-import org.wso2.carbon.identity.tenant.artifact.mgt.ArtifactManagementService;
 import org.wso2.carbon.registry.api.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
@@ -44,8 +43,6 @@ public class ApplicationManagementServiceComponentHolder {
     private boolean databaseBackedCertificateStoringSupportAvailable;
 
     private ConsentManager consentManager;
-
-    private ArtifactManagementService artifactManagementService;
 
     private ApplicationManagementServiceComponentHolder(){
     }
@@ -145,25 +142,5 @@ public class ApplicationManagementServiceComponentHolder {
     public ConsentManager getConsentManager() {
 
         return consentManager;
-    }
-
-    /**
-     * Set ArtifactManagementService instance.
-     *
-     * @param artifactManagementService ArtifactManagementService instance
-     */
-    public void setArtifactManagementService(ArtifactManagementService artifactManagementService) {
-
-        this.artifactManagementService = artifactManagementService;
-    }
-
-    /**
-     * Get ArtifactManagementService instance.
-     *
-     * @return ArtifactManagementService instance
-     */
-    public ArtifactManagementService getArtifactManagementService() {
-
-        return artifactManagementService;
     }
 }

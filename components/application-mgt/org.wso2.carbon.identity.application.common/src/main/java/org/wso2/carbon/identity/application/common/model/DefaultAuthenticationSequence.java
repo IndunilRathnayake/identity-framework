@@ -19,24 +19,25 @@ package org.wso2.carbon.identity.application.common.model;
 import org.apache.axiom.om.OMElement;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.Serializable;
+import java.util.Iterator;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Iterator;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "DefaultAuthenticationSequence")
-public class DefaultAuthenticationSequence {
-
-    @XmlElement(name = "name", required = true)
-    private String name;
+public class DefaultAuthenticationSequence implements Serializable {
 
     @XmlElement(name = "description")
     private String description;
 
     @XmlElement(name = "content")
-    private String content;
+    private LocalAndOutboundAuthenticationConfig content;
+
+    @XmlElement(name = "contentXml")
+    private String contentXml;
 
     public static DefaultAuthenticationSequence build(OMElement defaultAuthSeqOM) {
         DefaultAuthenticationSequence authenticationSequence = new DefaultAuthenticationSequence();
@@ -46,25 +47,13 @@ public class DefaultAuthenticationSequence {
 
         while (iter.hasNext()) {
             OMElement member = (OMElement) iter.next();
-            if ("name".equals(member.getLocalName())) {
-                authenticationSequence.setName(member.getText());
-            } else if ("description".equals(member.getLocalName())) {
+            if ("description".equals(member.getLocalName())) {
                 if (StringUtils.isNotBlank(member.getText())) {
                     authenticationSequence.setDescription(member.getText());
                 }
             }
         }
         return authenticationSequence;
-    }
-
-    public String getName() {
-
-        return name;
-    }
-
-    public void setName(String name) {
-
-        this.name = name;
     }
 
     public String getDescription() {
@@ -77,13 +66,23 @@ public class DefaultAuthenticationSequence {
         this.description = description;
     }
 
-    public String getContent() {
+    public LocalAndOutboundAuthenticationConfig getContent() {
 
         return content;
     }
 
-    public void setContent(String content) {
+    public void setContent(LocalAndOutboundAuthenticationConfig content) {
 
         this.content = content;
+    }
+
+    public String getContentXml() {
+
+        return contentXml;
+    }
+
+    public void setContentXml(String contentXml) {
+
+        this.contentXml = contentXml;
     }
 }

@@ -43,11 +43,12 @@ import org.wso2.carbon.identity.application.mgt.ApplicationConstants;
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementServiceImpl;
 import org.wso2.carbon.identity.application.mgt.ApplicationMgtSystemConfig;
+import org.wso2.carbon.identity.application.mgt.defaultauth.DefaultAuthSeqMgtService;
+import org.wso2.carbon.identity.application.mgt.defaultauth.DefaultAuthSeqMgtServiceImpl;
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationIdentityProviderMgtListener;
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtAuditLogger;
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtListener;
 import org.wso2.carbon.identity.application.mgt.listener.STSApplicationMgtListener;
-import org.wso2.carbon.identity.tenant.artifact.mgt.ArtifactManagementService;
 import org.wso2.carbon.idp.mgt.listener.IdentityProviderMgtListener;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -94,6 +95,8 @@ public class ApplicationManagementServiceComponent {
             } else {
                 log.error("STS - ApplicationMgtListener could not be registered.");
             }
+            bundleContext.registerService(DefaultAuthSeqMgtService.class.getName(),
+                    DefaultAuthSeqMgtServiceImpl.getInstance(), null);
             buildFileBasedSPList();
             loadAuthenticationTemplates();
 
@@ -205,24 +208,6 @@ public class ApplicationManagementServiceComponent {
     protected void unsetConsentMgtService(ConsentManager consentManager) {
 
         ApplicationManagementServiceComponentHolder.getInstance().setConsentManager(null);
-    }
-
-    @Reference(
-            name = "artifact.mgt.service",
-            service = ArtifactManagementService.class,
-            cardinality = ReferenceCardinality.MANDATORY,
-            policy = ReferencePolicy.DYNAMIC,
-            unbind = "unsetArtifactManagementService"
-    )
-    protected void setArtifactManagementService(ArtifactManagementService setArtifactManagementService) {
-
-        ApplicationManagementServiceComponentHolder.getInstance().setArtifactManagementService(
-                setArtifactManagementService);
-    }
-
-    protected void unsetArtifactManagementService(ArtifactManagementService artifactManagementService) {
-
-        ApplicationManagementServiceComponentHolder.getInstance().setArtifactManagementService(null);
     }
 
     private void buildFileBasedSPList() {

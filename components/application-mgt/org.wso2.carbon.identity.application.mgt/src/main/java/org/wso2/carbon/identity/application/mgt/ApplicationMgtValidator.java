@@ -88,7 +88,7 @@ public class ApplicationMgtValidator {
      * @throws IdentityApplicationManagementException Identity Application Management Exception when unable to get the
      *                                                authenticator params
      */
-    private void validateLocalAndOutBoundAuthenticationConfig(
+    public void validateLocalAndOutBoundAuthenticationConfig(
             LocalAndOutboundAuthenticationConfig localAndOutBoundAuthenticationConfig, String tenantDomain)
             throws IdentityApplicationManagementException {
 
@@ -103,7 +103,7 @@ public class ApplicationMgtValidator {
             return;
         }
         ApplicationManagementService applicationMgtService = ApplicationManagementService.getInstance();
-        Map<String, Property[]> allLocalAuthenticators = Arrays.stream( applicationMgtService
+        Map<String, Property[]> allLocalAuthenticators = Arrays.stream(applicationMgtService
                 .getAllLocalAuthenticators(tenantDomain))
                 .collect(Collectors.toMap(LocalAuthenticatorConfig::getName, LocalAuthenticatorConfig::getProperties));
 

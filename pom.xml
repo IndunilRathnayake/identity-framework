@@ -38,7 +38,7 @@
     </scm>
 
     <modules>
-       <!-- <module>test-utils/org.wso2.carbon.identity.testutil</module>
+        <module>test-utils/org.wso2.carbon.identity.testutil</module>
         <module>service-stubs/identity</module>
         <module>components/authentication-framework</module>
         <module>components/entitlement</module>
@@ -57,9 +57,9 @@
         <module>components/workflow-mgt</module>
         <module>components/policy-editor</module>
         <module>components/carbon-authenticators</module>
-        <module>components/consent-mgt</module>-->
+        <module>components/consent-mgt</module>
         <module>components/resource-mgt</module>
-        <!--<module>features/security-mgt</module>
+        <module>features/security-mgt</module>
         <module>features/claim-mgt</module>
         <module>features/identity-core</module>
         <module>features/identity-event</module>
@@ -75,7 +75,7 @@
         <module>features/workflow-mgt</module>
         <module>features/categories</module>
         <module>features/carbon-authenticators</module>
-        <module>features/consent-mgt</module>-->
+        <module>features/consent-mgt</module>
     </modules>
 
     <repositories>

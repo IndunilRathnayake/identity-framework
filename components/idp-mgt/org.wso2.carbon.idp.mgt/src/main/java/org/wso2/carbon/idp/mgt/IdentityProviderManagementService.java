@@ -48,12 +48,9 @@ public class IdentityProviderManagementService extends AbstractAdmin {
      * @throws IdentityProviderManagementException Error when getting Resident Identity Provider
      */
     public IdentityProvider getResidentIdP() throws IdentityProviderManagementException {
-        String tenantDomain = "";
+        String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         try {
-            tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
-            IdentityProvider residentIdP = IdentityProviderManager.getInstance()
-                    .getResidentIdP(tenantDomain);
-            return residentIdP;
+            return IdentityProviderManager.getInstance().getResidentIdP(tenantDomain);
         } catch (IdentityProviderManagementException idpException) {
             log.error("Error while getting ResidentIdP in tenantDomain :" + tenantDomain, idpException);
             throw idpException;

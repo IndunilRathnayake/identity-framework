@@ -34,10 +34,10 @@ import org.wso2.carbon.identity.application.common.IdentityApplicationManagement
 import org.wso2.carbon.identity.application.common.model.ApplicationBasicInfo;
 import org.wso2.carbon.identity.application.common.model.ApplicationPermission;
 import org.wso2.carbon.identity.application.common.model.AuthenticationStep;
+import org.wso2.carbon.identity.application.common.model.DefaultAuthenticationSequence;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.model.ImportResponse;
 import org.wso2.carbon.identity.application.common.model.InboundAuthenticationRequestConfig;
-import org.wso2.carbon.identity.application.common.model.LocalAndOutboundAuthenticationConfig;
 import org.wso2.carbon.identity.application.common.model.LocalAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.PermissionsAndRoleConfig;
 import org.wso2.carbon.identity.application.common.model.RequestPathAuthenticatorConfig;
@@ -57,18 +57,15 @@ import org.wso2.carbon.identity.application.mgt.dao.IdentityProviderDAO;
 import org.wso2.carbon.identity.application.mgt.dao.OAuthApplicationDAO;
 import org.wso2.carbon.identity.application.mgt.dao.SAMLApplicationDAO;
 import org.wso2.carbon.identity.application.mgt.dao.impl.FileBasedApplicationDAO;
+import org.wso2.carbon.identity.application.mgt.defaultauth.DefaultAuthSeqMgtException;
+import org.wso2.carbon.identity.application.mgt.defaultauth.DefaultAuthSeqMgtService;
+import org.wso2.carbon.identity.application.mgt.defaultauth.DefaultAuthSeqMgtServiceImpl;
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationManagementServiceComponent;
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationManagementServiceComponentHolder;
 import org.wso2.carbon.identity.application.mgt.internal.ApplicationMgtListenerServiceComponent;
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtListener;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
-import org.wso2.carbon.identity.tenant.artifact.mgt.ArtifactManagementService;
-import org.wso2.carbon.identity.tenant.artifact.mgt.ArtifactManagementServiceImpl;
-import org.wso2.carbon.identity.tenant.artifact.mgt.IdentityArtifactManagementException;
-import org.wso2.carbon.identity.tenant.artifact.mgt.dto.ResourceArtifact;
-import org.wso2.carbon.identity.tenant.artifact.mgt.dto.ResourceArtifactCategory;
 import org.wso2.carbon.registry.api.RegistryException;
-import org.wso2.carbon.registry.api.Resource;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.user.api.ClaimMapping;
@@ -81,9 +78,18 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -99,23 +105,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 import static org.wso2.carbon.identity.application.mgt.ApplicationMgtUtil.isRegexValidated;
 import static org.wso2.carbon.identity.core.util.IdentityUtil.isValidPEMCertificate;
 
 /**
- * Application management service implementation
+ * Application management service implementation.
  */
 public class ApplicationManagementServiceImpl extends ApplicationManagementService {
 
@@ -933,22 +928,17 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                     loadApplicationPermissions(serviceProviderName, serviceProvider);
 
                     if (authenticationSteps == null || authenticationSteps.length == 0) {
-                        ArtifactManagementService artifactMgtService = ApplicationManagementServiceComponentHolder
-                                .getInstance().getArtifactManagementService();
-                        ResourceArtifactCategory resourceArtifactCategory;
+                        DefaultAuthSeqMgtService seqMgtService = DefaultAuthSeqMgtServiceImpl.getInstance();
+                        DefaultAuthenticationSequence sequence;
                         try {
-                            resourceArtifactCategory = artifactMgtService.getArtifactCategory(
-                                    ApplicationConstants.DEFAULT_AUTH_SEQ_COLLECTION_NAME, tenantDomain);
-                        } catch (IdentityArtifactManagementException e) {
+                            sequence = seqMgtService.getDefaultAuthenticationSeq(tenantDomain);
+                        } catch (DefaultAuthSeqMgtException e) {
                             throw new IdentityApplicationManagementException("Error when retrieving default " +
                                     "authentication sequence in tenant: " + tenantDomain, e);
                         }
 
-                        if (resourceArtifactCategory != null &&
-                                ArrayUtils.isNotEmpty(resourceArtifactCategory.getResourceArtifacts())) {
-                            LocalAndOutboundAuthenticationConfig authConfig = unmarshalDefaultAuthSeq
-                                    (resourceArtifactCategory.getResourceArtifacts()[0].getValue(), tenantDomain);
-                            serviceProvider.setLocalAndOutBoundAuthenticationConfig(authConfig);
+                        if (sequence != null && sequence.getContent() != null) {
+                            serviceProvider.setLocalAndOutBoundAuthenticationConfig(sequence.getContent());
                         } else {
                             ServiceProvider defaultSP = ApplicationManagementServiceComponent
                                     .getFileBasedSPs().get(IdentityApplicationConstants.DEFAULT_SP_CONFIG);
@@ -1838,40 +1828,6 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                 log.error(errorMsg, e);
                 throw new IdentityApplicationManagementException(errorMsg, e);
             }
-        }
-    }
-
-    /**
-     * Convert xml file of default authentication sequence to object.
-     *
-     * @param defaultAuthSeq xml string of the defualt authentication sequence
-     * @param tenantDomain tenant domain name
-     * @return LocalAndOutboundAuthenticationConfig instance
-     * @throws IdentityApplicationManagementException Identity Application Management Exception
-     */
-    private LocalAndOutboundAuthenticationConfig unmarshalDefaultAuthSeq(String defaultAuthSeq, String tenantDomain)
-            throws IdentityApplicationManagementException {
-
-        if (StringUtils.isEmpty(defaultAuthSeq)) {
-            throw new IdentityApplicationManagementException(String.format("Empty defualt authentication sequence " +
-                    "configuration is provided"));
-        }
-        try {
-            /*JAXBContext jaxbContext = JAXBContext.newInstance(LocalAndOutboundAuthenticationConfig.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            return (LocalAndOutboundAuthenticationConfig) unmarshaller.unmarshal(new ByteArrayInputStream(
-                    defaultAuthSeq.getBytes(StandardCharsets.UTF_8)));
-
-            */
-            JAXBContext jaxbContext = JAXBContext.newInstance(LocalAndOutboundAuthenticationConfig.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            JAXBElement<LocalAndOutboundAuthenticationConfig> root = unmarshaller.unmarshal(
-                    new StreamSource(new ByteArrayInputStream(defaultAuthSeq.getBytes(StandardCharsets.UTF_8))),
-                    LocalAndOutboundAuthenticationConfig.class);
-            return root.getValue();
-        } catch (JAXBException e) {
-            throw new IdentityApplicationManagementException(String.format("Error in reading default authentication " +
-                    "sequence configuration in tenant: %s", tenantDomain), e);
         }
     }
 }

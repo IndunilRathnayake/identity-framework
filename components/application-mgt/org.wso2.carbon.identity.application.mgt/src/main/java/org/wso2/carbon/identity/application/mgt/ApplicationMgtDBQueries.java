@@ -221,4 +221,17 @@ public class ApplicationMgtDBQueries {
     public static final String DELETE_SP_TEMPLATE_BY_NAME = "DELETE FROM SP_TEMPLATE WHERE NAME = ? AND TENANT_ID= ?";
     public static final String UPDATE_SP_TEMPLATE_BY_NAME = "UPDATE SP_TEMPLATE SET NAME= ?,DESCRIPTION = ?," +
             "CONTENT = ? WHERE NAME = ? AND TENANT_ID = ?";
+
+    /**
+     * DB Queries for default authentication sequence management
+     */
+    public static final String ADD_DEFAULT_SEQ = "INSERT INTO SP_DEFAULT_AUTH_SEQ(TENANT_ID, DESCRIPTION, " +
+            "CONTENT) VALUES (?, ?, ?)";
+    public static final String GET_DEFAULT_SEQ = "SELECT DESCRIPTION, CONTENT FROM SP_DEFAULT_AUTH_SEQ " +
+            "WHERE TENANT_ID = ?";
+    public static final String GET_DEFAULT_SEQ_ID = "SELECT ID FROM SP_DEFAULT_AUTH_SEQ WHERE TENANT_ID = ?";
+    public static final String UPDATE_DEFAULT_SEQ = "UPDATE SP_DEFAULT_AUTH_SEQ SET DESCRIPTION = ?, " +
+            "CONTENT = ? WHERE TENANT_ID = ?";
+    public static final String DELETE_DEFAULT_SEQ = "DELETE FROM SP_DEFAULT_AUTH_SEQ WHERE TENANT_ID = ?";
+
 }
